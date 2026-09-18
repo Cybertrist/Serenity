@@ -69,7 +69,7 @@ class Actor(StrEnum):
 
 
 class Entry(SQLModel, table=True):
-    """A vault item watched by Serenity (metadata mirror, synced from Vaultwarden)."""
+    """A vault item watched by Serenity (metadata only; replaced by `Item` in phase 4)."""
 
     id: int | None = Field(default=None, primary_key=True)
     vault_item_id: str = Field(unique=True, index=True)

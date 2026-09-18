@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "serenity"
 version = "0.0.0"
-description = "Agentic, self-hosted password manager driving Vaultwarden."
+description = "Self-hosted password manager with a dual-zone encrypted vault and an agent."
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "argon2-cffi>=25.1,<26",

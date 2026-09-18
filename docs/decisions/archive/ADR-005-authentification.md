@@ -1,7 +1,7 @@
 # ADR-005 — Authentification mono-utilisateur
 
 - **Date** : 2026-09-18
-- **Statut** : accepté
+- **Statut** : remplacé — le nouveau modèle d'authentification sera décrit en phase 3 (clé d'auth dérivée côté client)
 
 ## Contexte
 

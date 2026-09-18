@@ -1,5 +1,8 @@
 # 03 — Socle backend
 
+> **Remise à plat (phase 0)** : cette page décrit le socle construit avant l'abandon de Vaultwarden.
+> Le code reste en place, mais l'authentification sera refaite en phase 3 selon `docs/crypto.md`.
+
 ## Quoi
 
 L'`api` devient une vraie application FastAPI, avec :

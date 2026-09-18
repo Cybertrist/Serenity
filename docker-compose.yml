@@ -12,39 +12,6 @@ x-hardening: &hardening
       max-file: "3"
 
 services:
-  vaultwarden:
-    <<: *hardening
-    image: vaultwarden/server:1.37.3-alpine
-    user: "10003:10003"
-    cap_drop: [ALL]
-    read_only: true
-    tmpfs: [/tmp]
-    environment:
-      DOMAIN: https://${TAILNET_HOST:?set TAILNET_HOST in .env}:10000
-      ROCKET_PORT: "8080"
-      SIGNUPS_ALLOWED: ${VW_SIGNUPS_ALLOWED:-false}
-      INVITATIONS_ALLOWED: "false"
-      PASSWORD_HINTS_ALLOWED: "false"
-      SHOW_PASSWORD_HINT: "false"
-      # Avoids leaking the list of stored domains through favicon requests.
-      DISABLE_ICON_DOWNLOAD: "true"
-      IP_HEADER: X-Forwarded-For
-      LOG_LEVEL: warn
-      TZ: ${TZ:-Europe/Paris}
-      # ADMIN_TOKEN is intentionally absent: the admin page is disabled.
-      # See ops/vaultwarden/admin.override.yml to enable it temporarily.
-    volumes:
-      - ./data/vaultwarden:/data
-    ports:
-      - "127.0.0.1:8081:8080"
-    networks: [edge, internal]
-    healthcheck:
-      test: ["CMD", "/healthcheck.sh"]
-      interval: 30s
-      timeout: 5s
-      start_period: 20s
-      retries: 3
-
   ntfy:
     <<: *hardening
     image: binwiederhier/ntfy:v2.28.0
@@ -89,15 +56,12 @@ services:
       SERENITY_LOGIN_MAX_ATTEMPTS: ${SERENITY_LOGIN_MAX_ATTEMPTS:-5}
       SERENITY_LOGIN_LOCKOUT_MINUTES: ${SERENITY_LOGIN_LOCKOUT_MINUTES:-15}
       SERENITY_LOG_LEVEL: ${SERENITY_LOG_LEVEL:-INFO}
-      SERENITY_VAULTWARDEN_URL: http://vaultwarden:8080
       SERENITY_NTFY_URL: http://ntfy:8080
     volumes:
       - ./data/api:/data
     # No published port: only reachable by `web` on the internal network.
     networks: [internal, egress]
     depends_on:
-      vaultwarden:
-        condition: service_healthy
       ntfy:
         condition: service_healthy
 

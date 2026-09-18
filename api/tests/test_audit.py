@@ -56,6 +56,6 @@ def test_log_filter_redacts_messages(caplog: pytest.LogCaptureFixture) -> None:
     logger = logging.getLogger("test.audit")
     logger.addFilter(SecretFilter())
     with caplog.at_level(logging.INFO, logger="test.audit"):
-        logger.info("calling bw with password=%s", "hunter2")
+        logger.info("calling a site with password=%s", "hunter2")
     assert "hunter2" not in caplog.text
     assert REDACTED in caplog.text

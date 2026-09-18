@@ -1,1 +1,1 @@
-"""Serenity: agentic, self-hosted password manager driving Vaultwarden."""
+"""Serenity: self-hosted password manager with a dual-zone encrypted vault and an agent."""
