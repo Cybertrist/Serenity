@@ -25,6 +25,7 @@ from serenity.auth.validation import InvalidInputError, normalize_username
 from serenity.crypto import blocks, contexts, items, kdf, recovery, sealed
 from serenity.crypto.encoding import b64url_decode as d
 from serenity.crypto.encoding import b64url_encode as e
+from serenity.models import BreachKind
 from serenity.watcher.checks import ScannedEntry, analyze
 from serenity.watcher.rules import parse_date
 
@@ -458,7 +459,13 @@ def _cmd_scan(client: Client, state: dict[str, Any], _target: str | None) -> Non
     alerts = analyze(scanned, datetime.now(UTC), None)
     body = {
         "scanned": [s.item_id for s in scanned],
-        "alerts": [{"item_id": a.item_id, "kind": a.kind.value} for a in alerts],
+        # No Pwned Passwords here: say so, or the agent's "exposed" alerts would be closed.
+        "checked": ["reused", "weak", "old"],
+        "alerts": [
+            {"item_id": a.item_id, "kind": a.kind.value}
+            for a in alerts
+            if a.kind != BreachKind.PWNED_PASSWORD
+        ],
     }
     summary = client.call("POST", "/api/watch/report", body)
     print(f"{len(scanned)} entrée(s) vérifiée(s) (sans Pwned Passwords : l'appli web le fera).")

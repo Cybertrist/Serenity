@@ -286,3 +286,20 @@ def test_watched_emails_with_hibp(account: Account, client: TestClient, agent_re
         assert db.exec(select(WatchedEmail)).one().last_checked_at is not None
     emails = account.api.call("GET", "/api/watch/emails")
     assert emails["enabled"] is False  # no HIBP_API_KEY in the test settings
+
+
+def test_a_scan_only_closes_the_kinds_it_checked(account: Account, keys: Keyring) -> None:
+    item = account.api.add(keys, {"v": 1, "type": "login", "name": "A", "password": "x"})["id"]
+    _report(account, [item], [(item, "pwned_password"), (item, "weak")])
+    # A scan without Pwned Passwords (offline) must not close the "exposed" alert.
+    body = {"scanned": [item], "checked": ["reused", "weak", "old"], "alerts": []}
+    assert account.api.call("POST", "/api/watch/report", body) == {
+        "new": 0,
+        "open": 0,
+        "resolved": 1,
+    }
+    kinds = [b["kind"] for b in account.api.call("GET", "/api/breaches")]
+    assert kinds == ["pwned_password"]
+    body = {"scanned": [item], "checked": ["weak"], "alerts": [{"item_id": item, "kind": "old"}]}
+    with pytest.raises(ApiError):
+        account.api.call("POST", "/api/watch/report", body)  # alert of an unchecked kind

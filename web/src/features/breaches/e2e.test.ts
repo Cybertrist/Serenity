@@ -59,7 +59,8 @@ describe.skipIf(!URL)("watch against the Python API", () => {
     const notifications = await api.get<{ kind: string }[]>("/api/notifications");
     expect(notifications.map((n) => n.kind)).toEqual(["breach.new", "breach.new"]);
 
-    // Nothing found this time (no Pwned Passwords check): the pwned alert is resolved.
-    expect(await report(api, await scanVault(state, keyring, null))).toMatchObject({ resolved: 1 });
+    // Without Pwned Passwords (unreachable), the "exposed" alert must stay open.
+    expect(await report(api, await scanVault(state, keyring, null))).toMatchObject({ resolved: 0 });
+    expect((await openBreaches(api)).map((b) => b.kind).sort()).toEqual(["pwned_password", "weak"]);
   });
 });

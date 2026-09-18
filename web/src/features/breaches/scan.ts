@@ -17,6 +17,8 @@ export interface ScanAlert {
 
 export interface ScanResult {
   scanned: string[];
+  /** Kinds really verified: without Pwned Passwords, "pwned_password" is left out. */
+  checked: AlertKind[];
   alerts: ScanAlert[];
 }
 
@@ -45,7 +47,10 @@ export async function scanVault(
   for (const ids of byPassword.values()) {
     if (ids.length > 1) for (const id of ids) alerts.push({ item_id: id, kind: "reused" });
   }
-  return { scanned, alerts };
+  const checked: AlertKind[] = pwned
+    ? ["pwned_password", "reused", "weak", "old"]
+    : ["reused", "weak", "old"];
+  return { scanned, checked, alerts };
 }
 
 export interface ScanSummary {

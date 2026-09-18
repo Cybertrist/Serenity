@@ -34,10 +34,21 @@ class AlertIn(BaseModel):
     kind: Literal["pwned_password", "reused", "weak", "old"]
 
 
+AlertKind = Literal["pwned_password", "reused", "weak", "old"]
+
+
+ALL_KINDS: tuple[AlertKind, ...] = ("pwned_password", "reused", "weak", "old")
+
+
 class ReportIn(BaseModel):
-    """A full scan done in the browser: entry ids and alert kinds only, never a secret."""
+    """A full scan done in the browser: entry ids and alert kinds only, never a secret.
+
+    `checked` lists the kinds this scan really verified (e.g. without Pwned Passwords when it
+    was unreachable): only those alerts can be opened or resolved.
+    """
 
     scanned: list[str] = Field(max_length=MAX_SCAN)
+    checked: list[AlertKind] = Field(default_factory=lambda: list(ALL_KINDS))
     alerts: list[AlertIn] = Field(max_length=MAX_SCAN * len(ITEM_BREACH_KINDS))
 
 
@@ -81,7 +92,10 @@ def post_report(body: ReportIn, row: UnlockedDep, db: DbDep) -> SummaryOut:
     try:
         scanned = [check_uuid(i) for i in body.scanned]
         alerts = [Alert(check_uuid(a.item_id), BreachKind(a.kind)) for a in body.alerts]
-        summary = service.record_item_scan(db, row.user_id, scanned, alerts, "client", utcnow())
+        kinds = tuple(BreachKind(k) for k in dict.fromkeys(body.checked))
+        summary = service.record_item_scan(
+            db, row.user_id, scanned, alerts, "client", utcnow(), kinds=kinds
+        )
     except (InvalidInputError, service.InvalidReportError) as exc:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc)) from None
     return SummaryOut(new=summary.new, open=summary.open, resolved=summary.resolved)
