@@ -25,6 +25,7 @@ Nommage : `ADR-NNN-titre-court.md`.
 - [ADR-003 — Lancer tests et linters dans Docker](ADR-003-outils-dans-docker.md)
 - [ADR-004 — Migrations SQLite maison au démarrage](ADR-004-migrations.md)
 - [ADR-005 — Notifications maison, sans service tiers](ADR-005-notifications-maison.md)
+- [ADR-006 — Choix cryptographiques précisant CLAUDE.md](ADR-006-choix-cryptographiques.md) *(proposé)*
 
 ## Archives
 
