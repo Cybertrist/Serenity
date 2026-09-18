@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { totpCode } from "./totp";
 
 // RFC 6238 appendix B, SHA-1 secret "12345678901234567890" (base32 below), last 6 digits.
-const SECRET = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ";
+const SECRET = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ"; // gitleaks:allow (public RFC 6238 test secret)
 
 describe("totp", () => {
   it.each([
