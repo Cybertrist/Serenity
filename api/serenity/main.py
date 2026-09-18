@@ -11,7 +11,7 @@ from serenity.auth.hashing import DummyHash
 from serenity.config import Settings, get_settings
 from serenity.db import create_db_engine, init_db
 from serenity.models import Actor
-from serenity.routes import auth, crypto, health, logs, vault
+from serenity.routes import auth, crypto, health, logs, notifications, vault, watch
 
 
 def create_app(settings: Settings | None = None, totp_key: bytes | None = None) -> FastAPI:
@@ -41,5 +41,7 @@ def create_app(settings: Settings | None = None, totp_key: bytes | None = None) 
     app.include_router(logs.router)
     app.include_router(crypto.router)
     app.include_router(vault.router)
+    app.include_router(watch.router)
+    app.include_router(notifications.router)
     app.add_exception_handler(vault.ConflictResponse, vault.conflict_handler)
     return app

@@ -9,6 +9,18 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- Phase 5 : veille des fuites. Dans le navigateur (deux zones) : Pwned Passwords en k-anonymat,
+  réutilisés, faibles, anciens ; rapport sans secret (`POST /api/watch/report`). Sur le serveur
+  (agent, zone agent, toutes les 6 h) : mêmes contrôles sauf réutilisation ; adresses e-mail via
+  HIBP si `HIBP_API_KEY`. Alertes sans doublon (`Breach`), notifications dans l'appli
+  (`Notification`), kill switch lu avant chaque action de l'agent.
+- Phase 5 : règles partagées `shared/test-vectors/watch.json`, `make watch-now`,
+  `make client c=scan|breaches|notifications`, doc `05-veille.md`, ADR-010, migration v4.
+
+### Retiré
+
+- Phase 5 : anciens modèles `Entry`, `Breach`, `Rotation` de l'époque Vaultwarden.
+
 - Phase 4 : coffre chiffré (`Item`, `ItemRevision`, migration v3) : ajout (par lots), modification
   avec contrôle de révision (`409`), corbeille 30 jours, historique des 10 dernières versions,
   synchronisation par curseur, confier à l'agent / reprendre avec confirmation et journal.

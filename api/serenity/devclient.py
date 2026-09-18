@@ -14,6 +14,7 @@ import os
 import sys
 import uuid
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +25,9 @@ from serenity.auth.validation import InvalidInputError, normalize_username
 from serenity.crypto import blocks, contexts, items, kdf, recovery, sealed
 from serenity.crypto.encoding import b64url_decode as d
 from serenity.crypto.encoding import b64url_encode as e
+from serenity.models import BreachKind
+from serenity.watcher.checks import ScannedEntry, analyze
+from serenity.watcher.rules import parse_date
 
 COOKIE = "serenity_session"
 
@@ -333,8 +337,8 @@ def _zone_label(zone: str) -> str:
 def _cmd_add(client: Client, state: dict[str, Any], _target: str | None) -> None:
     keys = _unlocked(client, state)
     name = input("Nom (ex. Netflix) : ").strip()
-    username = input("Identifiant sur le site : ").strip()
-    password = getpass.getpass("Mot de passe du site (vide = générer) : ")
+    username = input("Identifiant sur le site (ton e-mail ou pseudo chez eux) : ").strip()
+    password = getpass.getpass("Mot de passe du site (saisie masquée ; vide = en générer un) : ")
     if not password:
         password = e(nacl.utils.random(15))
         print("Mot de passe généré (20 caractères).")
@@ -424,6 +428,71 @@ def _cmd_history(client: Client, state: dict[str, Any], target: str | None) -> N
         print(f"  révision {rev['revision']} ({_zone_label(rev['zone'])})")
 
 
+KIND_LABELS = {
+    "pwned_password": "mot de passe exposé dans une fuite",
+    "reused": "mot de passe réutilisé",
+    "weak": "mot de passe faible",
+    "old": "mot de passe ancien (plus d'un an)",
+    "email_breach": "adresse e-mail dans une fuite",
+}
+
+
+def _names(client: Client, keys: Keyring) -> dict[str, str]:
+    return {
+        i["id"]: client.decrypt(keys, i)["name"]
+        for i in client.sync()["items"]
+        if i["block"] is not None
+    }
+
+
+def rules_date(value: str) -> datetime:
+    return parse_date(value) or datetime.now(UTC)
+
+
+def _cmd_scan(client: Client, state: dict[str, Any], _target: str | None) -> None:
+    """Browser-like scan of both zones. No Pwned Passwords here: the api container is offline."""
+    keys = _unlocked(client, state)
+    rows = [i for i in client.sync()["items"] if i["block"] is not None and i["deleted_at"] is None]
+    scanned = [
+        ScannedEntry(i["id"], client.decrypt(keys, i), rules_date(i["created_at"])) for i in rows
+    ]
+    alerts = analyze(scanned, datetime.now(UTC), None)
+    body = {
+        "scanned": [s.item_id for s in scanned],
+        # No Pwned Passwords here: say so, or the agent's "exposed" alerts would be closed.
+        "checked": ["reused", "weak", "old"],
+        "alerts": [
+            {"item_id": a.item_id, "kind": a.kind.value}
+            for a in alerts
+            if a.kind != BreachKind.PWNED_PASSWORD
+        ],
+    }
+    summary = client.call("POST", "/api/watch/report", body)
+    print(f"{len(scanned)} entrée(s) vérifiée(s) (sans Pwned Passwords : l'appli web le fera).")
+    new, still_open, resolved = summary["new"], summary["open"], summary["resolved"]
+    print(f"Nouvelles alertes : {new}, ouvertes : {still_open}, résolues : {resolved}")
+
+
+def _cmd_breaches(client: Client, state: dict[str, Any], _target: str | None) -> None:
+    keys = _unlocked(client, state)
+    names = _names(client, keys)
+    breaches = client.call("GET", "/api/breaches")
+    if not breaches:
+        print("Tout va bien.")
+    for b in breaches:
+        subject = names.get(b["item_id"] or "", b["details"].get("email", "?"))
+        print(f"  - {subject} : {KIND_LABELS.get(b['kind'], b['kind'])} (vu par : {b['source']})")
+
+
+def _cmd_notifications(client: Client, state: dict[str, Any], _target: str | None) -> None:
+    keys = _unlocked(client, state)
+    names = _names(client, keys)
+    for n in client.call("GET", "/api/notifications"):
+        subject = names.get(n["item_id"] or "", "une adresse surveillée")
+        flag = "  " if n["read_at"] else "• "
+        print(f"{flag}{n['created_at'][:16].replace('T', ' ')}  nouvelle alerte : {subject}")
+
+
 VAULT_COMMANDS = {
     "add": _cmd_add,
     "list": _cmd_list,
@@ -434,35 +503,30 @@ VAULT_COMMANDS = {
     "delete": _cmd_delete,
     "restore": _cmd_restore,
     "history": _cmd_history,
+    "scan": _cmd_scan,
+    "breaches": _cmd_breaches,
+    "notifications": _cmd_notifications,
 }
+
+
+ACCOUNT_COMMANDS = (
+    "signup",
+    "login",
+    "unlock",
+    "lock",
+    "me",
+    "sessions",
+    "logout",
+    "password",
+    "recover",
+)
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m serenity.devclient")
-    parser.add_argument(
-        "command",
-        choices=[
-            "signup",
-            "login",
-            "unlock",
-            "lock",
-            "me",
-            "sessions",
-            "logout",
-            "password",
-            "recover",
-            "add",
-            "list",
-            "show",
-            "edit",
-            "delegate",
-            "reclaim",
-            "delete",
-            "restore",
-            "history",
-        ],
-    )
-    parser.add_argument("target", nargs="?", help="entry name or id (show, edit, delegate...)")
+    parser.add_argument("command", choices=[*ACCOUNT_COMMANDS, *VAULT_COMMANDS])
+    # Entry names may contain spaces: every remaining word is part of the target.
+    parser.add_argument("target", nargs="*", help="entry name or id (show, edit, delegate...)")
     parser.add_argument("--url", default=os.environ.get("SERENITY_URL", "http://127.0.0.1:8000"))
     args = parser.parse_args(argv)
     state = _load()
@@ -505,7 +569,7 @@ def main(argv: list[str] | None = None) -> int:
             client.change_password(state["username"], current, new, input("Code TOTP : ").strip())
             print("Mot de passe maître changé. Les autres appareils sont déconnectés.")
         elif args.command in VAULT_COMMANDS:
-            VAULT_COMMANDS[args.command](client, state, args.target)
+            VAULT_COMMANDS[args.command](client, state, " ".join(args.target) or None)
         elif args.command == "recover":
             username = _ask_username()
             kit = getpass.getpass("Clé de récupération : ")

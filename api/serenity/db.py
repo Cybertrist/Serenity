@@ -46,10 +46,22 @@ def _v3_vault(session: Session) -> None:
     add_column(session, "user", "vault_seq", "INTEGER NOT NULL DEFAULT 0")
 
 
+def _v4_watch(session: Session) -> None:
+    # Legacy tables from the Vaultwarden era (always empty): entry, rotation and the old breach.
+    conn = session.connection()
+    old_breach = "entry_id" in {r[1] for r in conn.execute(text('PRAGMA table_info("breach")'))}
+    conn.execute(text("DROP TABLE IF EXISTS rotation"))
+    if old_breach:
+        conn.execute(text("DROP TABLE breach"))
+        SQLModel.metadata.tables["breach"].create(conn)
+    conn.execute(text("DROP TABLE IF EXISTS entry"))
+
+
 MIGRATIONS: list[Migration] = [
     lambda session: None,
     _v2_accounts,
     _v3_vault,
+    _v4_watch,
 ]
 
 

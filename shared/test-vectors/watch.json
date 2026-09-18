@@ -1,0 +1,115 @@
+{
+  "description": "Watch rules shared by Python and TypeScript (docs/05-veille.md). Not secrets: sample passwords.",
+  "min_length": 12,
+  "min_bits": 60,
+  "min_distinct": 5,
+  "old_after_days": 365,
+  "passwords": [
+    {
+      "password": "",
+      "weak": false,
+      "bits": 0.0,
+      "sha1": null
+    },
+    {
+      "password": "password",
+      "weak": true,
+      "bits": 37.603518,
+      "sha1": "5BAA61E4C9B93F3F0682250B6CF8331B7EE68FD8"
+    },
+    {
+      "password": "Password1",
+      "weak": true,
+      "bits": 53.587767,
+      "sha1": "70CCD9007338D6D81DD3B6271621B9CF9A97EA00"
+    },
+    {
+      "password": "correct horse battery staple",
+      "weak": false,
+      "bits": 164.714005,
+      "sha1": "ABF7AAD6438836DBE526AA231ABDE2D0EEF74D42"
+    },
+    {
+      "password": "Tr0ub4dor&3",
+      "weak": true,
+      "bits": 72.268412,
+      "sha1": "874572E7A5AE6A49466A6AC578B98ADBA78C6AA6"
+    },
+    {
+      "password": "aaaaaaaaaaaaaaaaaaaa",
+      "weak": true,
+      "bits": 94.008794,
+      "sha1": "38666B8BA500FAA5C2406F4575D42A92379844C2"
+    },
+    {
+      "password": "abababababababab",
+      "weak": true,
+      "bits": 75.207035,
+      "sha1": "09A9CE11EFC9DD543BBF3141BDA5155FC52FA5DE"
+    },
+    {
+      "password": "k9#Lm2$pQ7!xZ4&w",
+      "weak": false,
+      "bits": 105.11769,
+      "sha1": "29336ACBDB91529E669BDE96F6CA629D5B0CD0E0"
+    },
+    {
+      "password": "0123456789012",
+      "weak": true,
+      "bits": 43.185065,
+      "sha1": "D7C997C777B174BB05FAA82799526F1263B4A6F4"
+    },
+    {
+      "password": "été-crème-brûlée-2026",
+      "weak": false,
+      "bits": 128.279014,
+      "sha1": "80A3F7AFA4748252295B386D710C05C3FC58D9B2"
+    },
+    {
+      "password": "x7Kq-m2Pz-9Lw4-rT8v",
+      "weak": false,
+      "bits": 124.827257,
+      "sha1": "D437981162E01E887C84A6F3D0B178B90E0CB831"
+    },
+    {
+      "password": "ZZZZZZZZZZZZZZZZ1a!",
+      "weak": true,
+      "bits": 124.827257,
+      "sha1": "F90DA23F1F0C84606D5BD706E397C346E3F43910"
+    },
+    {
+      "password": "ab1!ab1!ab1!ab1!",
+      "weak": true,
+      "bits": 97.736391,
+      "sha1": "488E758474824052D8FDA4841442312270784B26"
+    },
+    {
+      "password": "sixteencharslong",
+      "weak": false,
+      "bits": 75.207035,
+      "sha1": "6959615CB2A1538B51F5E9A2B58CC125AFC07304"
+    }
+  ],
+  "old": [
+    {
+      "changed_at": "2025-09-18T12:00:00.000Z",
+      "now": "2026-09-18T12:00:00.000Z",
+      "old": false
+    },
+    {
+      "changed_at": "2025-09-18T11:59:59.000Z",
+      "now": "2026-09-18T12:00:00.000Z",
+      "old": true
+    },
+    {
+      "changed_at": "2026-01-01T00:00:00.000Z",
+      "now": "2026-09-18T12:00:00.000Z",
+      "old": false
+    },
+    {
+      "changed_at": null,
+      "now": "2026-09-18T12:00:00.000Z",
+      "old": false
+    }
+  ]
+}

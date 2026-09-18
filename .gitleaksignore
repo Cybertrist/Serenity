@@ -1,3 +1,6 @@
 # Reviewed false positives (fingerprint = commit:file:rule:line).
 # Public RFC 6238 TOTP test secret, before the inline gitleaks:allow annotation.
 f4ac054db4000c30e4a5f987ab2bc7a3d5c021ea:web/src/lib/totp.test.ts:generic-api-key:5
+# Sample passwords in the phase 5 watch tests (fake values).
+af98a6f10be9b47708403895fded9aa5ed20d7fe:web/src/features/breaches/e2e.test.ts:generic-api-key:46
+af98a6f10be9b47708403895fded9aa5ed20d7fe:api/tests/test_watch.py:generic-api-key:212
