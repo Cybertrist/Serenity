@@ -11,7 +11,7 @@ UID_API         := 10001
 UID_NTFY        := 10002
 UID_VAULTWARDEN := 10003
 
-.PHONY: help init up down restart logs ps test lint dev-image
+.PHONY: help init up down restart logs ps auth-init test lint dev-image
 
 help: ## Show this help
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-10s %s\n", $$1, $$2}'
@@ -40,6 +40,9 @@ logs: ## Follow logs (make logs s=api for a single service)
 ps: ## Show services and health
 	$(COMPOSE) ps
 
+auth-init: ## Create the login password and TOTP (interactive)
+	$(COMPOSE) exec api python -m serenity.auth init $(if $(force),--force)
+
 dev-image:
 	@docker build -q --target dev -t $(DEV_IMAGE) api >/dev/null
 
@@ -50,4 +53,5 @@ lint: dev-image ## Run linters and type checks
 	$(DEV_RUN) ruff check .
 	$(DEV_RUN) ruff format --check .
 	$(DEV_RUN) mypy serenity
-	$(COMPOSE) --env-file .env.example config --quiet
+	@# .env.example has no secret key: provide a dummy one only for validation.
+	SERENITY_SECRET_KEY=lint-only $(COMPOSE) --env-file .env.example config --quiet
