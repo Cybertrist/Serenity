@@ -78,7 +78,7 @@ e2e: dev-image ## End-to-end: TypeScript account flows against the real Python A
 	  -v "$(CURDIR)/api:/app" -w /app $(DEV_IMAGE) python tests/e2e_server.py 8765 >/dev/null
 	docker run --rm --network container:serenity-e2e --user $(shell id -u):$(shell id -g) -e HOME=/tmp \
 	  -e SERENITY_E2E_URL=http://127.0.0.1:8765 -v "$(CURDIR):/repo" -w /repo/web node:22-slim \
-	  sh -c 'for i in $$(seq 1 30); do node -e "fetch(process.env.SERENITY_E2E_URL+\"/api/health\").then(r=>process.exit(r.ok?0:1),()=>process.exit(1))" && break; sleep 1; done; npx vitest --run src/features/account/e2e.test.ts'; \
+	  sh -c 'for i in $$(seq 1 30); do node -e "fetch(process.env.SERENITY_E2E_URL+\"/api/health\").then(r=>process.exit(r.ok?0:1),()=>process.exit(1))" && break; sleep 1; done; npx vitest --run --no-file-parallelism src/features/account/e2e.test.ts src/vault/e2e.test.ts'; \
 	  status=$$?; docker rm -f serenity-e2e >/dev/null; exit $$status
 
 lint: dev-image ## Run linters and type checks

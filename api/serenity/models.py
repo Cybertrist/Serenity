@@ -163,6 +163,8 @@ class User(SQLModel, table=True):
     # Short-lived ticket between the two recovery steps (HMAC of the token).
     recovery_ticket_hash: str | None = None
     recovery_ticket_expires_at: datetime | None = _ts(default=None)
+    # Last change sequence number of the vault: clients sync with `since=<seq>`.
+    vault_seq: int = 0
     created_at: datetime = _ts(default_factory=utcnow)
     updated_at: datetime = _ts(default_factory=utcnow)
     password_changed_at: datetime = _ts(default_factory=utcnow)
@@ -180,6 +182,43 @@ class AgentKey(SQLModel, table=True):
     # For clients: AK wrapped by UK. For the agent: AK sealed for the server key.
     ak_by_uk: bytes
     ak_sealed: bytes
+    created_at: datetime = _ts(default_factory=utcnow)
+
+
+class Zone(StrEnum):
+    PERSONAL = "personal"
+    AGENT = "agent"
+
+
+class Item(SQLModel, table=True):
+    """A vault entry: one encrypted block (docs/crypto.md §5.7). The server cannot read it,
+    except the agent process for the agent zone."""
+
+    # UUID v4 chosen by the client: it is part of the encryption context.
+    id: str = Field(primary_key=True)
+    user_id: str = Field(foreign_key="user.id", index=True, ondelete="CASCADE")
+    zone: Zone = Zone.PERSONAL
+    revision: int = 1
+    # None once purged from the trash (the row stays as a tombstone for sync).
+    block: bytes | None
+    # Change sequence number (per user): set on every create, update, delete, restore, purge.
+    seq: int = Field(index=True)
+    created_at: datetime = _ts(default_factory=utcnow)
+    updated_at: datetime = _ts(default_factory=utcnow)
+    deleted_at: datetime | None = _ts(default=None)
+    purged_at: datetime | None = _ts(default=None)
+
+
+class ItemRevision(SQLModel, table=True):
+    """Previous encrypted versions of an item (the 10 most recent)."""
+
+    __tablename__ = "item_revision"
+
+    id: int | None = Field(default=None, primary_key=True)
+    item_id: str = Field(foreign_key="item.id", index=True, ondelete="CASCADE")
+    revision: int
+    zone: Zone
+    block: bytes
     created_at: datetime = _ts(default_factory=utcnow)
 
 

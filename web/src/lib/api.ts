@@ -6,6 +6,8 @@ export class ApiError extends Error {
   constructor(
     readonly status: number,
     readonly detail: string,
+    /** Parsed JSON body of the error response, when any (e.g. a 409 with the current item). */
+    readonly body?: unknown,
   ) {
     super(`HTTP ${String(status)}: ${detail}`);
   }
@@ -34,7 +36,7 @@ export class Api {
         typeof data === "object" && data !== null && "detail" in data
           ? String(data.detail)
           : response.statusText;
-      throw new ApiError(response.status, detail);
+      throw new ApiError(response.status, detail, data);
     }
     return data as T;
   }

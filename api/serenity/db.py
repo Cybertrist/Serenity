@@ -20,9 +20,9 @@ Migration = Callable[[Session], None]
 
 def add_column(session: Session, table: str, column: str, ddl: str) -> None:
     """Add a column unless it exists: a fresh database already has it from `create_all`."""
-    rows = session.connection().execute(text(f"PRAGMA table_info({table})"))
+    rows = session.connection().execute(text(f'PRAGMA table_info("{table}")'))
     if column not in {row[1] for row in rows}:
-        session.connection().execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {ddl}"))
+        session.connection().execute(text(f'ALTER TABLE "{table}" ADD COLUMN "{column}" {ddl}'))
 
 
 def _v2_accounts(session: Session) -> None:
@@ -41,9 +41,15 @@ def _v2_accounts(session: Session) -> None:
 # Version 1 is the baseline created by `SQLModel.metadata.create_all`.
 # Add a function here for every change that `create_all` cannot do (new column, data fix...).
 # Migrations must be idempotent: on a fresh database, `create_all` already built the latest schema.
+def _v3_vault(session: Session) -> None:
+    # item and item_revision are new tables, created by create_all.
+    add_column(session, "user", "vault_seq", "INTEGER NOT NULL DEFAULT 0")
+
+
 MIGRATIONS: list[Migration] = [
     lambda session: None,
     _v2_accounts,
+    _v3_vault,
 ]
 
 
