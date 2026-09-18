@@ -1,4 +1,53 @@
-# Shortcuts for common tasks. Targets are filled in during phase 2.
-.PHONY: help
-help:
-	@echo "Targets arrive in phase 2: up, down, logs, ps, test, lint, backup"
+# Serenity shortcuts. Run `make help` for the list.
+
+COMPOSE   := docker compose
+DEV_IMAGE := serenity-api-dev
+# Runs the api dev image on the local sources, as the current user.
+DEV_RUN   := docker run --rm --user $(shell id -u):$(shell id -g) \
+             -v "$(CURDIR)/api:/app" -w /app $(DEV_IMAGE)
+
+# Container UIDs (see docker-compose.yml and api/Dockerfile).
+UID_API         := 10001
+UID_NTFY        := 10002
+UID_VAULTWARDEN := 10003
+
+.PHONY: help init up down restart logs ps test lint dev-image
+
+help: ## Show this help
+	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-10s %s\n", $$1, $$2}'
+
+init: ## Create data/ folders with the right owners (asks for sudo once)
+	@test -f .env || { echo "Missing .env: cp .env.example .env"; exit 1; }
+	mkdir -p data/api data/ntfy data/vaultwarden
+	sudo chown $(UID_API):$(UID_API) data/api
+	sudo chown $(UID_NTFY):$(UID_NTFY) data/ntfy
+	sudo chown $(UID_VAULTWARDEN):$(UID_VAULTWARDEN) data/vaultwarden
+	sudo chmod 700 data/api data/ntfy data/vaultwarden
+
+up: ## Build and start the stack
+	@test -d data/vaultwarden || { echo "Run 'make init' first"; exit 1; }
+	$(COMPOSE) up -d --build
+
+down: ## Stop the stack
+	$(COMPOSE) down
+
+restart: ## Restart the stack
+	$(COMPOSE) restart
+
+logs: ## Follow logs (make logs s=api for a single service)
+	$(COMPOSE) logs -f --tail=100 $(s)
+
+ps: ## Show services and health
+	$(COMPOSE) ps
+
+dev-image:
+	@docker build -q --target dev -t $(DEV_IMAGE) api >/dev/null
+
+test: dev-image ## Run backend tests
+	$(DEV_RUN) pytest
+
+lint: dev-image ## Run linters and type checks
+	$(DEV_RUN) ruff check .
+	$(DEV_RUN) ruff format --check .
+	$(DEV_RUN) mypy serenity
+	$(COMPOSE) --env-file .env.example config --quiet

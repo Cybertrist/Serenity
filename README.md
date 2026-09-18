@@ -24,6 +24,7 @@ sur ton téléphone. Il ne te demande rien sans raison, mais tu es toujours info
 git clone git@github.com:Cybertrist/serenity.git
 cd serenity
 cp .env.example .env   # puis remplis les valeurs
+make init
 make up
 ```
 

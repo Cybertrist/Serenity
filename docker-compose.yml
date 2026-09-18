@@ -1,2 +1,121 @@
-# Docker Compose stack: vaultwarden, ntfy, api, web (phase 2).
-services: {}
+# Serenity stack. See docs/02-infrastructure.md.
+# Every published port is bound to 127.0.0.1; external access goes through `tailscale serve`.
+
+x-hardening: &hardening
+  restart: unless-stopped
+  security_opt:
+    - no-new-privileges:true
+  logging:
+    driver: local
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  vaultwarden:
+    <<: *hardening
+    image: vaultwarden/server:1.37.3-alpine
+    user: "10003:10003"
+    cap_drop: [ALL]
+    read_only: true
+    tmpfs: [/tmp]
+    environment:
+      DOMAIN: https://${TAILNET_HOST:?set TAILNET_HOST in .env}:10000
+      ROCKET_PORT: "8080"
+      SIGNUPS_ALLOWED: ${VW_SIGNUPS_ALLOWED:-false}
+      INVITATIONS_ALLOWED: "false"
+      PASSWORD_HINTS_ALLOWED: "false"
+      SHOW_PASSWORD_HINT: "false"
+      # Avoids leaking the list of stored domains through favicon requests.
+      DISABLE_ICON_DOWNLOAD: "true"
+      IP_HEADER: X-Forwarded-For
+      LOG_LEVEL: warn
+      TZ: ${TZ:-Europe/Paris}
+      # ADMIN_TOKEN is intentionally absent: the admin page is disabled.
+      # See ops/vaultwarden/admin.override.yml to enable it temporarily.
+    volumes:
+      - ./data/vaultwarden:/data
+    ports:
+      - "127.0.0.1:8081:8080"
+    networks: [edge, internal]
+    healthcheck:
+      test: ["CMD", "/healthcheck.sh"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  ntfy:
+    <<: *hardening
+    image: binwiederhier/ntfy:v2.28.0
+    command: serve
+    user: "10002:10002"
+    cap_drop: [ALL]
+    read_only: true
+    tmpfs: [/tmp]
+    environment:
+      NTFY_BASE_URL: https://${TAILNET_HOST:?set TAILNET_HOST in .env}:8443
+      TZ: ${TZ:-Europe/Paris}
+    volumes:
+      - ./ops/ntfy/server.yml:/etc/ntfy/server.yml:ro
+      - ./data/ntfy:/var/lib/ntfy
+    ports:
+      - "127.0.0.1:8090:8080"
+    networks: [edge, internal]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://127.0.0.1:8080/v1/health | grep -q '\"healthy\":true'"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+  api:
+    <<: *hardening
+    build:
+      context: ./api
+      target: runtime
+    image: serenity-api:local
+    cap_drop: [ALL]
+    read_only: true
+    tmpfs: [/tmp]
+    # Variables are passed explicitly (never the whole .env) so the api only sees what it needs.
+    environment:
+      TZ: ${TZ:-Europe/Paris}
+      SERENITY_PUBLIC_URL: https://${TAILNET_HOST:?set TAILNET_HOST in .env}
+      SERENITY_VAULTWARDEN_URL: http://vaultwarden:8080
+      SERENITY_NTFY_URL: http://ntfy:8080
+    volumes:
+      - ./data/api:/data
+    # No published port: only reachable by `web` on the internal network.
+    networks: [internal, egress]
+    depends_on:
+      vaultwarden:
+        condition: service_healthy
+      ntfy:
+        condition: service_healthy
+
+  web:
+    <<: *hardening
+    build:
+      context: ./web
+    image: serenity-web:local
+    # nginx master needs to switch to its worker user.
+    cap_drop: [ALL]
+    cap_add: [CHOWN, SETUID, SETGID]
+    read_only: true
+    tmpfs: [/tmp, /var/cache/nginx, /var/run]
+    ports:
+      - "127.0.0.1:8080:8080"
+    networks: [edge, internal]
+    depends_on:
+      api:
+        condition: service_healthy
+
+networks:
+  # Service-to-service traffic. No Internet access.
+  internal:
+    internal: true
+  # Network for services published on 127.0.0.1.
+  edge: {}
+  # Outbound Internet for the api (Pwned Passwords, phase 5).
+  egress: {}
