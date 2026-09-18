@@ -1,1 +1,10 @@
-"""health routes (phase 3/6)."""
+"""Health check route, used by Docker healthchecks and monitoring."""
+
+from fastapi import APIRouter
+
+router = APIRouter(prefix="/api", tags=["health"])
+
+
+@router.get("/health")
+def health() -> dict[str, str]:
+    return {"status": "ok"}

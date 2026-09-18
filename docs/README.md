@@ -6,7 +6,7 @@ Une page par phase, dans l'ordre de construction.
 |---|---|
 | [00 — Vue d'ensemble](00-vue-ensemble.md) | Le projet, l'architecture, les principes |
 | [01 — Dépôt et GitHub](01-depot-github.md) | Arborescence, CI, labels, protection de `main` |
-| 02 — Infrastructure | Docker Compose, Vaultwarden, ntfy, Tailscale *(à venir)* |
+| [02 — Infrastructure](02-infrastructure.md) | Docker Compose, Vaultwarden, ntfy, Tailscale |
 | 03 — Socle backend | FastAPI, modèles, authentification, audit *(à venir)* |
 | 04 — Coffre | Bitwarden CLI, compte dédié, synchronisation *(à venir)* |
 | 05 — Veille | Fuites, k-anonymat, mots de passe faibles *(à venir)* |

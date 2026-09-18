@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "serenity"
+version = "0.0.0"
+description = "Agentic, self-hosted password manager driving Vaultwarden."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi>=0.141,<1",
+    "uvicorn>=0.53,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "httpx>=0.28,<1",
+    "mypy>=2.3,<3",
+    "pytest>=9.1,<10",
+    "ruff>=0.16,<0.17",
+]
+
+[tool.setuptools.packages.find]
+include = ["serenity*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
