@@ -10,7 +10,7 @@ Une page par phase, dans l'ordre de construction.
 | [Spécification crypto](crypto.md) | Hiérarchie des clés, formats, flux, modèle de menace |
 | [02 — Infrastructure](02-infrastructure.md) | Docker Compose, clés serveur, agent séparé, Tailscale |
 | [03 — Authentification](03-authentification.md) | Comptes, connexion, TOTP, déverrouillage, kit de récupération |
-| 04 — Coffre | Entrées chiffrées, révisions, délégation, import Bitwarden *(à venir)* |
+| [04 — Coffre](04-coffre.md) | Entrées chiffrées, synchronisation, délégation, import Bitwarden |
 | 05 — Veille | Fuites, k-anonymat, mots de passe faibles *(à venir)* |
 | 06 — Agent | Politiques, kill switch, planification, notifications *(à venir)* |
 | 07 — Interface | PWA React *(à venir)* |

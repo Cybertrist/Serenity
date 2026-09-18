@@ -2,7 +2,8 @@
 
 Only in the dev image (tests/ is not shipped). Temporary database, random keys, and a
 test-only clock for TOTP: POST /__test/tick moves it 30 s forward and returns it, so the
-client can compute a fresh code for each step without waiting.
+client can compute a fresh code for each step without waiting. POST /__test/reset empties
+every table except the settings (server key), so each test file starts from scratch.
 """
 
 import sys
@@ -11,7 +12,7 @@ from pathlib import Path
 
 import nacl.utils
 import uvicorn
-from sqlmodel import Session
+from sqlmodel import Session, SQLModel
 
 import serenity.auth.totp
 from serenity.agent.service import publish_server_key
@@ -42,6 +43,15 @@ def build(tmp: Path) -> object:
     def tick() -> dict[str, float]:
         CLOCK["now"] += 30
         return CLOCK
+
+    @app.post("/__test/reset", status_code=204)
+    def reset() -> None:
+        engine = app.state.engine
+        with Session(engine) as session:
+            for table in reversed(SQLModel.metadata.sorted_tables):
+                if table.name != "setting":
+                    session.connection().execute(table.delete())
+            session.commit()
 
     return app
 

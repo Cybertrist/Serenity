@@ -52,6 +52,7 @@ describe.skipIf(!URL)("account flows against the Python API", () => {
   let kit = "";
 
   it("signs up, shows the kit once, and closes registration", async () => {
+    await new Api(URL).post("/__test/reset");
     expect(await new Api(URL).get("/api/auth/status")).toEqual({ registration_open: true });
     const pending = await signup(phone, USER, PASSWORD);
     secret = pending.totpSecret;

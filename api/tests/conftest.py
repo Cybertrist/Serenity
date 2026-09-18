@@ -12,7 +12,7 @@ from sqlmodel import Session
 from serenity.agent.service import publish_server_key
 from serenity.config import Settings
 from serenity.db import create_db_engine, init_db
-from serenity.devclient import Client
+from serenity.devclient import Client, Keyring
 from serenity.main import create_app
 from serenity.models import utcnow
 
@@ -84,6 +84,11 @@ class Account:
     totp_secret: str
     recovery_kit: str
     clock: Clock
+
+    def keys(self) -> Keyring:
+        """Unwrap UK and AK like an unlocked device does."""
+        _, mek = self.api.derive(USERNAME, PASSWORD)
+        return self.api.keys(mek)
 
     def code(self) -> str:
         """A fresh code: moves the clock one step so the anti-replay check accepts it."""

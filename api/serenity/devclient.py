@@ -21,7 +21,7 @@ import httpx
 import nacl.utils
 
 from serenity.auth.validation import InvalidInputError, normalize_username
-from serenity.crypto import blocks, contexts, kdf, recovery, sealed
+from serenity.crypto import blocks, contexts, items, kdf, recovery, sealed
 from serenity.crypto.encoding import b64url_decode as d
 from serenity.crypto.encoding import b64url_encode as e
 
@@ -188,6 +188,72 @@ class Client:
         )
         return recovery.encode_recovery_key(rk2)
 
+    # --- vault (docs/crypto.md §7.4 to §7.6) -----------------------------------------
+
+    @staticmethod
+    def _key(keys: Keyring, zone: str) -> bytes:
+        return keys.uk if zone == "personal" else keys.ak
+
+    def sync(self, since: int = 0) -> dict[str, Any]:
+        result: dict[str, Any] = self.call("GET", f"/api/vault/items?since={since}")
+        return result
+
+    def decrypt(self, keys: Keyring, item: dict[str, Any]) -> dict[str, Any]:
+        ctx = contexts.item(keys.user_id, item["id"], item["zone"], item["revision"])
+        return items.decrypt_item(self._key(keys, item["zone"]), d(item["block"]), ctx)
+
+    def add(self, keys: Keyring, entry: dict[str, Any]) -> dict[str, Any]:
+        """New entry, always in the personal zone, revision 1."""
+        item_id = str(uuid.uuid4())
+        block = items.encrypt_item(
+            keys.uk, entry, contexts.item(keys.user_id, item_id, "personal", 1)
+        )
+        created = self.call(
+            "POST", "/api/vault/items", {"items": [{"id": item_id, "block": e(block)}]}
+        )
+        result: dict[str, Any] = created[0]
+        return result
+
+    def _reencrypt(
+        self, keys: Keyring, item: dict[str, Any], entry: dict[str, Any], zone: str
+    ) -> str:
+        ctx = contexts.item(keys.user_id, item["id"], zone, item["revision"] + 1)
+        return e(items.encrypt_item(self._key(keys, zone), entry, ctx))
+
+    def edit(self, keys: Keyring, item: dict[str, Any], entry: dict[str, Any]) -> dict[str, Any]:
+        body = {
+            "base_revision": item["revision"],
+            "block": self._reencrypt(keys, item, entry, item["zone"]),
+        }
+        result: dict[str, Any] = self.call("PUT", f"/api/vault/items/{item['id']}", body)
+        return result
+
+    def move(self, keys: Keyring, item: dict[str, Any], to_zone: str) -> dict[str, Any]:
+        """Delegate (personal -> agent) or reclaim (agent -> personal): decrypt, re-encrypt."""
+        entry = self.decrypt(keys, item)
+        body = {
+            "base_revision": item["revision"],
+            "block": self._reencrypt(keys, item, entry, to_zone),
+            "confirm": True,
+        }
+        action = "delegate" if to_zone == "agent" else "reclaim"
+        result: dict[str, Any] = self.call("POST", f"/api/vault/items/{item['id']}/{action}", body)
+        return result
+
+    def trash(self, item: dict[str, Any]) -> dict[str, Any]:
+        result: dict[str, Any] = self.call(
+            "DELETE", f"/api/vault/items/{item['id']}?base_revision={item['revision']}"
+        )
+        return result
+
+    def history(self, keys: Keyring, item_id: str) -> list[dict[str, Any]]:
+        out = []
+        for rev in self.call("GET", f"/api/vault/items/{item_id}/history"):
+            ctx = contexts.item(keys.user_id, item_id, rev["zone"], rev["revision"])
+            entry = items.decrypt_item(self._key(keys, rev["zone"]), d(rev["block"]), ctx)
+            out.append({"revision": rev["revision"], "zone": rev["zone"], "entry": entry})
+        return out
+
 
 def _params(params: kdf.KdfParams) -> dict[str, int]:
     return {"memlimit": params.memlimit, "opslimit": params.opslimit}
@@ -232,6 +298,145 @@ def _print_json(data: Any) -> None:
     print(json.dumps(data, ensure_ascii=False, indent=2))
 
 
+# --- vault commands --------------------------------------------------------------------
+
+
+def _unlocked(client: Client, state: dict[str, Any]) -> Keyring:
+    """Unlock with the master password, then unwrap UK and AK (nothing is stored)."""
+    auth, mek = client.derive(state["username"], _ask_password())
+    client.call("POST", "/api/auth/unlock", {"auth_key": e(auth)})
+    return client.keys(mek)
+
+
+def _find(
+    client: Client, keys: Keyring, target: str | None
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    if not target:
+        raise SystemExit("Précise le nom ou l'identifiant de l'entrée.")
+    names = []
+    wanted = target.strip().casefold()
+    for item in client.sync()["items"]:
+        if item["block"] is None:
+            continue
+        entry = client.decrypt(keys, item)
+        names.append(entry["name"])
+        if wanted in (item["id"], entry["name"].strip().casefold()):
+            return item, entry
+    available = ", ".join(f"« {n} »" for n in names) or "aucune (ajoute-en une : make client c=add)"
+    raise SystemExit(f"Aucune entrée « {target} ». Entrées disponibles : {available}")
+
+
+def _zone_label(zone: str) -> str:
+    return "Protégé par toi" if zone == "personal" else "Confié à l'agent"
+
+
+def _cmd_add(client: Client, state: dict[str, Any], _target: str | None) -> None:
+    keys = _unlocked(client, state)
+    name = input("Nom (ex. Netflix) : ").strip()
+    username = input("Identifiant sur le site : ").strip()
+    password = getpass.getpass("Mot de passe du site (vide = générer) : ")
+    if not password:
+        password = e(nacl.utils.random(15))
+        print("Mot de passe généré (20 caractères).")
+    url = input("Adresse (facultatif) : ").strip()
+    entry = {
+        "v": 1,
+        "type": "login",
+        "name": name,
+        "username": username,
+        "password": password,
+        "urls": [url] if url else [],
+    }
+    item = client.add(keys, entry)
+    print(f"Ajouté dans « {_zone_label(item['zone'])} » (id {item['id']}).")
+
+
+def _cmd_list(client: Client, state: dict[str, Any], _target: str | None) -> None:
+    keys = _unlocked(client, state)
+    rows = [i for i in client.sync()["items"] if i["block"] is not None]
+    for zone in ("personal", "agent"):
+        print(f"\n{_zone_label(zone)}")
+        for item in rows:
+            if item["zone"] == zone and item["deleted_at"] is None:
+                entry = client.decrypt(keys, item)
+                login = entry.get("username", "")
+                print(f"  - {entry['name']}  ({login}, révision {item['revision']})")
+    trashed = [i for i in rows if i["deleted_at"]]
+    if trashed:
+        print(f"\nCorbeille : {len(trashed)} entrée(s)")
+
+
+def _cmd_show(client: Client, state: dict[str, Any], target: str | None) -> None:
+    keys = _unlocked(client, state)
+    item, entry = _find(client, keys, target)
+    shown = {**entry, "password": "•" * 8 if entry.get("password") else ""}
+    _print_json({"zone": item["zone"], "revision": item["revision"], "entry": shown})
+
+
+def _cmd_edit(client: Client, state: dict[str, Any], target: str | None) -> None:
+    keys = _unlocked(client, state)
+    item, entry = _find(client, keys, target)
+    new = getpass.getpass("Nouveau mot de passe du site : ")
+    updated = client.edit(keys, item, {**entry, "password": new})
+    print(f"Révision {updated['revision']}.")
+
+
+def _cmd_move(zone: str) -> Any:
+    def run(client: Client, state: dict[str, Any], target: str | None) -> None:
+        keys = _unlocked(client, state)
+        item, entry = _find(client, keys, target)
+        warning = (
+            "L'agent pourra lire et changer ce mot de passe."
+            if zone == "agent"
+            else "L'agent ne pourra plus le lire. Change ensuite ce mot de passe : "
+            "le serveur l'a connu."
+        )
+        if (
+            input(f"{warning} Confirmer pour « {entry['name']} » ? (oui/non) ").strip().lower()
+            != "oui"
+        ):
+            print("Annulé.")
+            return
+        moved = client.move(keys, item, zone)
+        print(f"« {entry['name']} » : {_zone_label(moved['zone'])} (révision {moved['revision']}).")
+
+    return run
+
+
+def _cmd_delete(client: Client, state: dict[str, Any], target: str | None) -> None:
+    keys = _unlocked(client, state)
+    item, entry = _find(client, keys, target)
+    client.trash(item)
+    print(f"« {entry['name']} » est dans la corbeille (effacée dans 30 jours).")
+
+
+def _cmd_restore(client: Client, state: dict[str, Any], target: str | None) -> None:
+    keys = _unlocked(client, state)
+    item, entry = _find(client, keys, target)
+    client.call("POST", f"/api/vault/items/{item['id']}/restore")
+    print(f"« {entry['name']} » est restaurée.")
+
+
+def _cmd_history(client: Client, state: dict[str, Any], target: str | None) -> None:
+    keys = _unlocked(client, state)
+    item, _ = _find(client, keys, target)
+    for rev in client.history(keys, item["id"]):
+        print(f"  révision {rev['revision']} ({_zone_label(rev['zone'])})")
+
+
+VAULT_COMMANDS = {
+    "add": _cmd_add,
+    "list": _cmd_list,
+    "show": _cmd_show,
+    "edit": _cmd_edit,
+    "delegate": _cmd_move("agent"),
+    "reclaim": _cmd_move("personal"),
+    "delete": _cmd_delete,
+    "restore": _cmd_restore,
+    "history": _cmd_history,
+}
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m serenity.devclient")
     parser.add_argument(
@@ -246,8 +451,18 @@ def main(argv: list[str] | None = None) -> int:
             "logout",
             "password",
             "recover",
+            "add",
+            "list",
+            "show",
+            "edit",
+            "delegate",
+            "reclaim",
+            "delete",
+            "restore",
+            "history",
         ],
     )
+    parser.add_argument("target", nargs="?", help="entry name or id (show, edit, delegate...)")
     parser.add_argument("--url", default=os.environ.get("SERENITY_URL", "http://127.0.0.1:8000"))
     args = parser.parse_args(argv)
     state = _load()
@@ -289,6 +504,8 @@ def main(argv: list[str] | None = None) -> int:
             new = _ask_password("Nouveau mot de passe maître : ", confirm=True)
             client.change_password(state["username"], current, new, input("Code TOTP : ").strip())
             print("Mot de passe maître changé. Les autres appareils sont déconnectés.")
+        elif args.command in VAULT_COMMANDS:
+            VAULT_COMMANDS[args.command](client, state, args.target)
         elif args.command == "recover":
             username = _ask_username()
             kit = getpass.getpass("Clé de récupération : ")
@@ -302,7 +519,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Erreur : {exc}", file=sys.stderr)
         return 1
     except KeyError:
-        print("Connecte-toi d'abord : python -m serenity.devclient login", file=sys.stderr)
+        print("Connecte-toi d'abord : make client c=login", file=sys.stderr)
         return 1
     finally:
         state["token"] = client.token

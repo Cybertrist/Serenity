@@ -9,6 +9,15 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- Phase 4 : coffre chiffré (`Item`, `ItemRevision`, migration v3) : ajout (par lots), modification
+  avec contrôle de révision (`409`), corbeille 30 jours, historique des 10 dernières versions,
+  synchronisation par curseur, confier à l'agent / reprendre avec confirmation et journal.
+- Phase 4 : côté navigateur, état du coffre et détection de retour en arrière, verrouillage
+  automatique, générateur de mots de passe et de phrases de passe (liste EFF), codes TOTP des
+  entrées, import Bitwarden dans le navigateur, export chiffré.
+- Phase 4 : commandes du coffre dans `make client`, tests de bout en bout du coffre, doc
+  `04-coffre.md`, ADR-009.
+
 - Phase 3 : comptes (`User`, `AgentKey`, `DeviceSession`, `Throttle`), inscription en deux temps
   (blocs chiffrés puis premier code TOTP), prélogin sans énumération, connexion clé d'auth + TOTP,
   session d'appareil de 60 jours, déverrouillage de 15 min pour les actions sensibles,
