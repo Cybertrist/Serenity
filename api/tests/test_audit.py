@@ -29,7 +29,7 @@ def test_sensitive_keys_are_redacted_recursively() -> None:
         'payload {"password": "hunter2"}',
         "token: hunter2",
         "Authorization: Bearer hunter2hunter2",
-        "ntfy tk_hunter2hunter2hunter2",
+        "token tk_hunter2hunter2hunter2",
         "hash $argon2id$v=19$m=65536,t=3,p=4$hunter2",
         "otpauth://totp/Serenity:tristan?secret=HUNTER2",
     ],

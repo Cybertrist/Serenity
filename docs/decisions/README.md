@@ -24,6 +24,7 @@ Nommage : `ADR-NNN-titre-court.md`.
 - [ADR-002 — Réseaux Docker, durcissement et dossiers de données](ADR-002-reseaux-et-durcissement.md)
 - [ADR-003 — Lancer tests et linters dans Docker](ADR-003-outils-dans-docker.md)
 - [ADR-004 — Migrations SQLite maison au démarrage](ADR-004-migrations.md)
+- [ADR-005 — Notifications maison, sans service tiers](ADR-005-notifications-maison.md)
 
 ## Archives
 

@@ -7,8 +7,7 @@ DEV_RUN   := docker run --rm --user $(shell id -u):$(shell id -g) \
              -v "$(CURDIR)/api:/app" -w /app $(DEV_IMAGE)
 
 # Container UIDs (see docker-compose.yml and api/Dockerfile).
-UID_API  := 10001
-UID_NTFY := 10002
+UID_API := 10001
 
 .PHONY: help init up down restart logs ps auth-init test lint dev-image
 
@@ -17,10 +16,9 @@ help: ## Show this help
 
 init: ## Create data/ folders with the right owners (asks for sudo once)
 	@test -f .env || { echo "Missing .env: cp .env.example .env"; exit 1; }
-	mkdir -p data/api data/ntfy
+	mkdir -p data/api
 	sudo chown $(UID_API):$(UID_API) data/api
-	sudo chown $(UID_NTFY):$(UID_NTFY) data/ntfy
-	sudo chmod 700 data/api data/ntfy
+	sudo chmod 700 data/api
 
 up: ## Build and start the stack
 	@test -d data/api || { echo "Run 'make init' first"; exit 1; }

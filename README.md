@@ -22,10 +22,11 @@ Par défaut, tout va dans la zone personnelle.
 - Appli web installable (PWA), pensée d'abord pour le mobile.
 - Import depuis un export Bitwarden, chiffré sur place, dans le navigateur.
 - Veille des fuites : Pwned Passwords (k-anonymat), mots de passe réutilisés, faibles ou anciens.
-- Délégation d'entrées à l'agent, planification des rotations avec rappels et notifications ntfy.
+- Délégation d'entrées à l'agent, planification des rotations avec rappels.
+- Notifications maison, sans service tiers : centre de notifications en temps réel dans l'appli.
 - Un kill switch arrête l'agent immédiatement.
 
-La rotation automatique sur les sites arrive en V2.
+Ensuite : l'appli Android native avec notifications (V2), puis la rotation automatique sur les sites (V3).
 
 ## Démarrage rapide
 

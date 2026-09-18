@@ -12,30 +12,6 @@ x-hardening: &hardening
       max-file: "3"
 
 services:
-  ntfy:
-    <<: *hardening
-    image: binwiederhier/ntfy:v2.28.0
-    command: serve
-    user: "10002:10002"
-    cap_drop: [ALL]
-    read_only: true
-    tmpfs: [/tmp]
-    environment:
-      NTFY_BASE_URL: https://${TAILNET_HOST:?set TAILNET_HOST in .env}:8443
-      TZ: ${TZ:-Europe/Paris}
-    volumes:
-      - ./ops/ntfy/server.yml:/etc/ntfy/server.yml:ro
-      - ./data/ntfy:/var/lib/ntfy
-    ports:
-      - "127.0.0.1:8090:8080"
-    networks: [edge, internal]
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q -O- http://127.0.0.1:8080/v1/health | grep -q '\"healthy\":true'"]
-      interval: 30s
-      timeout: 5s
-      start_period: 10s
-      retries: 3
-
   api:
     <<: *hardening
     build:
@@ -56,14 +32,10 @@ services:
       SERENITY_LOGIN_MAX_ATTEMPTS: ${SERENITY_LOGIN_MAX_ATTEMPTS:-5}
       SERENITY_LOGIN_LOCKOUT_MINUTES: ${SERENITY_LOGIN_LOCKOUT_MINUTES:-15}
       SERENITY_LOG_LEVEL: ${SERENITY_LOG_LEVEL:-INFO}
-      SERENITY_NTFY_URL: http://ntfy:8080
     volumes:
       - ./data/api:/data
     # No published port: only reachable by `web` on the internal network.
     networks: [internal, egress]
-    depends_on:
-      ntfy:
-        condition: service_healthy
 
   web:
     <<: *hardening
