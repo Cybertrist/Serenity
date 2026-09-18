@@ -302,19 +302,46 @@ Le serveur n'a reçu que AuthKey, RAK et des blocs chiffrés.
 2. ▶ Vérifie le plancher des paramètres, dérive MK → AuthKey et MEK.
 3. ▶ → ◆ `POST /api/auth/login {identifiant, AuthKey, code TOTP}`.
 4. ◆ Vérifie le hachage **et** le TOTP (anti-rejeu, limitation des tentatives). Ouvre une
-   session (cookie `HttpOnly`, `Secure`, `SameSite=Strict`) et renvoie `UK_par_MEK`,
-   `AK_par_UK`, `ak_version`.
+   **session d'appareil de 60 jours** (cookie `HttpOnly`, `Secure`, `SameSite=Strict`), déjà
+   **déverrouillée** (§7.3), et renvoie `UK_par_MEK`, `AK_par_UK`, `ak_version`.
 5. ▶ Déchiffre UK avec MEK, puis AK avec UK. Un échec ici signale un bloc modifié : on arrête
    et on prévient. MK, MEK et AuthKey sont effacées ; UK et AK restent **en mémoire**.
 
-### 7.3 Déverrouillage (session ouverte, coffre verrouillé)
+### 7.3 Sessions d'appareil et déverrouillage
 
-Après 15 min d'inactivité ou à la fermeture de l'onglet, UK et AK sont effacées. Pour
-déverrouiller, pas besoin du serveur ni du TOTP :
+**Deux niveaux**, pour que l'usage quotidien reste simple :
+
+| Niveau | Durée | Comment on l'obtient | Ce qu'il permet |
+|---|---|---|---|
+| **Session d'appareil** | **60 jours**, fixes (pas prolongés à l'usage) | Connexion complète : mot de passe maître **+ TOTP** (§7.2) | Lire les blocs chiffrés, les notifications |
+| **Déverrouillage** | 15 min, prolongé à chaque action | Mot de passe maître seul (AuthKey) | Tout le reste : créer, modifier, supprimer, déléguer, reprendre, approuver ou refuser une rotation, kill switch, export, réglages |
+
+Donc : le TOTP n'est demandé que sur un **nouvel appareil**, puis **tous les 60 jours** par
+appareil. Au quotidien, seul le mot de passe maître est demandé.
+
+**Déverrouiller** (session d'appareil valide, coffre verrouillé après 15 min d'inactivité ou
+fermeture de l'onglet) :
 
 1. ▶ Tu retapes ton mot de passe maître. Le sel, les paramètres et `UK_par_MEK` sont en cache
    local (ce sont des données publiques ou chiffrées).
-2. ▶ Dérive MK → MEK, déchiffre UK puis AK. Fonctionne **hors ligne**.
+2. ▶ Dérive MK → MEK et AuthKey, déchiffre UK puis AK.
+3. ▶ → ◆ `POST /api/auth/unlock {AuthKey}` : le serveur vérifie et marque la session
+   **déverrouillée** pour 15 min glissantes. Limitation des tentatives comme à la connexion.
+4. Hors ligne, les étapes 1 et 2 suffisent pour **lire** le coffre ; les modifications
+   attendent le retour du réseau.
+
+Au verrouillage, le client efface UK et AK, et prévient le serveur (`POST /api/auth/lock`) :
+la session repasse au niveau « appareil ». Un cookie volé ne permet donc aucune action
+sensible sans le mot de passe maître.
+
+Chaque session d'appareil est listée dans les réglages (appareil, date de connexion,
+dernière activité) et peut être **révoquée** à distance. Changer le mot de passe maître ou
+utiliser le kit de récupération révoque toutes les sessions.
+
+**Plus tard** : déverrouillage par **empreinte digitale**, sur Android (V2, clé protégée par le
+Keystore) et sur le web via une passkey dotée de l'extension WebAuthn PRF, quand le navigateur
+le permet. La passkey remplace alors la saisie du mot de passe maître pour obtenir MEK ; ce
+mécanisme fera l'objet d'une mise à jour de cette spécification.
 
 ### 7.4 Ajout et modification d'une entrée
 
@@ -421,6 +448,8 @@ Serenity ne peut rien contre ça. Conseil : un profil de navigateur dédié, san
 - **Ne peut pas** : lire la zone personnelle, forger ou modifier une entrée (AEAD), déplacer un
   bloc vers une autre entrée, zone ou compte (données associées), affaiblir Argon2id (plancher
   côté client), fabriquer une fausse AK acceptée par le client (il faudrait UK).
+- Un **cookie de session volé** donne seulement accès aux blocs chiffrés : toute action
+  sensible exige un déverrouillage récent (AuthKey, donc le mot de passe maître).
 - **Peut** : refuser le service, supprimer des entrées, servir une **ancienne version** complète
   d'une entrée avec son ancienne révision (retour arrière). Le client mémorise la plus haute
   révision vue par entrée et alerte s'il reçoit moins, mais un appareil neuf ne peut pas le
@@ -440,7 +469,9 @@ Serenity ne peut rien contre ça. Conseil : un profil de navigateur dédié, san
 
 Dit clairement :
 
-1. **Un appareil ou un navigateur compromis** pendant qu'il est déverrouillé.
+1. **Un appareil ou un navigateur compromis** pendant qu'il est déverrouillé. Pendant les
+   60 jours d'une session d'appareil, quelqu'un qui connaît ton mot de passe maître **et** a
+   accès à l'appareil n'a pas besoin du TOTP.
 2. **Une VM compromise sur la durée** : zone agent immédiatement, zone personnelle dès ta
    prochaine saisie du mot de passe maître dans l'appli web servie par cette VM.
 3. **Un mot de passe maître faible** face à une fuite de la base.

@@ -22,7 +22,11 @@ données associées). Plusieurs détails restaient à trancher pour pouvoir impl
 5. **Argon2id 64 Mio / 3 passes**, plancher imposé côté client.
 6. **Bourrage** des entrées à 256 octets (`sodium_pad`).
 7. **Kit de récupération de 160 bits** en base32 Crockford, avec groupe de contrôle.
-8. **`crypto_kdf` côté Python** reconstruit via `crypto_generichash_blake2b_salt_personal`
+8. **Sessions à deux niveaux** : session d'appareil de 60 jours (mot de passe maître + TOTP),
+   déverrouillage de 15 min glissantes (mot de passe maître seul, prouvé au serveur par AuthKey)
+   exigé pour toute action sensible. Le TOTP n'est donc demandé que sur un nouvel appareil et
+   tous les 60 jours.
+9. **`crypto_kdf` côté Python** reconstruit via `crypto_generichash_blake2b_salt_personal`
    (PyNaCl ne l'expose pas), vérifié identique à libsodium.js.
 
 ## Conséquences
