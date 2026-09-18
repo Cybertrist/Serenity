@@ -6,7 +6,7 @@ from sqlalchemy.exc import StatementError
 from sqlmodel import Session
 
 from serenity.db import MIGRATIONS, SCHEMA_VERSION_KEY, Migration, init_db
-from serenity.models import Entry, Setting
+from serenity.models import Setting, Throttle
 
 
 def test_init_db_is_idempotent(engine: Engine) -> None:
@@ -56,16 +56,31 @@ def _names(engine: Engine, kind: str) -> set[str]:
 
 def test_datetimes_come_back_timezone_aware(db: Session) -> None:
     changed = datetime(2026, 1, 1, 8, 30, tzinfo=UTC)
-    db.add(Entry(vault_item_id="abc", name="Example", password_changed_at=changed))
+    db.add(Throttle(key="k", locked_until=changed))
     db.commit()
     db.expunge_all()
-    entry = db.get(Entry, 1)
-    assert entry is not None
-    assert entry.password_changed_at == changed
-    assert entry.password_changed_at.tzinfo is not None
+    row = db.get(Throttle, "k")
+    assert row is not None
+    assert row.locked_until == changed
+    assert row.locked_until.tzinfo is not None
 
 
 def test_naive_datetimes_are_refused(db: Session) -> None:
-    db.add(Entry(vault_item_id="abc", name="Example", password_changed_at=datetime(2026, 1, 1)))
+    db.add(Throttle(key="k", locked_until=datetime(2026, 1, 1)))
     with pytest.raises(StatementError):
         db.commit()
+
+
+def test_v4_replaces_the_legacy_breach_table(engine: Engine) -> None:
+    with Session(engine) as session:
+        conn = session.connection()
+        conn.execute(text("DROP TABLE breach"))
+        conn.execute(text("CREATE TABLE breach (id INTEGER PRIMARY KEY, entry_id INTEGER)"))
+        conn.execute(text("CREATE TABLE entry (id INTEGER PRIMARY KEY)"))
+        MIGRATIONS[3](session)
+        MIGRATIONS[3](session)  # idempotent
+        session.commit()
+    assert "entry" not in _names(engine, "table")
+    with Session(engine) as session:
+        columns = {r[1] for r in session.connection().execute(text('PRAGMA table_info("breach")'))}
+    assert {"subject", "kind", "item_id"} <= columns

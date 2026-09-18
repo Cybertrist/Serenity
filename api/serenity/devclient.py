@@ -14,6 +14,7 @@ import os
 import sys
 import uuid
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +25,8 @@ from serenity.auth.validation import InvalidInputError, normalize_username
 from serenity.crypto import blocks, contexts, items, kdf, recovery, sealed
 from serenity.crypto.encoding import b64url_decode as d
 from serenity.crypto.encoding import b64url_encode as e
+from serenity.watcher.checks import ScannedEntry, analyze
+from serenity.watcher.rules import parse_date
 
 COOKIE = "serenity_session"
 
@@ -424,6 +427,65 @@ def _cmd_history(client: Client, state: dict[str, Any], target: str | None) -> N
         print(f"  révision {rev['revision']} ({_zone_label(rev['zone'])})")
 
 
+KIND_LABELS = {
+    "pwned_password": "mot de passe exposé dans une fuite",
+    "reused": "mot de passe réutilisé",
+    "weak": "mot de passe faible",
+    "old": "mot de passe ancien (plus d'un an)",
+    "email_breach": "adresse e-mail dans une fuite",
+}
+
+
+def _names(client: Client, keys: Keyring) -> dict[str, str]:
+    return {
+        i["id"]: client.decrypt(keys, i)["name"]
+        for i in client.sync()["items"]
+        if i["block"] is not None
+    }
+
+
+def rules_date(value: str) -> datetime:
+    return parse_date(value) or datetime.now(UTC)
+
+
+def _cmd_scan(client: Client, state: dict[str, Any], _target: str | None) -> None:
+    """Browser-like scan of both zones. No Pwned Passwords here: the api container is offline."""
+    keys = _unlocked(client, state)
+    rows = [i for i in client.sync()["items"] if i["block"] is not None and i["deleted_at"] is None]
+    scanned = [
+        ScannedEntry(i["id"], client.decrypt(keys, i), rules_date(i["created_at"])) for i in rows
+    ]
+    alerts = analyze(scanned, datetime.now(UTC), None)
+    body = {
+        "scanned": [s.item_id for s in scanned],
+        "alerts": [{"item_id": a.item_id, "kind": a.kind.value} for a in alerts],
+    }
+    summary = client.call("POST", "/api/watch/report", body)
+    print(f"{len(scanned)} entrée(s) vérifiée(s) (sans Pwned Passwords : l'appli web le fera).")
+    new, still_open, resolved = summary["new"], summary["open"], summary["resolved"]
+    print(f"Nouvelles alertes : {new}, ouvertes : {still_open}, résolues : {resolved}")
+
+
+def _cmd_breaches(client: Client, state: dict[str, Any], _target: str | None) -> None:
+    keys = _unlocked(client, state)
+    names = _names(client, keys)
+    breaches = client.call("GET", "/api/breaches")
+    if not breaches:
+        print("Tout va bien.")
+    for b in breaches:
+        subject = names.get(b["item_id"] or "", b["details"].get("email", "?"))
+        print(f"  - {subject} : {KIND_LABELS.get(b['kind'], b['kind'])} (vu par : {b['source']})")
+
+
+def _cmd_notifications(client: Client, state: dict[str, Any], _target: str | None) -> None:
+    keys = _unlocked(client, state)
+    names = _names(client, keys)
+    for n in client.call("GET", "/api/notifications"):
+        subject = names.get(n["item_id"] or "", "une adresse surveillée")
+        flag = "  " if n["read_at"] else "• "
+        print(f"{flag}{n['created_at'][:16].replace('T', ' ')}  nouvelle alerte : {subject}")
+
+
 VAULT_COMMANDS = {
     "add": _cmd_add,
     "list": _cmd_list,
@@ -434,6 +496,9 @@ VAULT_COMMANDS = {
     "delete": _cmd_delete,
     "restore": _cmd_restore,
     "history": _cmd_history,
+    "scan": _cmd_scan,
+    "breaches": _cmd_breaches,
+    "notifications": _cmd_notifications,
 }
 
 

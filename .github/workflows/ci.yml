@@ -135,11 +135,11 @@ jobs:
         run: |
           python tests/e2e_server.py 8765 &
           for i in $(seq 1 30); do curl -sf http://127.0.0.1:8765/api/health && break; sleep 1; done
-      - name: Account and vault flows
+      - name: Account, vault and watch flows
         working-directory: web
         env:
           SERENITY_E2E_URL: http://127.0.0.1:8765
-        run: npx vitest --run --no-file-parallelism src/features/account/e2e.test.ts src/vault/e2e.test.ts
+        run: npx vitest --run --no-file-parallelism e2e.test
 
   secrets:
     name: Secret scan (gitleaks)

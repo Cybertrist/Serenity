@@ -34,6 +34,7 @@ services:
       SERENITY_LOGIN_MAX_ATTEMPTS: ${SERENITY_LOGIN_MAX_ATTEMPTS:-5}
       SERENITY_LOGIN_LOCKOUT_BASE_MINUTES: ${SERENITY_LOGIN_LOCKOUT_BASE_MINUTES:-1}
       SERENITY_LOG_LEVEL: ${SERENITY_LOG_LEVEL:-INFO}
+      SERENITY_HIBP_ENABLED: ${HIBP_API_KEY:+true}
     volumes:
       - ./data/api:/data
       # TOTP key only: the api never sees the server key.
@@ -54,7 +55,11 @@ services:
     cap_add: [SETUID, SETGID]
     read_only: true
     tmpfs: [/tmp]
-    environment: *api-env
+    environment:
+      <<: *api-env
+      SERENITY_WATCH_INTERVAL_HOURS: ${SERENITY_WATCH_INTERVAL_HOURS:-6}
+      # Paid HIBP key (optional): the agent alone calls HIBP.
+      HIBP_API_KEY: ${HIBP_API_KEY:-}
     volumes:
       - ./data/api:/data
       # Server key only: the agent alone can open the agent zone.

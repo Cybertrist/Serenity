@@ -39,78 +39,10 @@ def _ts(**kwargs: Any) -> Any:
     return Field(sa_type=UTCDateTime, **kwargs)
 
 
-class Criticality(StrEnum):
-    # The agent always asks for approval before touching a critical account.
-    CRITICAL = "critical"
-    SECONDARY = "secondary"
-
-
-class BreachKind(StrEnum):
-    PWNED_PASSWORD = "pwned_password"  # noqa: S105 (enum label, not a secret)
-    ACCOUNT_BREACH = "account_breach"
-    REUSED = "reused"
-    WEAK = "weak"
-    OLD = "old"
-
-
-class RotationStatus(StrEnum):
-    PENDING_APPROVAL = "pending_approval"
-    SCHEDULED = "scheduled"
-    IN_PROGRESS = "in_progress"
-    SUCCEEDED = "succeeded"
-    FAILED = "failed"
-    ROLLED_BACK = "rolled_back"
-    CANCELLED = "cancelled"
-
-
 class Actor(StrEnum):
     USER = "user"
     AGENT = "agent"
     SYSTEM = "system"
-
-
-class Entry(SQLModel, table=True):
-    """A vault item watched by Serenity (metadata only; replaced by `Item` in phase 4)."""
-
-    id: int | None = Field(default=None, primary_key=True)
-    vault_item_id: str = Field(unique=True, index=True)
-    name: str
-    domain: str | None = Field(default=None, index=True)
-    criticality: Criticality = Criticality.SECONDARY
-    # None means "never rotate automatically".
-    rotation_interval_days: int | None = Field(default=None, ge=1)
-    password_changed_at: datetime | None = _ts(default=None)
-    next_rotation_at: datetime | None = _ts(default=None, index=True)
-    last_synced_at: datetime | None = _ts(default=None)
-    created_at: datetime = _ts(default_factory=utcnow)
-    updated_at: datetime = _ts(default_factory=utcnow)
-
-
-class Breach(SQLModel, table=True):
-    """A finding about an entry: leaked, reused, weak or old password."""
-
-    id: int | None = Field(default=None, primary_key=True)
-    entry_id: int = Field(foreign_key="entry.id", index=True, ondelete="CASCADE")
-    kind: BreachKind
-    source: str | None = None
-    # Number of times seen in a breach corpus (Pwned Passwords), when relevant.
-    occurrences: int | None = None
-    detected_at: datetime = _ts(default_factory=utcnow)
-    resolved_at: datetime | None = _ts(default=None)
-
-
-class Rotation(SQLModel, table=True):
-    """A password rotation attempt and its transactional state."""
-
-    id: int | None = Field(default=None, primary_key=True)
-    entry_id: int = Field(foreign_key="entry.id", index=True, ondelete="CASCADE")
-    status: RotationStatus = RotationStatus.SCHEDULED
-    trigger: str
-    requested_at: datetime = _ts(default_factory=utcnow)
-    started_at: datetime | None = _ts(default=None)
-    finished_at: datetime | None = _ts(default=None)
-    # Sanitized error message (never contains a secret).
-    error: str | None = None
 
 
 class AuditLog(SQLModel, table=True):
@@ -236,6 +168,71 @@ class DeviceSession(SQLModel, table=True):
     expires_at: datetime = _ts(index=True)
     last_seen_at: datetime = _ts(default_factory=utcnow)
     unlocked_until: datetime | None = _ts(default=None)
+
+
+class BreachKind(StrEnum):
+    PWNED_PASSWORD = "pwned_password"  # noqa: S105 (label, not a secret)
+    REUSED = "reused"
+    WEAK = "weak"
+    OLD = "old"
+    EMAIL_BREACH = "email_breach"
+
+
+# Kinds a client may report for an entry (email alerts come from the agent only).
+ITEM_BREACH_KINDS = (BreachKind.PWNED_PASSWORD, BreachKind.REUSED, BreachKind.WEAK, BreachKind.OLD)
+
+
+class BreachStatus(StrEnum):
+    OPEN = "open"
+    RESOLVED = "resolved"
+    # Seen by the user and set aside; reopens if the entry changes and the problem comes back.
+    DISMISSED = "dismissed"
+
+
+class Breach(SQLModel, table=True):
+    """A watch alert. Never contains a secret: an entry id and a kind, or a watched e-mail."""
+
+    __table_args__ = (UniqueConstraint("user_id", "subject", "kind"),)
+
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", index=True, ondelete="CASCADE")
+    kind: BreachKind
+    # Entry id for entry alerts, "<email>|<breach name>" for e-mail alerts: the dedup key.
+    subject: str
+    item_id: str | None = Field(default=None, foreign_key="item.id", index=True, ondelete="CASCADE")
+    item_revision: int | None = None
+    # "client" (scan in the browser), "agent" (server-side, agent zone) or "hibp".
+    source: str
+    status: BreachStatus = BreachStatus.OPEN
+    details: dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
+    first_seen_at: datetime = _ts(default_factory=utcnow)
+    last_seen_at: datetime = _ts(default_factory=utcnow)
+    resolved_at: datetime | None = _ts(default=None)
+
+
+class Notification(SQLModel, table=True):
+    """In-app notification (ADR-005). No text: the client renders it, so no entry name is stored."""
+
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", index=True, ondelete="CASCADE")
+    kind: str
+    breach_id: int | None = Field(default=None, foreign_key="breach.id", ondelete="CASCADE")
+    item_id: str | None = None
+    created_at: datetime = _ts(default_factory=utcnow, index=True)
+    read_at: datetime | None = _ts(default=None)
+
+
+class WatchedEmail(SQLModel, table=True):
+    """Address checked against HIBP breaches (only when HIBP_API_KEY is set)."""
+
+    __tablename__ = "watched_email"
+    __table_args__ = (UniqueConstraint("user_id", "email"),)
+
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", index=True, ondelete="CASCADE")
+    email: str
+    added_at: datetime = _ts(default_factory=utcnow)
+    last_checked_at: datetime | None = _ts(default=None)
 
 
 class Throttle(SQLModel, table=True):

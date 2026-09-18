@@ -29,6 +29,7 @@ Nommage : `ADR-NNN-titre-court.md`.
 - [ADR-007 — Fichiers de clés root et abandon de privilèges au démarrage](ADR-007-cles-serveur.md)
 - [ADR-008 — Comptes : inscription unique, verrouillage progressif, client de test](ADR-008-comptes.md)
 - [ADR-009 — Coffre : curseur de synchronisation, corbeille, historique, import dans le navigateur](ADR-009-coffre.md)
+- [ADR-010 — Veille : double scan, alertes sans secret, notifications sans texte](ADR-010-veille.md)
 
 ## Archives
 

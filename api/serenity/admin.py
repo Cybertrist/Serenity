@@ -1,23 +1,28 @@
-"""Administration on the VM (root inside the api container):
+"""Administration on the VM (root inside a container, then privileges are dropped):
 
     docker compose exec api python -m serenity.admin reset-totp <username>
+    docker compose exec agent python -m serenity.admin watch-now
 
-Reads the TOTP key file as root, drops privileges, then acts on the database.
 Resetting the login TOTP gives no access to the personal zone (docs/crypto.md §7.8).
+`watch-now` runs the agent-zone watch immediately (it needs the server key: agent only).
 """
 
 import argparse
 import sys
 
+import httpx
 from sqlmodel import Session, select
 
 from serenity import audit
+from serenity.agent.watch import run_watch
 from serenity.auth import sessions, totp
 from serenity.auth.validation import InvalidInputError, normalize_username
 from serenity.config import get_settings
 from serenity.db import check_schema, create_db_engine
 from serenity.models import Actor, User, UserStatus, utcnow
 from serenity.secrets import drop_privileges, read_key_file
+from serenity.watcher.hibp import Hibp
+from serenity.watcher.pwned import PwnedPasswords
 
 
 def reset_totp(username: str) -> int:
@@ -54,12 +59,33 @@ def reset_totp(username: str) -> int:
     return 0
 
 
+def watch_now() -> int:
+    settings = get_settings()
+    server_key = read_key_file(settings.server_key_file)
+    drop_privileges()
+    engine = create_db_engine(settings.db_path)
+    check_schema(engine)
+    key = settings.hibp_api_key
+    with httpx.Client(timeout=20) as http:
+        hibp = Hibp(http, key.get_secret_value()) if key and key.get_secret_value() else None
+        report = run_watch(engine, server_key, PwnedPasswords(http), hibp, utcnow())
+    if report.skipped:
+        print("Kill switch actif : veille non lancée.")
+        return 1
+    print(f"Veille terminée : {report.users} compte(s), {report.new_alerts} nouvelle(s) alerte(s).")
+    print("E-mails : " + ("vérifiés (HIBP)" if hibp else "non vérifiés (pas de HIBP_API_KEY)"))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m serenity.admin")
     sub = parser.add_subparsers(dest="command", required=True)
     reset = sub.add_parser("reset-totp", help="replace the login TOTP of an account")
     reset.add_argument("username")
+    sub.add_parser("watch-now", help="run the agent-zone watch now (agent container)")
     args = parser.parse_args(argv)
+    if args.command == "watch-now":
+        return watch_now()
     try:
         username = normalize_username(args.username)
     except InvalidInputError as exc:

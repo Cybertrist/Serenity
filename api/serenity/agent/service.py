@@ -7,19 +7,24 @@ watcher and kill switch arrive in phases 5 and 6.
 import logging
 import signal
 import threading
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+import httpx
+from apscheduler.schedulers.background import BackgroundScheduler
 from sqlalchemy import Engine
 from sqlmodel import Session
 
 from serenity import audit
+from serenity.agent.watch import run_watch
 from serenity.config import Settings
 from serenity.crypto.encoding import b64url_encode
 from serenity.crypto.server_key import server_public_key
 from serenity.db import check_schema, create_db_engine
 from serenity.models import Actor, Setting, utcnow
+from serenity.watcher.hibp import Hibp
+from serenity.watcher.pwned import PwnedPasswords
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +61,7 @@ class Agent:
     def __init__(self, settings: Settings, engine: Engine, server_key: bytes) -> None:
         self._settings = settings
         self._engine = engine
-        # Kept in memory only: opens sealed agent keys (phase 4).
+        # Kept in memory only: opens sealed agent keys.
         self._server_key = server_key
         self.stop_event = threading.Event()
 
@@ -68,10 +73,37 @@ class Agent:
         logger.info("agent started, server key id %s", info["key_id"])
         return info
 
+    def watch_once(self) -> None:
+        """One server-side watch run (agent zone, watched e-mails). Errors never stop the agent."""
+        key = self._settings.hibp_api_key
+        with httpx.Client(timeout=20) as http:
+            hibp = Hibp(http, key.get_secret_value()) if key and key.get_secret_value() else None
+            report = run_watch(self._engine, self._server_key, PwnedPasswords(http), hibp, utcnow())
+        logger.info(
+            "watch: %d user(s), %d new alert(s)%s",
+            report.users,
+            report.new_alerts,
+            " (kill switch)" if report.skipped else "",
+        )
+
     def run_forever(self) -> None:
-        while not self.stop_event.is_set():
-            touch(self._settings.agent_heartbeat_file)
-            self.stop_event.wait(self._settings.agent_heartbeat_seconds)
+        scheduler = BackgroundScheduler(timezone="UTC")
+        scheduler.add_job(
+            self.watch_once,
+            "interval",
+            hours=self._settings.watch_interval_hours,
+            next_run_time=utcnow() + timedelta(seconds=self._settings.watch_first_delay_seconds),
+            max_instances=1,
+            coalesce=True,
+            id="watch",
+        )
+        touch(self._settings.agent_heartbeat_file)
+        scheduler.start()
+        try:
+            while not self.stop_event.wait(self._settings.agent_heartbeat_seconds):
+                touch(self._settings.agent_heartbeat_file)
+        finally:
+            scheduler.shutdown(wait=False)
         with Session(self._engine) as session:
             audit.record(session, Actor.AGENT, "agent.stop")
         logger.info("agent stopped")

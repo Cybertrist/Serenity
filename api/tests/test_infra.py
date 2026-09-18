@@ -128,3 +128,13 @@ def test_server_key_route(client: TestClient, engine: Engine) -> None:
     response = client.get("/api/crypto/server-key")
     assert response.status_code == 200
     assert response.json() == info
+
+
+def test_empty_hibp_variables_mean_disabled(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("SERENITY_SECRET_KEY", "k" * 48)
+    monkeypatch.setenv("SERENITY_HIBP_ENABLED", "")
+    monkeypatch.setenv("HIBP_API_KEY", "")
+    settings = Settings()  # type: ignore[call-arg]
+    assert settings.hibp_enabled is False
+    assert settings.hibp_api_key is not None
+    assert settings.hibp_api_key.get_secret_value() == ""
