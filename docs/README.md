@@ -9,7 +9,7 @@ Une page par phase, dans l'ordre de construction.
 | [01 — Cryptographie](01-cryptographie.md) | Modules crypto Python et TypeScript, vecteurs partagés, vérification croisée |
 | [Spécification crypto](crypto.md) | Hiérarchie des clés, formats, flux, modèle de menace |
 | [02 — Infrastructure](02-infrastructure.md) | Docker Compose, clés serveur, agent séparé, Tailscale |
-| 03 — Authentification | Comptes, connexion, TOTP, kit de récupération *(à venir)* |
+| [03 — Authentification](03-authentification.md) | Comptes, connexion, TOTP, déverrouillage, kit de récupération |
 | 04 — Coffre | Entrées chiffrées, révisions, délégation, import Bitwarden *(à venir)* |
 | 05 — Veille | Fuites, k-anonymat, mots de passe faibles *(à venir)* |
 | 06 — Agent | Politiques, kill switch, planification, notifications *(à venir)* |
@@ -23,5 +23,3 @@ Références :
 - `design.md` : la charte graphique *(phase 7)*
 - [`decisions/`](decisions/README.md) : les décisions techniques (ADR)
 
-La page [03 — Socle backend](03-backend-socle.md) décrit l'ancien socle (avant la remise à plat) ;
-elle sera remplacée par « 03 — Authentification ».

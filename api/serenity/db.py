@@ -5,7 +5,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import Engine, event
+from sqlalchemy import Engine, event, text
 from sqlmodel import Session, SQLModel, create_engine
 
 # Importing the models module registers every table on SQLModel.metadata.
@@ -17,11 +17,33 @@ SCHEMA_VERSION_KEY = "schema_version"
 
 Migration = Callable[[Session], None]
 
+
+def add_column(session: Session, table: str, column: str, ddl: str) -> None:
+    """Add a column unless it exists: a fresh database already has it from `create_all`."""
+    rows = session.connection().execute(text(f"PRAGMA table_info({table})"))
+    if column not in {row[1] for row in rows}:
+        session.connection().execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {ddl}"))
+
+
+def _v2_accounts(session: Session) -> None:
+    # Accounts replace the single-user password file; old sessions are meaningless.
+    session.connection().execute(text("DROP TABLE IF EXISTS auth_session"))
+    session.connection().execute(
+        text("DELETE FROM setting WHERE key IN ('login_throttle', 'totp_last_step')")
+    )
+    add_column(session, "auditlog", "user_id", "VARCHAR")
+    session.connection().execute(
+        text("CREATE INDEX IF NOT EXISTS ix_auditlog_user_id ON auditlog (user_id)")
+    )
+
+
 # Ordered, append-only list. Version N is MIGRATIONS[N - 1].
 # Version 1 is the baseline created by `SQLModel.metadata.create_all`.
 # Add a function here for every change that `create_all` cannot do (new column, data fix...).
+# Migrations must be idempotent: on a fresh database, `create_all` already built the latest schema.
 MIGRATIONS: list[Migration] = [
     lambda session: None,
+    _v2_accounts,
 ]
 
 

@@ -9,7 +9,7 @@ DEV_RUN   := docker run --rm --user $(shell id -u):$(shell id -g) \
 # Container UIDs (see docker-compose.yml and api/Dockerfile).
 UID_API := 10001
 
-.PHONY: help init keys up down restart logs ps auth-init test lint vectors web-test crypto-interop dev-image
+.PHONY: help init keys up down restart logs ps client reset-totp test lint vectors web-test crypto-interop e2e dev-image
 
 help: ## Show this help
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-10s %s\n", $$1, $$2}'
@@ -44,8 +44,11 @@ logs: ## Follow logs (make logs s=api for a single service)
 ps: ## Show services and health
 	$(COMPOSE) ps
 
-auth-init: ## Create the login password and TOTP (interactive)
-	$(COMPOSE) exec --user $(UID_API):$(UID_API) api python -m serenity.auth init $(if $(force),--force)
+client: ## Test client inside the api container (make client c=signup|login|unlock|me|sessions|password|recover|lock|logout)
+	$(COMPOSE) exec --user $(UID_API):$(UID_API) api python -m serenity.devclient $(c)
+
+reset-totp: ## Replace the login TOTP of an account (make reset-totp u=<username>)
+	$(COMPOSE) exec api python -m serenity.admin reset-totp $(u)
 
 dev-image:
 	@docker build -q --target dev -t $(DEV_IMAGE) api >/dev/null
@@ -68,6 +71,15 @@ crypto-interop: dev-image ## Cross-check crypto: Python -> TypeScript -> Python
 	$(NODE_RUN) sh -c 'INTEROP_VERIFY=/repo/api/.interop-py.json npx vitest --run src/crypto/interop.test.ts && INTEROP_PRODUCE=/repo/api/.interop-ts.json npx vitest --run src/crypto/interop.test.ts'
 	$(DEV_RUN) python tests/crypto/interop.py verify /app/.interop-ts.json
 	rm -f api/.interop-py.json api/.interop-ts.json
+
+e2e: dev-image ## End-to-end: TypeScript account flows against the real Python API
+	docker rm -f serenity-e2e >/dev/null 2>&1 || true
+	docker run -d --rm --name serenity-e2e --user $(shell id -u):$(shell id -g) \
+	  -v "$(CURDIR)/api:/app" -w /app $(DEV_IMAGE) python tests/e2e_server.py 8765 >/dev/null
+	docker run --rm --network container:serenity-e2e --user $(shell id -u):$(shell id -g) -e HOME=/tmp \
+	  -e SERENITY_E2E_URL=http://127.0.0.1:8765 -v "$(CURDIR):/repo" -w /repo/web node:22-slim \
+	  sh -c 'for i in $$(seq 1 30); do node -e "fetch(process.env.SERENITY_E2E_URL+\"/api/health\").then(r=>process.exit(r.ok?0:1),()=>process.exit(1))" && break; sleep 1; done; npx vitest --run src/features/account/e2e.test.ts'; \
+	  status=$$?; docker rm -f serenity-e2e >/dev/null; exit $$status
 
 lint: dev-image ## Run linters and type checks
 	$(DEV_RUN) ruff check .

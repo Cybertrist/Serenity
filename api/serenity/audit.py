@@ -61,12 +61,14 @@ def record(
     action: str,
     *,
     outcome: str = "success",
+    user_id: str | None = None,
     target_type: str | None = None,
     target_id: str | int | None = None,
     details: dict[str, Any] | None = None,
 ) -> AuditLog:
     """Write one audit line and commit it."""
     entry = AuditLog(
+        user_id=user_id,
         actor=actor,
         action=action,
         outcome=outcome,

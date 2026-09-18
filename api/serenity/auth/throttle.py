@@ -1,51 +1,51 @@
-"""Login throttling: lockout after too many failed attempts, persisted in SQLite."""
+"""Progressive lockout: after N failures, lock base * 2^(k-1) minutes, up to 24 hours."""
 
 from datetime import datetime, timedelta
 
-from sqlmodel import Session
+from sqlmodel import Session, col, delete
 
-from serenity.models import Setting
+from serenity.config import Settings
+from serenity.models import Throttle
 
-THROTTLE_KEY = "login_throttle"
-
-
-def _state(session: Session) -> Setting:
-    return session.get(Setting, THROTTLE_KEY) or Setting(
-        key=THROTTLE_KEY, value={"failures": 0, "locked_until": None}
-    )
+MAX_LOCKOUT = timedelta(hours=24)
+# Forget a key's history after a full day without failure.
+FORGET_AFTER = timedelta(hours=24)
 
 
-def locked_until(session: Session, now: datetime) -> datetime | None:
-    """Return the end of the current lockout, or None if logins are allowed."""
-    raw = _state(session).value.get("locked_until")
-    if raw is None:
+def locked_until(session: Session, key: str, now: datetime) -> datetime | None:
+    row = session.get(Throttle, key)
+    if row is None or row.locked_until is None or row.locked_until <= now:
         return None
-    until = datetime.fromisoformat(raw)
-    return until if until > now else None
+    return row.locked_until
 
 
 def register_failure(
-    session: Session, now: datetime, max_attempts: int, lockout: timedelta
+    session: Session, settings: Settings, key: str, now: datetime
 ) -> datetime | None:
-    """Count a failed attempt. Returns the lockout end if this failure triggered one."""
-    row = _state(session)
-    # Failures older than one lockout window are forgotten.
-    previous = int(row.value.get("failures", 0)) if row.updated_at > now - lockout else 0
-    failures = previous + 1
-    until: datetime | None = None
-    if failures >= max_attempts:
-        until = now + lockout
-        failures = 0
-    row.value = {"failures": failures, "locked_until": until.isoformat() if until else None}
+    """Count a failure. Returns the lockout end when this failure triggers one."""
+    row = session.get(Throttle, key)
+    if row is None or row.updated_at < now - FORGET_AFTER:
+        row = row or Throttle(key=key)
+        row.failures, row.lockouts = 0, 0
+    row.failures += 1
+    until = None
+    if row.failures >= settings.login_max_attempts:
+        row.lockouts += 1
+        row.failures = 0
+        minutes = settings.login_lockout_base_minutes * 2 ** min(row.lockouts - 1, 20)
+        until = now + min(timedelta(minutes=minutes), MAX_LOCKOUT)
+        row.locked_until = until
     row.updated_at = now
     session.add(row)
     session.commit()
     return until
 
 
-def reset(session: Session, now: datetime) -> None:
-    row = _state(session)
-    row.value = {"failures": 0, "locked_until": None}
-    row.updated_at = now
-    session.add(row)
+def reset(session: Session, key: str) -> None:
+    session.exec(delete(Throttle).where(col(Throttle.key) == key))
+    session.commit()
+
+
+def purge(session: Session, now: datetime) -> None:
+    session.exec(delete(Throttle).where(col(Throttle.updated_at) < now - FORGET_AFTER))
     session.commit()

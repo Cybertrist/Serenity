@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from sqlmodel import Session
 
 from serenity import audit
+from serenity.auth.hashing import DummyHash
 from serenity.config import Settings, get_settings
 from serenity.db import create_db_engine, init_db
 from serenity.models import Actor
@@ -34,6 +35,7 @@ def create_app(settings: Settings | None = None, totp_key: bytes | None = None) 
     app.state.settings = settings
     # Encrypts login TOTP secrets at rest (phase 3). Loaded from a root-only key file.
     app.state.totp_key = totp_key
+    app.state.dummy_hash = DummyHash(settings)
     app.include_router(health.router)
     app.include_router(auth.router)
     app.include_router(logs.router)

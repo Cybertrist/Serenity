@@ -1,81 +1,185 @@
-"""Single-user credentials: argon2 password hash and TOTP seed, stored in a 0600 file."""
+"""Master password change and recovery with the kit (docs/crypto.md §7.7, §7.8)."""
 
-import json
-import os
+import secrets
 from dataclasses import dataclass
-from pathlib import Path
+from datetime import datetime, timedelta
 
-import pyotp
-from argon2 import PasswordHasher
-from argon2.exceptions import InvalidHashError, VerificationError
+from sqlmodel import Session, select
 
-MIN_PASSWORD_LENGTH = 12
-_hasher = PasswordHasher()
+from serenity import audit
+from serenity.auth import sessions, throttle, totp
+from serenity.auth.accounts import LoginResult, active_user, latest_agent_key, open_session
+from serenity.auth.errors import AuthError, AuthErrorKind
+from serenity.auth.guards import check_lock, fail
+from serenity.auth.hashing import DummyHash, hash_key, verify_key
+from serenity.config import Settings
+from serenity.crypto import kdf
+from serenity.models import Actor, AgentKey, DeviceSession, User
+
+TICKET_TTL = timedelta(minutes=10)
 
 
 @dataclass(frozen=True)
-class Credentials:
-    password_hash: str
-    totp_secret: str
+class NewMasterPassword:
+    salt: bytes
+    params: kdf.KdfParams
+    auth_key: bytes
+    uk_by_mk: bytes
 
     def __repr__(self) -> str:
-        return "Credentials(<hidden>)"
+        return "NewMasterPassword(<hidden>)"
 
 
-def create_credentials(password: str, totp_secret: str) -> Credentials:
-    if len(password) < MIN_PASSWORD_LENGTH:
-        raise ValueError(f"password must be at least {MIN_PASSWORD_LENGTH} characters")
-    return Credentials(password_hash=_hasher.hash(password), totp_secret=totp_secret)
+@dataclass(frozen=True)
+class RecoveryStart:
+    user: User
+    ticket: str
+    agent_key: AgentKey
+
+    def __repr__(self) -> str:
+        return f"RecoveryStart(user_id={self.user.id!r})"
 
 
-def new_totp_secret() -> str:
-    return pyotp.random_base32()
-
-
-def provisioning_uri(totp_secret: str, account: str = "tristan") -> str:
-    return pyotp.TOTP(totp_secret).provisioning_uri(name=account, issuer_name="Serenity")
-
-
-def save_credentials(path: Path, credentials: Credentials) -> None:
-    """Write atomically, readable by the current user only."""
-    tmp = path.with_suffix(".tmp")
-    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-    with os.fdopen(fd, "w") as f:
-        json.dump(
-            {"password_hash": credentials.password_hash, "totp_secret": credentials.totp_secret},
-            f,
+def change_password(
+    session: Session,
+    settings: Settings,
+    totp_key: bytes,
+    row: DeviceSession,
+    current_auth_key: bytes,
+    code: str,
+    new: NewMasterPassword,
+    now: datetime,
+) -> int:
+    """Replace salt, AuthKey and UK wrapping. Entries are untouched. Returns revoked sessions."""
+    key = f"password:{row.user_id}"
+    check_lock(session, key, now, row.user_id)
+    user = session.get(User, row.user_id)
+    if user is None:
+        raise AuthError(AuthErrorKind.NOT_FOUND, "Compte introuvable.")
+    ok = verify_key(user.auth_hash, current_auth_key)
+    step = totp.matching_step(
+        totp.decrypt_secret(totp_key, user.id, user.totp_secret_enc), code, user.totp_last_step
+    )
+    if not ok or step is None:
+        fail(
+            session,
+            settings,
+            key,
+            now,
+            user.id,
+            "auth.password.change",
+            "Mot de passe ou code incorrect.",
         )
-    os.replace(tmp, path)
+    throttle.reset(session, key)
+    _apply_new_password(settings, user, new, now)
+    user.totp_last_step = step
+    session.add(user)
+    session.commit()
+    revoked = sessions.revoke_all(session, user.id, keep=row.id)
+    audit.record(
+        session,
+        Actor.USER,
+        "auth.password.change",
+        user_id=user.id,
+        details={"revoked_sessions": revoked},
+    )
+    return revoked
 
 
-def load_credentials(path: Path) -> Credentials | None:
-    if not path.exists():
-        return None
-    data = json.loads(path.read_text())
-    return Credentials(password_hash=data["password_hash"], totp_secret=data["totp_secret"])
+def start_recovery(
+    session: Session,
+    settings: Settings,
+    totp_key: bytes,
+    dummy: DummyHash,
+    username: str,
+    recovery_auth_key: bytes,
+    code: str,
+    now: datetime,
+) -> RecoveryStart:
+    key = f"recover:{username}"
+    user = active_user(session, username)
+    check_lock(session, key, now, user.id if user else None)
+    if user is None:
+        dummy.burn(recovery_auth_key)
+        fail(
+            session,
+            settings,
+            key,
+            now,
+            None,
+            "auth.recover.start",
+            "Clé de récupération ou code incorrect.",
+        )
+    ok = verify_key(user.recovery_hash, recovery_auth_key)
+    step = totp.matching_step(
+        totp.decrypt_secret(totp_key, user.id, user.totp_secret_enc), code, user.totp_last_step
+    )
+    if not ok or step is None:
+        fail(
+            session,
+            settings,
+            key,
+            now,
+            user.id,
+            "auth.recover.start",
+            "Clé de récupération ou code incorrect.",
+        )
+    throttle.reset(session, key)
+    ticket = secrets.token_urlsafe(32)
+    user.recovery_ticket_hash = sessions.token_hash(settings, ticket)
+    user.recovery_ticket_expires_at = now + TICKET_TTL
+    user.totp_last_step = step
+    session.add(user)
+    session.commit()
+    audit.record(session, Actor.USER, "auth.recover.start", user_id=user.id)
+    return RecoveryStart(user, ticket, latest_agent_key(session, user.id))
 
 
-def verify_password(credentials: Credentials, password: str) -> bool:
-    try:
-        return _hasher.verify(credentials.password_hash, password)
-    except (VerificationError, InvalidHashError):
-        return False
+def complete_recovery(
+    session: Session,
+    settings: Settings,
+    ticket: str,
+    new: NewMasterPassword,
+    new_recovery_auth_key: bytes,
+    new_uk_by_rk: bytes,
+    device: str,
+    now: datetime,
+) -> LoginResult:
+    """New master password and new kit. Every existing session is revoked."""
+    user = session.exec(
+        select(User).where(User.recovery_ticket_hash == sessions.token_hash(settings, ticket))
+    ).first()
+    if (
+        user is None
+        or user.recovery_ticket_expires_at is None
+        or user.recovery_ticket_expires_at <= now
+    ):
+        raise AuthError(AuthErrorKind.NOT_FOUND, "Récupération expirée, recommence.")
+    _apply_new_password(settings, user, new, now)
+    user.recovery_hash = hash_key(settings, new_recovery_auth_key)
+    user.uk_by_rk = new_uk_by_rk
+    user.recovery_ticket_hash = None
+    user.recovery_ticket_expires_at = None
+    session.add(user)
+    session.commit()
+    revoked = sessions.revoke_all(session, user.id)
+    audit.record(
+        session,
+        Actor.USER,
+        "auth.recover.complete",
+        user_id=user.id,
+        details={"revoked_sessions": revoked},
+    )
+    return open_session(session, settings, user, device, now)
 
 
-def totp_step(credentials: Credentials, code: str, last_step: int | None, at: float) -> int | None:
-    """Return the matched TOTP time step, or None if the code is invalid or already used.
-
-    One step of clock drift is tolerated. A step already used (`last_step`) is refused
-    so a code seen over the shoulder cannot be replayed.
-    """
-    code = code.strip()
-    if not (code.isdigit() and len(code) == 6):
-        return None
-    totp = pyotp.TOTP(credentials.totp_secret)
-    current = int(at // totp.interval)
-    for step in (current - 1, current, current + 1):
-        if last_step is not None and step <= last_step:
-            continue
-        if pyotp.utils.strings_equal(totp.generate_otp(step), code):
-            return step
-    return None
+def _apply_new_password(
+    settings: Settings, user: User, new: NewMasterPassword, now: datetime
+) -> None:
+    user.kdf_salt = new.salt
+    user.kdf_memlimit = new.params.memlimit
+    user.kdf_opslimit = new.params.opslimit
+    user.auth_hash = hash_key(settings, new.auth_key)
+    user.uk_by_mk = new.uk_by_mk
+    user.password_changed_at = now
+    user.updated_at = now

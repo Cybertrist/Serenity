@@ -7,7 +7,7 @@ from fastapi import APIRouter, Query
 from pydantic import BaseModel
 from sqlmodel import col, select
 
-from serenity.deps import AuthDep, DbDep
+from serenity.deps import DbDep, SessionDep
 from serenity.models import Actor, AuditLog
 
 router = APIRouter(prefix="/api/logs", tags=["logs"])
@@ -27,12 +27,17 @@ class AuditLogOut(BaseModel):
 @router.get("")
 def list_logs(
     db: DbDep,
-    _session: AuthDep,
+    row: SessionDep,
     limit: Annotated[int, Query(ge=1, le=500)] = 100,
     before_id: Annotated[int | None, Query(ge=1)] = None,
 ) -> list[AuditLogOut]:
-    """Most recent audit lines first. Paginate with `before_id`."""
-    query = select(AuditLog).order_by(col(AuditLog.id).desc()).limit(limit)
+    """The user's own lines and system lines, most recent first. Paginate with `before_id`."""
+    query = (
+        select(AuditLog)
+        .where((col(AuditLog.user_id) == row.user_id) | col(AuditLog.user_id).is_(None))
+        .order_by(col(AuditLog.id).desc())
+        .limit(limit)
+    )
     if before_id is not None:
         query = query.where(col(AuditLog.id) < before_id)
     return [AuditLogOut.model_validate(row, from_attributes=True) for row in db.exec(query)]
