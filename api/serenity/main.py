@@ -1,4 +1,4 @@
-"""FastAPI application factory (run with `uvicorn --factory serenity.main:create_app`)."""
+"""FastAPI application factory. In containers it is started by `python -m serenity.run api`."""
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -10,10 +10,10 @@ from serenity import audit
 from serenity.config import Settings, get_settings
 from serenity.db import create_db_engine, init_db
 from serenity.models import Actor
-from serenity.routes import auth, health, logs
+from serenity.routes import auth, crypto, health, logs
 
 
-def create_app(settings: Settings | None = None) -> FastAPI:
+def create_app(settings: Settings | None = None, totp_key: bytes | None = None) -> FastAPI:
     settings = settings or get_settings()
 
     @asynccontextmanager
@@ -32,7 +32,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         title="Serenity", docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan
     )
     app.state.settings = settings
+    # Encrypts login TOTP secrets at rest (phase 3). Loaded from a root-only key file.
+    app.state.totp_key = totp_key
     app.include_router(health.router)
     app.include_router(auth.router)
     app.include_router(logs.router)
+    app.include_router(crypto.router)
     return app

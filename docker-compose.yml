@@ -18,24 +18,63 @@ services:
       context: ./api
       target: runtime
     image: serenity-api:local
+    # Starts as root with SETUID/SETGID only, reads the TOTP key, then drops to UID 10001.
     cap_drop: [ALL]
+    cap_add: [SETUID, SETGID]
     read_only: true
     tmpfs: [/tmp]
     # Variables are passed explicitly (never the whole .env) so the api only sees what it needs.
-    environment:
+    environment: &api-env
       TZ: ${TZ:-Europe/Paris}
       SERENITY_PUBLIC_URL: https://${TAILNET_HOST:?set TAILNET_HOST in .env}
       SERENITY_SECRET_KEY: ${SERENITY_SECRET_KEY:?set SERENITY_SECRET_KEY in .env}
-      SERENITY_DB_PATH: ${SERENITY_DB_PATH:-/data/serenity.sqlite}
-      SERENITY_AUTH_FILE: ${SERENITY_AUTH_FILE:-/data/auth.json}
+      SERENITY_DB_PATH: /data/serenity.sqlite
+      SERENITY_AUTH_FILE: /data/auth.json
       SERENITY_SESSION_TTL_HOURS: ${SERENITY_SESSION_TTL_HOURS:-12}
       SERENITY_LOGIN_MAX_ATTEMPTS: ${SERENITY_LOGIN_MAX_ATTEMPTS:-5}
       SERENITY_LOGIN_LOCKOUT_MINUTES: ${SERENITY_LOGIN_LOCKOUT_MINUTES:-15}
       SERENITY_LOG_LEVEL: ${SERENITY_LOG_LEVEL:-INFO}
     volumes:
       - ./data/api:/data
+      # TOTP key only: the api never sees the server key.
+      - type: bind
+        source: ./data/keys/totp.key
+        target: /run/serenity/totp.key
+        read_only: true
+        bind: { create_host_path: false }
     # No published port: only reachable by `web` on the internal network.
-    networks: [internal, egress]
+    networks: [internal]
+
+  agent:
+    <<: *hardening
+    image: serenity-api:local
+    command: ["python", "-m", "serenity.run", "agent"]
+    # Starts as root with SETUID/SETGID only, reads the server key, then drops to UID 10001.
+    cap_drop: [ALL]
+    cap_add: [SETUID, SETGID]
+    read_only: true
+    tmpfs: [/tmp]
+    environment: *api-env
+    volumes:
+      - ./data/api:/data
+      # Server key only: the agent alone can open the agent zone.
+      - type: bind
+        source: ./data/keys/server.key
+        target: /run/serenity/server.key
+        read_only: true
+        bind: { create_host_path: false }
+    # No port at all. Outbound Internet for Pwned Passwords (phase 5).
+    networks: [egress]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os, sys, time; sys.exit(time.time() - os.path.getmtime('/tmp/agent-heartbeat') > 90)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+    depends_on:
+      # The api owns database migrations.
+      api:
+        condition: service_healthy
 
   web:
     <<: *hardening
@@ -60,5 +99,5 @@ networks:
     internal: true
   # Network for services published on 127.0.0.1.
   edge: {}
-  # Outbound Internet for the api (Pwned Passwords, phase 5).
+  # Outbound Internet for the agent (Pwned Passwords, phase 5).
   egress: {}

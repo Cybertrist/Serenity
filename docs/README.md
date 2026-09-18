@@ -8,7 +8,7 @@ Une page par phase, dans l'ordre de construction.
 | [01 — Dépôt et GitHub](01-depot-github.md) | Arborescence, CI, labels, protection de `main` |
 | [01 — Cryptographie](01-cryptographie.md) | Modules crypto Python et TypeScript, vecteurs partagés, vérification croisée |
 | [Spécification crypto](crypto.md) | Hiérarchie des clés, formats, flux, modèle de menace |
-| [02 — Infrastructure](02-infrastructure.md) | Docker Compose, Tailscale *(à revoir en phase 2)* |
+| [02 — Infrastructure](02-infrastructure.md) | Docker Compose, clés serveur, agent séparé, Tailscale |
 | 03 — Authentification | Comptes, connexion, TOTP, kit de récupération *(à venir)* |
 | 04 — Coffre | Entrées chiffrées, révisions, délégation, import Bitwarden *(à venir)* |
 | 05 — Veille | Fuites, k-anonymat, mots de passe faibles *(à venir)* |

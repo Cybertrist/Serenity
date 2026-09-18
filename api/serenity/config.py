@@ -23,6 +23,12 @@ class Settings(BaseSettings):
     login_lockout_minutes: int = Field(default=15, ge=1, le=1440)
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     public_url: str = "https://localhost"
+    # Key files (root:root 0400 on the host, see docs/02-infrastructure.md).
+    # The server key is mounted in the agent only; the TOTP key in the api only.
+    server_key_file: Path = Path("/run/serenity/server.key")
+    totp_key_file: Path = Path("/run/serenity/totp.key")
+    agent_heartbeat_file: Path = Path("/tmp/agent-heartbeat")  # noqa: S108 (tmpfs)
+    agent_heartbeat_seconds: int = Field(default=30, ge=5, le=300)
 
 
 @lru_cache

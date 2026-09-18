@@ -35,7 +35,24 @@ def _set_sqlite_pragmas(dbapi_connection: Any, _record: Any) -> None:
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.execute("PRAGMA journal_mode=WAL")
+    # The api and the agent share the database: wait for a lock instead of failing.
+    cursor.execute("PRAGMA busy_timeout=5000")
     cursor.close()
+
+
+def schema_version(engine: Engine) -> int:
+    with Session(engine) as session:
+        row = session.get(Setting, SCHEMA_VERSION_KEY)
+        return int(row.value) if row else 0
+
+
+def check_schema(engine: Engine, migrations: list[Migration] | None = None) -> int:
+    """For processes that must not migrate (the agent): the api owns migrations."""
+    expected = len(MIGRATIONS if migrations is None else migrations)
+    current = schema_version(engine)
+    if current != expected:
+        raise RuntimeError(f"database schema v{current}, expected v{expected}: start the api first")
+    return current
 
 
 def init_db(engine: Engine, migrations: list[Migration] | None = None) -> int:
