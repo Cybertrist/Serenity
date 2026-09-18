@@ -1,0 +1,7 @@
+# gitleaks configuration: default rules, plus one narrow exception.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Shared crypto test vectors: throwaway keys built from byte patterns, never real secrets (docs/01-cryptographie.md)"
+paths = ['''^shared/test-vectors/[a-z0-9]+\.json$''']
