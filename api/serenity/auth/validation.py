@@ -11,7 +11,8 @@ from serenity.crypto.contexts import ak_by_sk
 from serenity.crypto.encoding import b64url_decode
 from serenity.crypto.errors import CryptoError
 
-_USERNAME = re.compile(r"^[a-z0-9][a-z0-9._-]{2,63}$")
+# A simple name or an e-mail address (the address is only an identifier, nothing is sent to it).
+_USERNAME = re.compile(r"^[a-z0-9][a-z0-9._+@-]{2,253}$")
 _UUID4 = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
 KEY_BYTES = 32
 WRAPPED_KEY_BYTES = blocks.MIN_BLOCK_BYTES + KEY_BYTES
@@ -23,9 +24,10 @@ class InvalidInputError(ValueError):
 
 def normalize_username(username: str) -> str:
     value = unicodedata.normalize("NFKC", username).strip().lower()
-    if not _USERNAME.match(value):
+    if not _USERNAME.match(value) or value.count("@") > 1 or value.endswith("@"):
         raise InvalidInputError(
-            "identifiant : 3 à 64 caractères, lettres minuscules, chiffres, « . », « _ », « - »"
+            "identifiant : 3 à 254 caractères, lettres, chiffres et « . _ - + @ » "
+            "(une adresse e-mail convient)"
         )
     return value
 

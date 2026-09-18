@@ -20,6 +20,7 @@ from typing import Any
 import httpx
 import nacl.utils
 
+from serenity.auth.validation import InvalidInputError, normalize_username
 from serenity.crypto import blocks, contexts, kdf, recovery, sealed
 from serenity.crypto.encoding import b64url_decode as d
 from serenity.crypto.encoding import b64url_encode as e
@@ -218,6 +219,15 @@ def _ask_password(prompt: str = "Mot de passe maître : ", confirm: bool = False
     return password
 
 
+def _ask_username() -> str:
+    """Check the identifier before asking for the master password."""
+    while True:
+        try:
+            return normalize_username(input("Identifiant : "))
+        except InvalidInputError as exc:
+            print(f"Identifiant refusé : {exc}")
+
+
 def _print_json(data: Any) -> None:
     print(json.dumps(data, ensure_ascii=False, indent=2))
 
@@ -244,7 +254,7 @@ def main(argv: list[str] | None = None) -> int:
     client = Client(httpx.Client(base_url=args.url, timeout=30), state.get("token"))
     try:
         if args.command == "signup":
-            username = input("Identifiant : ").strip()
+            username = _ask_username()
             password = _ask_password(confirm=True)
             out = client.signup(username, password)
             print("\nAjoute Serenity dans ton appli d'authentification (saisie manuelle, TOTP) :")
@@ -256,7 +266,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  {out['recovery_kit']}\n")
             state["username"] = username
         elif args.command == "login":
-            username = input("Identifiant : ").strip()
+            username = _ask_username()
             password = _ask_password()
             keys = client.login(username, password, input("Code TOTP : ").strip())
             print(f"Connecté. Clés déchiffrées en mémoire (UK, AK v{keys.ak_version}).")
@@ -280,7 +290,7 @@ def main(argv: list[str] | None = None) -> int:
             client.change_password(state["username"], current, new, input("Code TOTP : ").strip())
             print("Mot de passe maître changé. Les autres appareils sont déconnectés.")
         elif args.command == "recover":
-            username = input("Identifiant : ").strip()
+            username = _ask_username()
             kit = getpass.getpass("Clé de récupération : ")
             code = input("Code TOTP : ").strip()
             new = _ask_password("Nouveau mot de passe maître : ", confirm=True)

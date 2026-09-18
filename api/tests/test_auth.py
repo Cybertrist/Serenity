@@ -250,3 +250,36 @@ def _signup_body(server_seed: bytes) -> dict:  # type: ignore[type-arg]
         "ak_by_uk": b64url_encode(blocks.wrap_key(uk, ak, contexts.ak_by_uk(user_id, 1))),
         "ak_sealed": b64url_encode(sealed.seal_for_server(pk, ak, contexts.ak_by_sk(user_id, 1))),
     }
+
+
+@pytest.mark.parametrize("name", ["Tristan.Joncour+serenity@Exemple.fr", "tri", "a_b-c.d"])
+def test_usernames_accept_emails(name: str) -> None:
+    from serenity.auth.validation import normalize_username
+
+    assert normalize_username(name) == name.lower()
+
+
+@pytest.mark.parametrize(
+    "name", ["ab", "tristan@gmail;com", "a@b@c", "tristan@", "-tristan", "a b"]
+)
+def test_usernames_refuse_malformed(name: str) -> None:
+    from serenity.auth.validation import InvalidInputError, normalize_username
+
+    with pytest.raises(InvalidInputError):
+        normalize_username(name)
+
+
+def test_signup_with_an_email_identifier(
+    client: TestClient, agent_ready: bytes, clock: Clock
+) -> None:
+    api = Client(client)
+    out = api.signup("Tristan@Exemple.fr", PASSWORD)
+    import pyotp
+
+    clock.tick()
+    api.confirm(out["user_id"], pyotp.TOTP(out["totp_secret"]).at(int(clock.now)))
+    clock.tick()
+    keys = Client(client).login(
+        "tristan@exemple.fr", PASSWORD, pyotp.TOTP(out["totp_secret"]).at(int(clock.now))
+    )
+    assert keys.user_id == out["user_id"]

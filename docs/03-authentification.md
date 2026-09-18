@@ -81,7 +81,7 @@ make up
 make client c=signup
 ```
 
-Il demande un identifiant et un mot de passe maître, affiche une **clé TOTP** à ajouter dans
+Il demande un identifiant (un nom simple ou ton adresse e-mail) et un mot de passe maître, affiche une **clé TOTP** à ajouter dans
 ton appli d'authentification, puis le **kit de récupération**. Note-les hors ligne et
 **ne les colle nulle part**.
 
