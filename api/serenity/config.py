@@ -37,6 +37,10 @@ class Settings(BaseSettings):
     # Server-side watch of the agent zone.
     watch_interval_hours: int = Field(default=6, ge=1, le=168)
     watch_first_delay_seconds: int = Field(default=60, ge=0, le=3600)
+    # Agent limits (docs/06-agent.md): allowlist file and rotations per day.
+    allowlist_file: Path = Path("/app/allowlist.yaml")
+    max_rotations_per_day: int = Field(default=3, ge=0, le=100)
+    schedule_interval_minutes: int = Field(default=60, ge=1, le=1440)
     # Paid Have I Been Pwned key for watched e-mails; empty = disabled. Given to the agent only.
     hibp_api_key: SecretStr | None = Field(
         default=None, validation_alias=AliasChoices("HIBP_API_KEY", "SERENITY_HIBP_API_KEY")

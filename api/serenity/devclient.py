@@ -493,6 +493,59 @@ def _cmd_notifications(client: Client, state: dict[str, Any], _target: str | Non
         print(f"{flag}{n['created_at'][:16].replace('T', ' ')}  nouvelle alerte : {subject}")
 
 
+def _cmd_policy(client: Client, state: dict[str, Any], target: str | None) -> None:
+    keys = _unlocked(client, state)
+    item, entry = _find(client, keys, target)
+    raw = input("Fréquence (7, 30, 90, 180 jours, ou « jamais ») : ").strip().lower()
+    frequency = None if raw in ("", "jamais", "0") else int(raw)
+    mode = "approval"
+    if item["zone"] == "agent" and input("Mode autonome ? (oui/non) ").strip().lower() == "oui":
+        mode = "autonomous"
+    changed = entry.get("passwordChangedAt") or item["updated_at"]
+    body = {"frequency_days": frequency, "mode": mode, "changed_at": changed}
+    policy = client.call("PUT", f"/api/vault/items/{item['id']}/policy", body)
+    kind = "rotation" if item["zone"] == "agent" else "rappel"
+    print(f"« {entry['name']} » : {kind} prévu(e) le {(policy['next_due_at'] or 'jamais')[:10]}.")
+
+
+def _cmd_rotations(client: Client, state: dict[str, Any], _target: str | None) -> None:
+    keys = _unlocked(client, state)
+    names = _names(client, keys)
+    rows = client.call("GET", "/api/agent/rotations?status=all")
+    if not rows:
+        print("Aucune rotation.")
+    for r in rows:
+        name = names.get(r["item_id"], "?")
+        print(f"  #{r['id']} {name} : {r['status']} ({r['trigger']}, {r['mode']})")
+
+
+def _cmd_decide(action: str) -> Any:
+    def run(client: Client, state: dict[str, Any], target: str | None) -> None:
+        keys = _unlocked(client, state)
+        item, entry = _find(client, keys, target)
+        pending = [
+            r
+            for r in client.call("GET", "/api/agent/rotations")
+            if r["item_id"] == item["id"] and r["status"] == "scheduled"
+        ]
+        if not pending:
+            raise SystemExit(f"Aucune rotation en attente pour « {entry['name']} ».")
+        result = client.call("POST", f"/api/agent/rotations/{pending[0]['id']}/{action}")
+        print(f"« {entry['name']} » : rotation {result['status']}.")
+
+    return run
+
+
+def _cmd_kill_switch(engaged: bool) -> Any:
+    def run(client: Client, state: dict[str, Any], _target: str | None) -> None:
+        if not engaged:
+            _unlocked(client, state)
+        client.call("POST", "/api/agent/kill-switch", {"engaged": engaged})
+        print("Agent arrêté (kill switch enclenché)." if engaged else "Agent relancé.")
+
+    return run
+
+
 VAULT_COMMANDS = {
     "add": _cmd_add,
     "list": _cmd_list,
@@ -506,6 +559,12 @@ VAULT_COMMANDS = {
     "scan": _cmd_scan,
     "breaches": _cmd_breaches,
     "notifications": _cmd_notifications,
+    "policy": _cmd_policy,
+    "rotations": _cmd_rotations,
+    "approve": _cmd_decide("approve"),
+    "refuse": _cmd_decide("refuse"),
+    "stop": _cmd_kill_switch(True),
+    "start": _cmd_kill_switch(False),
 }
 
 

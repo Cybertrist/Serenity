@@ -2,7 +2,8 @@
 
 Only in the dev image (tests/ is not shipped). Temporary database, random keys, and a
 test-only clock for TOTP: POST /__test/tick moves it 30 s forward and returns it, so the
-client can compute a fresh code for each step without waiting. POST /__test/reset empties
+client can compute a fresh code for each step without waiting. POST /__test/schedule runs the
+agent's due-date check. POST /__test/reset empties
 every table except the settings (server key), so each test file starts from scratch.
 """
 
@@ -15,6 +16,7 @@ import uvicorn
 from sqlmodel import Session, SQLModel
 
 import serenity.auth.totp
+from serenity.agent.rotations import run_schedule
 from serenity.agent.service import publish_server_key
 from serenity.config import Settings
 from serenity.db import create_db_engine, init_db
@@ -43,6 +45,13 @@ def build(tmp: Path) -> object:
     def tick() -> dict[str, float]:
         CLOCK["now"] += 30
         return CLOCK
+
+    @app.post("/__test/schedule")
+    def schedule() -> dict[str, int]:
+        """Run the agent's due-date check now (the agent process is not started in tests)."""
+        with Session(app.state.engine) as session:
+            report = run_schedule(session, utcnow())
+        return {"scheduled": report.scheduled, "reminders": report.reminders}
 
     @app.post("/__test/reset", status_code=204)
     def reset() -> None:

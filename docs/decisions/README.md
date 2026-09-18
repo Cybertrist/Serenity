@@ -30,6 +30,7 @@ Nommage : `ADR-NNN-titre-court.md`.
 - [ADR-008 — Comptes : inscription unique, verrouillage progressif, client de test](ADR-008-comptes.md)
 - [ADR-009 — Coffre : curseur de synchronisation, corbeille, historique, import dans le navigateur](ADR-009-coffre.md)
 - [ADR-010 — Veille : double scan, alertes sans secret, notifications sans texte](ADR-010-veille.md)
+- [ADR-011 — Agent : politiques, garde-fous par le code, rotation sans exécuteur](ADR-011-agent.md)
 
 ## Archives
 

@@ -1,3 +1,6 @@
-# Domains the agent is allowed to rotate automatically (V2).
-# Checked by code only, never by an LLM. Empty in V1.
+# Sites the agent may rotate on its own (V3). Checked by code only, never by an LLM.
+#
+# Strict format, one domain per line under "domains:". A domain also covers its subdomains
+# (netflix.com covers www.netflix.com, not netflix.com.evil.example).
+# Empty in V1: no site is rotated automatically yet.
 domains: []

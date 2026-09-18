@@ -9,6 +9,20 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- Phase 6 : politiques de rotation par entrée (fréquence, mode autonome / validation ; rappels
+  seulement en zone personnelle), échéancier horaire de l'agent, rotation après fuite, kill switch
+  (API, enclencher / relâcher), allowlist lue par le code, limite de rotations par jour,
+  approuver / refuser, notifications `rotation.due` et `reminder.due`.
+- Phase 6 : `rotator/base.py` : interface `SiteRotator` et rotation transactionnelle (en attente,
+  vérification, retour arrière), sans site.
+- Phase 6 : flux temps réel `/api/events` (Server-Sent Events), `docs/api.md` généré depuis OpenAPI
+  (`make api-doc`, vérifié en CI), client TypeScript de l'agent, `make schedule-now`, commandes
+  `make client` (policy, rotations, approve, refuse, stop, start), doc `06-agent.md`, ADR-011.
+
+### Corrigé
+
+- Phase 6 : la migration v4 pouvait supprimer la nouvelle table `rotation` sur une base neuve.
+
 - Phase 5 : veille des fuites. Dans le navigateur (deux zones) : Pwned Passwords en k-anonymat,
   réutilisés, faibles, anciens ; rapport sans secret (`POST /api/watch/report`). Sur le serveur
   (agent, zone agent, toutes les 6 h) : mêmes contrôles sauf réutilisation ; adresses e-mail via

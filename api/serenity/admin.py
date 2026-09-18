@@ -14,6 +14,7 @@ import httpx
 from sqlmodel import Session, select
 
 from serenity import audit
+from serenity.agent.rotations import run_schedule
 from serenity.agent.watch import run_watch
 from serenity.auth import sessions, totp
 from serenity.auth.validation import InvalidInputError, normalize_username
@@ -77,15 +78,36 @@ def watch_now() -> int:
     return 0
 
 
+def schedule_now() -> int:
+    settings = get_settings()
+    # Same privileges as the agent: read the server key as root (unused here), then drop.
+    read_key_file(settings.server_key_file)
+    drop_privileges()
+    engine = create_db_engine(settings.db_path)
+    check_schema(engine)
+    with Session(engine) as session:
+        report = run_schedule(session, utcnow())
+    if report.skipped:
+        print("Kill switch actif : aucune échéance traitée.")
+        return 1
+    print(
+        f"Échéances : {report.scheduled} rotation(s) programmée(s), {report.reminders} rappel(s)."
+    )
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m serenity.admin")
     sub = parser.add_subparsers(dest="command", required=True)
     reset = sub.add_parser("reset-totp", help="replace the login TOTP of an account")
     reset.add_argument("username")
     sub.add_parser("watch-now", help="run the agent-zone watch now (agent container)")
+    sub.add_parser("schedule-now", help="run the rotation due-date check now")
     args = parser.parse_args(argv)
     if args.command == "watch-now":
         return watch_now()
+    if args.command == "schedule-now":
+        return schedule_now()
     try:
         username = normalize_username(args.username)
     except InvalidInputError as exc:

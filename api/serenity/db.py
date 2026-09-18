@@ -49,8 +49,14 @@ def _v3_vault(session: Session) -> None:
 def _v4_watch(session: Session) -> None:
     # Legacy tables from the Vaultwarden era (always empty): entry, rotation and the old breach.
     conn = session.connection()
-    old_breach = "entry_id" in {r[1] for r in conn.execute(text('PRAGMA table_info("breach")'))}
-    conn.execute(text("DROP TABLE IF EXISTS rotation"))
+
+    def legacy(table: str) -> bool:
+        return "entry_id" in {r[1] for r in conn.execute(text(f'PRAGMA table_info("{table}")'))}
+
+    old_breach = legacy("breach")
+    # Only the legacy rotation table (it had entry_id): the new one must survive.
+    if legacy("rotation"):
+        conn.execute(text("DROP TABLE rotation"))
     if old_breach:
         conn.execute(text("DROP TABLE breach"))
         SQLModel.metadata.tables["breach"].create(conn)
@@ -62,6 +68,8 @@ MIGRATIONS: list[Migration] = [
     _v2_accounts,
     _v3_vault,
     _v4_watch,
+    # rotation_policy and rotation are new tables, created by create_all.
+    lambda session: None,
 ]
 
 
