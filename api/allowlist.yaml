@@ -1,0 +1,3 @@
+# Domains the agent is allowed to rotate automatically (V2).
+# Checked by code only, never by an LLM. Empty in V1.
+domains: []

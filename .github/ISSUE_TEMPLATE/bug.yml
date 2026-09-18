@@ -1,0 +1,42 @@
+name: Bug
+description: Signaler un problème
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Ne colle jamais de mot de passe, de jeton ou de contenu de `.env` ici.**
+  - type: textarea
+    id: what
+    attributes:
+      label: Que s'est-il passé ?
+      description: Décris le problème en quelques phrases.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Qu'attendais-tu ?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Étapes pour reproduire
+      placeholder: |
+        1. Ouvrir…
+        2. Cliquer sur…
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Partie concernée
+      options: [backend, frontend, infra, sécurité, docs]
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs (sans secret)
+      render: text
