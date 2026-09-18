@@ -1,0 +1,124 @@
+{
+  "description": "Associated-data contexts (§5.4)",
+  "cases": [
+    {
+      "kind": "uk_by_mk",
+      "args": [
+        "7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d"
+      ],
+      "context": "serenity/v1/uk-by-mk/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d"
+    },
+    {
+      "kind": "uk_by_rk",
+      "args": [
+        "7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d"
+      ],
+      "context": "serenity/v1/uk-by-rk/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d"
+    },
+    {
+      "kind": "ak_by_uk",
+      "args": [
+        "7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d",
+        1
+      ],
+      "context": "serenity/v1/ak-by-uk/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/1"
+    },
+    {
+      "kind": "ak_by_sk",
+      "args": [
+        "7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d",
+        12
+      ],
+      "context": "serenity/v1/ak-by-sk/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/12"
+    },
+    {
+      "kind": "item",
+      "args": [
+        "7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d",
+        "0f0c7a9e-1b2c-4d5e-8f90-123456789abc",
+        "personal",
+        1
+      ],
+      "context": "serenity/v1/item/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/0f0c7a9e-1b2c-4d5e-8f90-123456789abc/personal/1"
+    },
+    {
+      "kind": "item",
+      "args": [
+        "7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d",
+        "0f0c7a9e-1b2c-4d5e-8f90-123456789abc",
+        "agent",
+        42
+      ],
+      "context": "serenity/v1/item/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/0f0c7a9e-1b2c-4d5e-8f90-123456789abc/agent/42"
+    },
+    {
+      "kind": "totp",
+      "args": [
+        "7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d"
+      ],
+      "context": "serenity/v1/totp/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d"
+    },
+    {
+      "kind": "export",
+      "args": [
+        "7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d",
+        "c3d4e5f6-a7b8-4c9d-8e0f-a1b2c3d4e5f6"
+      ],
+      "context": "serenity/v1/export/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/c3d4e5f6-a7b8-4c9d-8e0f-a1b2c3d4e5f6"
+    }
+  ],
+  "rejected": [
+    {
+      "kind": "uk_by_mk",
+      "args": [
+        "7B2C1A4E-3F5D-4A6B-9C8D-1E2F3A4B5C6D"
+      ],
+      "reason": "uppercase UUID"
+    },
+    {
+      "kind": "uk_by_mk",
+      "args": [
+        "not-a-uuid"
+      ],
+      "reason": "not a UUID"
+    },
+    {
+      "kind": "item",
+      "args": [
+        "7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d",
+        "0f0c7a9e-1b2c-4d5e-8f90-123456789abc",
+        "shared",
+        1
+      ],
+      "reason": "unknown zone"
+    },
+    {
+      "kind": "item",
+      "args": [
+        "7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d",
+        "0f0c7a9e-1b2c-4d5e-8f90-123456789abc",
+        "agent",
+        0
+      ],
+      "reason": "revision 0"
+    },
+    {
+      "kind": "ak_by_uk",
+      "args": [
+        "7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d",
+        -1
+      ],
+      "reason": "negative version"
+    },
+    {
+      "kind": "item",
+      "args": [
+        "7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d",
+        "0f0c7a9e-1b2c-1d5e-8f90-123456789abc",
+        "agent",
+        1
+      ],
+      "reason": "UUID version 1"
+    }
+  ]
+}

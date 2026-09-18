@@ -1,0 +1,40 @@
+{
+  "description": "Sealed blocks type 0x02 (§5.3)",
+  "server_seed": "3t_g4eLj5OXm5-jp6uvs7e7v8PHy8_T19vf4-fr7_P0",
+  "public_key": "CcQBkx_ZGqvpFzn1xB3fv8d7osJX4FvCsvYZALCLSTk",
+  "key_id": "HJ_dLA",
+  "cases": [
+    {
+      "context": "serenity/v1/ak-by-sk/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/1",
+      "key": "CgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMkJSYnKCk",
+      "block": "AQIcn90sHV2bsBaQ5fTb8pmq6ACWCCjnFTbShwfuMNnnixWHT1QiHQ2UQTQNvHU8UVtruH8LkfltMuABMehSimBrgGAzY2vEAUioXNCOm1rz7mD0bkJxXDlSsDDcac2WOQTEJNJGl5S5uxfvxXmK_MDjGw0Js_zz1wwkBx9opCbt-cnDzGXkAUVKFFst83OPpw"
+    },
+    {
+      "context": "serenity/v1/ak-by-sk/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/2",
+      "key": "FBUWFxgZGhscHR4fICEiIyQlJicoKSorLC0uLzAxMjM",
+      "block": "AQIcn90s-M1lcjoQvfyZ9-1dqsITfUicqcw_qaabUggN_aw--QnETK4qq0KvVkyvox97CcfPKKEDFSFu2yJxSKnhzyzzbW9WXOXj9K3FV-opal1dIod-Fid-O1S8VfJ-4pAJcXfnk1dGnnYOTosvZUddHiNoWJPg_Grlg0ofKamzRMMqWTiUIlXRpNVRxy0JMg"
+    }
+  ],
+  "rejected": [
+    {
+      "reason": "wrong context",
+      "context": "serenity/v1/ak-by-sk/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/2",
+      "block": "AQIcn90sUrfk0IVSO4UDaaXVInUEGCwD88AGX_t8rVWt9QeZ5D3odK6029OKqutgdFE6b3Sklyo58h48F7srGMkHmBnOoTHvasKXav90CoXtS9pdOiLsDbqqi4peKvLuPqvClWnvoW2bz-OOesbOpnhBQZ_K5ftkXPe9lkrRinT9OIUbccKlPsPTvSEO0uVsYw"
+    },
+    {
+      "reason": "sealed for another server key",
+      "context": "serenity/v1/ak-by-sk/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/1",
+      "block": "AQIaZ5Nd25G-j8ndgQezTrgWFt1GdZeSghbAQHP8iK_z-mIWjS41nyKM9MqYlIxg-TAOr5hIDol6vlQ38ncZbezvHY1K_sSjelPNer4x2dWVYO5agolOUdm88H2G_5qU4mUsk2aHNOAqYzv4_vJrwKYJHIo-kt6AWQoZ1yu5oxq2O3u1-XJKoEKVkgy2D_V5-g"
+    },
+    {
+      "reason": "modified",
+      "context": "serenity/v1/ak-by-sk/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/1",
+      "block": "AQIcn90sUrfk0IVSO4UDaaXVInUEGCwD88AGX_t8rVWt9QeZ5D3odK6029OKqutgdFE6b3Sklyo58h48F7srGMkHmBnOoTHvasKXav90CoXtS9pdOiLsDbqqi4peKvLuPqvClWnvoW2bz-OOesbOpnhBQZ_K5ftkXPe9lkrRinT9OIUbccKlPsPTvSEO0uVsYg"
+    },
+    {
+      "reason": "AEAD type given to sealed",
+      "context": "serenity/v1/ak-by-sk/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/1",
+      "block": "AQEcn90sUrfk0IVSO4UDaaXVInUEGCwD88AGX_t8rVWt9QeZ5D3odK6029OKqutgdFE6b3Sklyo58h48F7srGMkHmBnOoTHvasKXav90CoXtS9pdOiLsDbqqi4peKvLuPqvClWnvoW2bz-OOesbOpnhBQZ_K5ftkXPe9lkrRinT9OIUbccKlPsPTvSEO0uVsYw"
+    }
+  ]
+}

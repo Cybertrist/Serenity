@@ -1,0 +1,83 @@
+{
+  "description": "Entries: JSON, sodium_pad(256), AEAD (§5.7)",
+  "key": "lpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq-wsbKztLU",
+  "cases": [
+    {
+      "key": "lpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq-wsbKztLU",
+      "nonce": "UFFSU1RVVldYWVpbXF1eX2BhYmNkZWZn",
+      "context": "serenity/v1/item/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/0f0c7a9e-1b2c-4d5e-8f90-123456789abc/personal/1",
+      "json": "{\"v\":1,\"type\":\"login\",\"name\":\"Netflix\",\"username\":\"tristan@exemple.fr\",\"password\":\"fake-password-for-tests\",\"urls\":[\"https://www.netflix.com/login\"],\"notes\":\"\",\"totp\":\"\",\"fields\":[],\"passwordChangedAt\":\"2026-09-01T10:00:00.000Z\",\"favorite\":false}",
+      "entry": {
+        "v": 1,
+        "type": "login",
+        "name": "Netflix",
+        "username": "tristan@exemple.fr",
+        "password": "fake-password-for-tests",
+        "urls": [
+          "https://www.netflix.com/login"
+        ],
+        "notes": "",
+        "totp": "",
+        "fields": [],
+        "passwordChangedAt": "2026-09-01T10:00:00.000Z",
+        "favorite": false
+      },
+      "block": "AQFQUVJTVFVWV1hZWltcXV5fYGFiY2RlZmfcxa4nhfLQTone40bg38mlPhizZSTtJBO-eNkobUEOrqwcxNsmU4jTJcWd-SRRHacAz50_O-YNY0A7rdulee-ssTn0JZ-t1abR6I_7kkBMF_4GqQjFKIDX6RkjnO9_7_MvvH50rPT4D0ryxRHXhIprbxl1DkEIN2Vwx2aH_BcpzhbOvVVoIpYyrzba48uGP7-Yz7VUTkwJnR-rt0IrpVaHLPkxG4cxUGo2_bffmgocLQEFncUeNJJt6i6tJJjQ_YlSp9BNcuu4g4c2bTmO_YdFB8KK_RHxeJSd4Y5Gfzj2F6Hd0b5eg_NDa-Kbg3GSL7y0Tb8uU0bboeKc7DwrmnGcbOcK_yAtCSKwtgppyVBdhg"
+    },
+    {
+      "key": "lpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq-wsbKztLU",
+      "nonce": "UVJTVFVWV1hZWltcXV5fYGFiY2RlZmdo",
+      "context": "serenity/v1/item/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/0f0c7a9e-1b2c-4d5e-8f90-123456789abc/agent/2",
+      "json": "{\"v\":1,\"type\":\"note\",\"name\":\"Codes Wi-Fi\",\"notes\":\"Salon : faux-code-de-test\\nSalon : faux-code-de-test\\nSalon : faux-code-de-test\\nSalon : faux-code-de-test\\nSalon : faux-code-de-test\\nSalon : faux-code-de-test\\nSalon : faux-code-de-test\\nSalon : faux-code-de-test\\nSalon : faux-code-de-test\\nSalon : faux-code-de-test\\nSalon : faux-code-de-test\\nSalon : faux-code-de-test\\nSalon : faux-code-de-test\\nSalon : faux-code-de-test\\nSalon : faux-code-de-test\\nSalon : faux-code-de-test\\nSalon : faux-code-de-test\\nSalon : faux-code-de-test\\nSalon : faux-code-de-test\\nSalon : faux-code-de-test\\n\"}",
+      "entry": {
+        "v": 1,
+        "type": "note",
+        "name": "Codes Wi-Fi",
+        "notes": "Salon : faux-code-de-test\nSalon : faux-code-de-test\nSalon : faux-code-de-test\nSalon : faux-code-de-test\nSalon : faux-code-de-test\nSalon : faux-code-de-test\nSalon : faux-code-de-test\nSalon : faux-code-de-test\nSalon : faux-code-de-test\nSalon : faux-code-de-test\nSalon : faux-code-de-test\nSalon : faux-code-de-test\nSalon : faux-code-de-test\nSalon : faux-code-de-test\nSalon : faux-code-de-test\nSalon : faux-code-de-test\nSalon : faux-code-de-test\nSalon : faux-code-de-test\nSalon : faux-code-de-test\nSalon : faux-code-de-test\n"
+      },
+      "block": "AQFRUlNUVVZXWFlaW1xdXl9gYWJjZGVmZ2iHOFCqLkKu6h7XkTt3_yjwAUt1ugc3uJv5qCL8qoNgNnOeRr3UWXdfUpcvkSIFscFOUIDwJeJ8mgB23CvX8Yf2j8LPXDdDgRGmoOaspESwWPGIf7ADNWo8K3RMz0RVGEHJJIfoS5YDYvicSkMgMsP1xRFCEC5lTD6TDMoAr5K4oiE_DCbdn_4056XenwffyZmDPYv1a7FB-USscnGj46P5roEzWLRiH5IQBL91b85oii0XoUy5qbMfJfvA1TeUkjsN59uKSJUBHwZACLGK5ODoplkcFccbdiKl_Pl4ZkvcEeVqaEa1vWQPYT9VJ-_2NmE06k7W4vNesH0IoWbryVlIoc5Adf2HSeASjY7p6Oh0kVE9ubwnZmYmGR_k3djax5HYjRtPjmxPqIsg9K5YB116unp6aeT7t9Ct2BVImYKv824Hcp0aH4LH1RRO8qnVYtUaq3S9GPe9_nTUErsolo9rRrrxUOC-p3kLaSJiuHHrJTDgf-qWKV7KHA8jPUHQFQZ8dAFQUxCuHSvdRnUcxxiiDOHI_oY_8PakAZbOIAHfBOrRJoard-6T-07KbX6Y2RrFSfCiPA9XSivLYjMsilyhidQWQC4vFjkmM6qWhcLt2piBDPswWBsvRIad4RXKgyhqfA_Sju5LnrtJyOuZyFeNM-2XBuvoI8nl0MXQPma1vs7GyxZYurCihtSvPOwmwrVhC_jjZgEqT-ypxbwvwAaeFK-yK7VWZvowG_7dWfDN-caRG7bH-FrXpObZ-ROE8jy_gV4hBkOG-tyN55_CFp-vd4of5YAbRHC1IrrLrHb5iSH7IuwkIsHbN5GGD6AOscuL86wDuw24DWYpV1fUK7gIEPS8ZovB-i9s4vNDYxF92aOXXfoDTV2AQtBtPmSAg-719zeYTfNPDNzsGeUdGgkdruVgOm0keNw0HmhDHvkeQj918Zl1n8lNjoXebjhStOrtMM6oyCRXkBCb3LBGFx_Xku7DSYvNyYsDz_AKld8sJI6-Psj7j7J9c1mjdwpMjoG9s6qxOosAhZJlUO5vRihA"
+    },
+    {
+      "key": "lpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq-wsbKztLU",
+      "nonce": "UlNUVVZXWFlaW1xdXl9gYWJjZGVmZ2hp",
+      "context": "serenity/v1/item/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/0f0c7a9e-1b2c-4d5e-8f90-123456789abc/personal/3",
+      "json": "{\"v\":1,\"type\":\"login\",\"name\":\"Champ futur\",\"futureField\":{\"kept\":true}}",
+      "entry": {
+        "v": 1,
+        "type": "login",
+        "name": "Champ futur",
+        "futureField": {
+          "kept": true
+        }
+      },
+      "block": "AQFSU1RVVldYWVpbXF1eX2BhYmNkZWZnaGnQhrBhl21Fkiz49qrAOEGN6kWzn9_FbmHTbfBEpsQwdL5-DcDBdldgUaPU6I1vaNkqgC-0fbDcTwUsEC_FORwZmzIckhiJPSJeFibKWO8HtOrLDmkcyt394uJYzeDxZHmmncfIDQJCRAQkIgw57UjEpMO3P5OUTmYSbInr-lNt8GLkujpn3qkJn2D_Yf6XFZyP3F8ADnBoGRO4mJnz8o3-WNrV8Co1mtcQVUxmflIvzsMZwH4t3c8qoAd1iuGtSP3TZRQNrwxbTx75vZqsArOoCVzjUOgzLlm7ITNu3Rsb44uBrc5ERznfPITPuAw_h4aA29EoWR1U-b9X2Wfk-XGAhK1UMF73gwnpj9RsBvkyRA"
+    }
+  ],
+  "rejected": [
+    {
+      "reason": "newer entry version",
+      "context": "serenity/v1/item/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/0f0c7a9e-1b2c-4d5e-8f90-123456789abc/personal/1",
+      "block": "AQEAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcGLAf6zwJe9cCjx1_p2pwpoEo2M1K6vS-rclTzg9DXixbSJb6LKKLuDv1CgmZPHGoJyxOZCh9sKvPZtICAEqvUPC_MNIWAMUhok9T5GX-lvWayjxc3Q4qYgZW1_4mPumk4cImkhp2RuC9eWhUzkgyEQ-Xv43CT9a1nTTMcYCobBTx9WvCEKV8HJwcMxC3eRuRY3fUiJf27OzZqWX5gfhPJWFwBN6MS0HJ_K54sQ2YrtWPbGDoVq1gKLYd4xBna6guTAtfoKcprDiioN9AxI_IlWRrKa3A3ocKUSoutm9p25vez5DJuMq-yJSTWUHONSZ-XQ6M1R9MvJaFFzMAU_6HUxD58_hCdW2yeDzK4DxDcCA"
+    },
+    {
+      "reason": "missing name",
+      "context": "serenity/v1/item/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/0f0c7a9e-1b2c-4d5e-8f90-123456789abc/personal/1",
+      "block": "AQEBAgMEBQYHCAkKCwwNDg8QERITFBUWFxgAQK2DpjfKAij_gDCWrl7kNAkFVnMI0S_ppxCMbUgVAMR-kmRZ49Fvf9XXm2YP3UR4GJB7Ef-V2fmNcEPbEe00uGu0MgFtc4H839d9ybM2Ym5QOEybzrqrJnMGcrabomcXOSFf7hG44mCw-mnV3JfdydC26J3ygGD1jkQR3Vo3oCvRO6vd_UIEDwZfcSKdPOKdSiF8nMZQIx83HL12V3s6OIw4C96DoOp4om-FKSeKxPQcgHxYGmFG0T0H0EJuqasl8p28U3Y79ESA1uuv9vPbHlIZMZY2xhP2j8H-AxdsiAuHMLGn63iMl9cQ-gti7N95SHo8xlu8SM8TQ75z1ihFCMQHAUp8XnxP8VFeSPiHjA"
+    },
+    {
+      "reason": "unknown type",
+      "context": "serenity/v1/item/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/0f0c7a9e-1b2c-4d5e-8f90-123456789abc/personal/1",
+      "block": "AQECAwQFBgcICQoLDA0ODxAREhMUFRYXGBk-nQbWTaZgBu5u5Lb4-7AkfxRs78vU6zxbUW40vZimqnBxKMCyaniY6JTqPYNhGlZ7QweZbcU3vcaKpHF5KZaKHDIn3QjHR52gSBuB2J4ZtjeR6ftgo2NeMpnXo6pskXy-OXLPwuXamftysWxK9sGOWUSiZYcc45NjzjLyB0hIeLHwxqsRw0n547zPa1TbUcOmwLJ9gEqNlPHPl8mkwWyMHSHVpqLVU3NmADlcc44f9E5Eo8i1a7TR_AH9yJUxidukv0Fg5sEuZhKGzjmNkkLS54wA4WjbC7QmmaZJ9ld8luMgSzT86r9_-WeHUeAmE43YnZMvRVreVveQaAMKB8EOY8ADXIcae4P_093ORE6SEA"
+    },
+    {
+      "reason": "name too long",
+      "context": "serenity/v1/item/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/0f0c7a9e-1b2c-4d5e-8f90-123456789abc/personal/1",
+      "block": "AQEDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRqRBelEweFAjQz37ij2NNn0n5crm9zUEx_cVTtTLF1jp5rqH7w5RCGbuAW8AbIe8YioWMH1qckOBBJ4p-CCe02z8BbrkXR1mnLM_utDLZtXABMi3GS6qiwZ96Mde8Bvdas_Mag4mpV0Djcmt8_2lSy4MYrmtwz5u2R72Jobn6qM2nymwoYv0EBneXJUMMCXuxagG3iiLZy4jISO8sm2hTSvcOKE0PPXzhvL6jni4-X8FoDjIuMz2b0xK2JS_pLKVAEuftc3A3z1OLf_cJDvsuTYGGq2L2T6YCND_25e7uMS6ErEpNqSLmtXreiI6FIrLScrEQgirj25XgQDnsXCCSyUq4uaBSlOqeU_zec98VRrOA"
+    },
+    {
+      "reason": "not padded",
+      "context": "serenity/v1/item/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/0f0c7a9e-1b2c-4d5e-8f90-123456789abc/personal/1",
+      "block": "AQFjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXqNOdIwi0NpTUXJhp4-BW3RVLOechonTlaljo1JH-D13uWaSZdWd_ladtkOSFg7iEQ"
+    }
+  ]
+}
