@@ -9,6 +9,15 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- Phase 3 : configuration `pydantic-settings`, `SERENITY_SECRET_KEY` obligatoire.
+- Phase 3 : modèles SQLModel (`Entry`, `Breach`, `Rotation`, `AuditLog`, `Setting`, `AuthSession`),
+  dates toujours en UTC, migrations au démarrage.
+- Phase 3 : authentification argon2 + TOTP (anti-rejeu), sessions côté serveur, cookie
+  `HttpOnly`/`Secure`/`SameSite=Strict` de 12 h, blocage après 5 échecs.
+- Phase 3 : commande `python -m serenity.auth init` (`make auth-init`).
+- Phase 3 : journal d'audit avec filtre anti-secret, appliqué aussi à tous les logs ; `GET /api/logs`.
+- Phase 3 : calcul de `next_rotation_at`.
+- Phase 3 : doc `03-backend-socle.md`, ADR-004 et ADR-005.
 - Phase 2 : `docker-compose.yml` (vaultwarden, ntfy, api, web), ports sur `127.0.0.1` uniquement,
   réseaux `internal` / `edge` / `egress`, conteneurs non-root en lecture seule, healthchecks.
 - Phase 2 : Vaultwarden (inscriptions fermées, admin désactivée, override d'admin ponctuel).

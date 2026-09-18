@@ -8,7 +8,11 @@ version = "0.0.0"
 description = "Agentic, self-hosted password manager driving Vaultwarden."
 requires-python = ">=3.12,<3.13"
 dependencies = [
+    "argon2-cffi>=25.1,<26",
     "fastapi>=0.141,<1",
+    "pydantic-settings>=2.15,<3",
+    "pyotp>=2.10,<3",
+    "sqlmodel>=0.0.42,<0.1",
     "uvicorn>=0.53,<1",
 ]
 
@@ -31,7 +35,8 @@ target-version = "py312"
 select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101"]
+# Tests use fake, throwaway credentials.
+"tests/**" = ["S101", "S105", "S106"]
 
 [tool.mypy]
 strict = true
