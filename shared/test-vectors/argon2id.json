@@ -1,0 +1,92 @@
+{
+  "description": "Argon2id master key and login subkeys (§4, §5.5)",
+  "cases": [
+    {
+      "password": "correct horse battery staple",
+      "normalized": "correct horse battery staple",
+      "salt": "AAECAwQFBgcICQoLDA0ODw",
+      "memlimit": 67108864,
+      "opslimit": 3,
+      "master_key": "DRo8ZSPI8G5OCvnFFapbVEjP69aDjy1Sw9i2743cPC4",
+      "auth_key": "IJCGld_DumRzzBk9Up4kkJy2Z2-6FriB9uCpQrfIyFU",
+      "wrap_key": "GFArHIkg84GEJRAZdj2VaJ0g0DaPOMr3JmlIidnVbn4"
+    },
+    {
+      "password": "Crème brûlée à l'été !",
+      "normalized": "Crème brûlée à l'été !",
+      "salt": "EBESExQVFhcYGRobHB0eHw",
+      "memlimit": 67108864,
+      "opslimit": 3,
+      "master_key": "XF0ZE5LFx3gwWNuczR0YEzvDy8HWVGm3xFDMwhT8uDk",
+      "auth_key": "pu71yIm9WaP8H1tcEcN-3g_z-iHCYaweWiYMYlb-XJE",
+      "wrap_key": "5vodztUtpxjPRIqlrHQtr8e37O16veSAdOzhT9L9hdA"
+    },
+    {
+      "password": "Crème brûlée à l'été !",
+      "normalized": "Crème brûlée à l'été !",
+      "salt": "ICEiIyQlJicoKSorLC0uLw",
+      "memlimit": 67108864,
+      "opslimit": 3,
+      "master_key": "72gt391AZjCoIGYASypHu_jSoRVaHphz6o63KfHrVSQ",
+      "auth_key": "tTDzcwMYUGj4vhIKdnGAH62Yfo5TFqNk80dmSAS80BE",
+      "wrap_key": "2-nm_mE9XjHj6MfOsuafLbr0F93GvQ7T6UGdYIF8clo"
+    },
+    {
+      "password": "ﬁle ﬁnal ① Ｆｕｌｌ",
+      "normalized": "file final 1 Full",
+      "salt": "MDEyMzQ1Njc4OTo7PD0-Pw",
+      "memlimit": 67108864,
+      "opslimit": 3,
+      "master_key": "f2dheiYSF0D4eS82G7GX-LZYdQVoTlGFHRpfF9IG4jk",
+      "auth_key": "XxaljE7fuDJZBA2-zw1QIwYwE0LvcV_EMTwjfrftJTs",
+      "wrap_key": "ZhRI8kpfu_sKMzxoH2tlUkOryP8jbb5M7cMfPHr52yQ"
+    },
+    {
+      "password": "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+      "normalized": "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+      "salt": "QEFCQ0RFRkdISUpLTE1OTw",
+      "memlimit": 67108864,
+      "opslimit": 3,
+      "master_key": "q7Eu1KCjndwKKez68nAboZ-34IXS91Mr4KJ6P7XB6Hg",
+      "auth_key": "_BqpCMzv1no175g8YJXt5WNF7yINJr2fDyUJ4ZgnKu0",
+      "wrap_key": "ci8IzUNNciOdUhchxvq1afHyuRZVdEIQSPhewXLVY1M"
+    }
+  ],
+  "rejected": [
+    {
+      "password": "short pass",
+      "salt": "AAECAwQFBgcICQoLDA0ODw",
+      "memlimit": 67108864,
+      "opslimit": 3,
+      "reason": "fewer than 12 characters"
+    },
+    {
+      "password": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "salt": "AAECAwQFBgcICQoLDA0ODw",
+      "memlimit": 67108864,
+      "opslimit": 3,
+      "reason": "more than 1024 bytes"
+    },
+    {
+      "password": "correct horse battery staple",
+      "salt": "AAECAwQFBgcICQoLDA0ODw",
+      "memlimit": 33554432,
+      "opslimit": 3,
+      "reason": "memlimit below the floor"
+    },
+    {
+      "password": "correct horse battery staple",
+      "salt": "AAECAwQFBgcICQoLDA0ODw",
+      "memlimit": 67108864,
+      "opslimit": 2,
+      "reason": "opslimit below the floor"
+    },
+    {
+      "password": "correct horse battery staple",
+      "salt": "AAECAwQFBgc",
+      "memlimit": 67108864,
+      "opslimit": 3,
+      "reason": "salt is not 16 bytes"
+    }
+  ]
+}

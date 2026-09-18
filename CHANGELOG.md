@@ -7,6 +7,16 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté
+
+- Phase 1 : spécification cryptographique `docs/crypto.md` (validée) et ADR-006.
+- Phase 1 : modules crypto Python (`api/serenity/crypto/`, PyNaCl) et TypeScript
+  (`web/src/crypto/`, libsodium-wrappers-sumo) : Argon2id, sous-clés, blocs AEAD, boîtes scellées,
+  kit de récupération, entrées bourrées.
+- Phase 1 : vecteurs de test partagés `shared/test-vectors/` (`make vectors`), vérification croisée
+  Python ↔ TypeScript en CI (`make crypto-interop`), projet web initialisé (TypeScript strict, eslint,
+  prettier, vitest ; `make web-test`).
+
 ### Changé
 
 - Phase 0 : **remise à plat**. Serenity devient un gestionnaire de mots de passe complet, avec son

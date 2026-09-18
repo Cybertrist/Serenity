@@ -6,7 +6,8 @@ Une page par phase, dans l'ordre de construction.
 |---|---|
 | [00 — Vue d'ensemble](00-vue-ensemble.md) | Le projet, le coffre à double zone, l'architecture |
 | [01 — Dépôt et GitHub](01-depot-github.md) | Arborescence, CI, labels, protection de `main` |
-| [Crypto](crypto.md) *(phase 1)* | Hiérarchie des clés, formats, flux, modèle de menace *(en validation)* |
+| [01 — Cryptographie](01-cryptographie.md) | Modules crypto Python et TypeScript, vecteurs partagés, vérification croisée |
+| [Spécification crypto](crypto.md) | Hiérarchie des clés, formats, flux, modèle de menace |
 | [02 — Infrastructure](02-infrastructure.md) | Docker Compose, Tailscale *(à revoir en phase 2)* |
 | 03 — Authentification | Comptes, connexion, TOTP, kit de récupération *(à venir)* |
 | 04 — Coffre | Entrées chiffrées, révisions, délégation, import Bitwarden *(à venir)* |

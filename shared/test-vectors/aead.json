@@ -1,0 +1,72 @@
+{
+  "description": "AEAD blocks type 0x01 (§5.2)",
+  "key": "ZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXp7fH1-f4CBgoM",
+  "cases": [
+    {
+      "key": "ZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXp7fH1-f4CBgoM",
+      "nonce": "MjM0NTY3ODk6Ozw9Pj9AQUJDREVGR0hJ",
+      "context": "serenity/v1/uk-by-mk/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d",
+      "plaintext": "yMnKy8zNzs_Q0dLT1NXW19jZ2tvc3d7f4OHi4-Tl5uc",
+      "block": "AQEyMzQ1Njc4OTo7PD0-P0BBQkNERUZHSElVQyFZkBTEOkkVz1SD_-NTZtU-XCnAOWTUtKTfw5cpN_SE3YwK33i87RmzxRJwCLU"
+    },
+    {
+      "key": "ZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXp7fH1-f4CBgoM",
+      "nonce": "MzQ1Njc4OTo7PD0-P0BBQkNERUZHSElK",
+      "context": "serenity/v1/ak-by-uk/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/1",
+      "plaintext": "BwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMkJSY",
+      "block": "AQEzNDU2Nzg5Ojs8PT4_QEFCQ0RFRkdISUpRdNISGUvk1vGA7TLHpeVliLRN2NC0SECCaZJsMjKRxYbw9pvNDvgVKYOF_iiM_cQ"
+    },
+    {
+      "key": "ZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXp7fH1-f4CBgoM",
+      "nonce": "NDU2Nzg5Ojs8PT4_QEFCQ0RFRkdISUpL",
+      "context": "serenity/v1/item/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d/0f0c7a9e-1b2c-4d5e-8f90-123456789abc/personal/3",
+      "plaintext": "Qm9uam91ciwgY29mZnJlICEg8J-UkA",
+      "block": "AQE0NTY3ODk6Ozw9Pj9AQUJDREVGR0hJSksFk8yG-l4YIaO6DONjUH9d8shNcq2pw-UFDJykJj8rlq9xRjKn9w"
+    },
+    {
+      "key": "ZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXp7fH1-f4CBgoM",
+      "nonce": "NTY3ODk6Ozw9Pj9AQUJDREVGR0hJSktM",
+      "context": "serenity/v1/totp/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d",
+      "plaintext": "",
+      "block": "AQE1Njc4OTo7PD0-P0BBQkNERUZHSElKS0wd1zXvBnkIlSjFbdph9Mpg"
+    }
+  ],
+  "rejected": [
+    {
+      "reason": "wrong context",
+      "context": "serenity/v1/uk-by-mk/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d",
+      "block": "AQEJCgsMDQ4PEBESExQVFhcYGRobHB0eHyBeuC28yM87DtmFyzktynqmv6F4Jc16"
+    },
+    {
+      "reason": "tag modified",
+      "context": "serenity/v1/totp/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d",
+      "block": "AQEJCgsMDQ4PEBESExQVFhcYGRobHB0eHyBeuC28yM87DtmFyzktynqmv6F4Jc17"
+    },
+    {
+      "reason": "ciphertext modified",
+      "context": "serenity/v1/totp/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d",
+      "block": "AQEJCgsMDQ4PEBESExQVFhcYGRobHB0eHyBeuC28SM87DtmFyzktynqmv6F4Jc16"
+    },
+    {
+      "reason": "unknown version",
+      "context": "serenity/v1/totp/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d",
+      "block": "AgEJCgsMDQ4PEBESExQVFhcYGRobHB0eHyBeuC28yM87DtmFyzktynqmv6F4Jc16"
+    },
+    {
+      "reason": "sealed type given to AEAD",
+      "context": "serenity/v1/totp/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d",
+      "block": "AQIJCgsMDQ4PEBESExQVFhcYGRobHB0eHyBeuC28yM87DtmFyzktynqmv6F4Jc16"
+    },
+    {
+      "reason": "truncated",
+      "context": "serenity/v1/totp/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d",
+      "block": "AQEJCgsMDQ4PEBESExQVFhcYGRobHB0eHyBeuC28yM87DtmFyzktyno"
+    },
+    {
+      "reason": "wrong key",
+      "context": "serenity/v1/totp/7b2c1a4e-3f5d-4a6b-9c8d-1e2f3a4b5c6d",
+      "block": "AQEJCgsMDQ4PEBESExQVFhcYGRobHB0eHyBeuC28yM87DtmFyzktynqmv6F4Jc16",
+      "key": "ZWZnaGlqa2xtbm9wcXJzdHV2d3h5ent8fX5_gIGCg4Q"
+    }
+  ]
+}

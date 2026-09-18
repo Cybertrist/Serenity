@@ -1,8 +1,7 @@
 # Spécification cryptographique — Serenity v1
 
-> **Statut : proposée, en attente de validation.** Aucune ligne de code crypto n'est écrite
-> avant ta validation. Toute modification ultérieure de ce document demande un nouvel accord
-> (règle 10 de `CLAUDE.md`).
+> **Statut : validée le 2026-09-18.** Toute modification de ce document ou du code crypto
+> demande un nouvel accord explicite (règle 10 de `CLAUDE.md`).
 
 Ce document décrit **exactement** comment Serenity chiffre ton coffre : quelles clés existent,
 d'où elles viennent, ce qui est envoyé au serveur, et ce qui se passe si quelque chose fuit.

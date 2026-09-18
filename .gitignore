@@ -16,6 +16,7 @@ data/
 *.db-shm
 
 # --- Python ---
+.interop-*.json
 __pycache__/
 *.py[cod]
 *.egg-info/

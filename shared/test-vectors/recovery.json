@@ -1,0 +1,65 @@
+{
+  "description": "Recovery kit (§5.6)",
+  "cases": [
+    {
+      "rk": "AAECAwQFBgcICQoLDA0ODxAREhM",
+      "text": "000G-40R4-0M30-E209-185G-R38E-1W81-24GK-VW8T",
+      "recovery_auth_key": "FWmst3tqIt8ZbFQDvzPSkq00dvtTLppXFgGmi6WuNJA",
+      "recovery_wrap_key": "am_mMZR8hWTJ96CPfHTunHdloRTi-ga486XAzAQGWV0"
+    },
+    {
+      "rk": "JSYnKCkqKywtLi8wMTIzNDU2Nzg",
+      "text": "4MK2-EA19-58NJ-RB9E-5WR3-2CHK-6GTK-CDSR-SSGH",
+      "recovery_auth_key": "kaAxMkvgaoWHVDdvafzMOJIQiuFsOxAhhYxpgYDY0ek",
+      "recovery_wrap_key": "hCDnttO2ezXDY_SO3UB3DVOkNcD0aacCaQGgU9p5GRg"
+    },
+    {
+      "rk": "SktMTU5PUFFSU1RVVldYWVpbXF0",
+      "text": "995M-RKAE-9X85-2MJK-AHAN-CNTR-B5D5-PQ2X-K62M",
+      "recovery_auth_key": "OYTUSY6iqj5FZQEWrDXbxQZROEn0PouijKEB4_9x3SQ",
+      "recovery_wrap_key": "E0vUW1hUNdwfLj0KRC-ox33e10lviWfOeiQBa_LZaWQ"
+    },
+    {
+      "rk": "AAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "text": "0000-0000-0000-0000-0000-0000-0000-0000-KV55",
+      "recovery_auth_key": "1dTjeukrOv5H2I3tqqLVJCr-_U871uWjmi0jz4sTNd8",
+      "recovery_wrap_key": "QT_TMMw4eF9X9rYY0Fw0AMY1tKamnDC02sQYtMxBji0"
+    }
+  ],
+  "accepted": [
+    {
+      "input": "000g-40r4-0m30-e209-185g-r38e-1w81-24gk-vw8t",
+      "rk": "AAECAwQFBgcICQoLDA0ODxAREhM"
+    },
+    {
+      "input": "000G 40R4 0M30 E209 185G R38E 1W81 24GK VW8T",
+      "rk": "AAECAwQFBgcICQoLDA0ODxAREhM"
+    },
+    {
+      "input": "000G40R40M30E209185GR38E1W8124GKVW8T",
+      "rk": "AAECAwQFBgcICQoLDA0ODxAREhM"
+    },
+    {
+      "input": "OOOG4OR4OM3OE2O9l85GR38ElW8l24GKVW8T",
+      "rk": "AAECAwQFBgcICQoLDA0ODxAREhM"
+    }
+  ],
+  "rejected": [
+    {
+      "input": "000G40R40M30E209185GR38E1W8124GKVW80",
+      "reason": "check group modified"
+    },
+    {
+      "input": "100G40R40M30E209185GR38E1W8124GKVW8T",
+      "reason": "typo in the key"
+    },
+    {
+      "input": "000G40R40M30E209185GR38E1W8124GK",
+      "reason": "missing check group"
+    },
+    {
+      "input": "000G40R40M30E209185GR38E1W8124GKVW8U",
+      "reason": "U is not in the Crockford alphabet"
+    }
+  ]
+}

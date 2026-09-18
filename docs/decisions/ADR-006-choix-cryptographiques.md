@@ -1,7 +1,7 @@
 # ADR-006 — Choix cryptographiques précisant CLAUDE.md
 
 - **Date** : 2026-09-18
-- **Statut** : proposé (en attente de validation avec `docs/crypto.md`)
+- **Statut** : accepté (validé avec `docs/crypto.md`)
 
 ## Contexte
 

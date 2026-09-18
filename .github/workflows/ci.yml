@@ -55,7 +55,7 @@ jobs:
         working-directory: web
     steps:
       - uses: actions/checkout@v4
-      # Skipped until the frontend project exists (phase 7).
+      # Skipped while web/package.json is empty.
       - id: detect
         run: |
           if [ -s package.json ]; then
@@ -80,6 +80,37 @@ jobs:
         run: npm test -- --run
       - if: steps.detect.outputs.enabled == 'true'
         run: npm run build
+
+  crypto-interop:
+    name: Crypto interop (Python <-> TypeScript)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: api/pyproject.toml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: pip install -e "./api[dev]"
+      - run: npm ci
+        working-directory: web
+      # Static vectors are already checked by the backend and frontend jobs.
+      # Here each side decrypts fresh, randomized blocks produced by the other.
+      - name: Python produces
+        run: python api/tests/crypto/interop.py produce "$RUNNER_TEMP/py.json"
+      - name: TypeScript verifies, then produces
+        working-directory: web
+        run: |
+          INTEROP_VERIFY="$RUNNER_TEMP/py.json" npx vitest --run src/crypto/interop.test.ts
+          INTEROP_PRODUCE="$RUNNER_TEMP/ts.json" npx vitest --run src/crypto/interop.test.ts
+          test -s "$RUNNER_TEMP/ts.json"
+      - name: Python verifies
+        run: python api/tests/crypto/interop.py verify "$RUNNER_TEMP/ts.json"
 
   secrets:
     name: Secret scan (gitleaks)
