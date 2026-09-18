@@ -1,0 +1,57 @@
+# --- Secrets & local config ---
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+
+# --- Runtime data (Vaultwarden, SQLite, ntfy, backups) ---
+data/
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.python-version
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# --- Node / frontend ---
+node_modules/
+web/dist/
+dev-dist/
+*.tsbuildinfo
+.vite/
+coverage/
+npm-debug.log*
+
+# --- Playwright (V2) ---
+playwright/.auth/
+playwright-report/
+test-results/
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# --- Claude Code local settings ---
+.claude/settings.local.json
