@@ -55,22 +55,19 @@ Mises à jour **hebdomadaires** pour : `pip` (api), `npm` (web), les `Dockerfile
 - **Labels** : `backend`, `frontend`, `infra`, `security`, `docs`, `v1`, `v2`, `v3`.
 - **Milestones** : `V1 — Veille`, `V2 — Rotation`, `V3 — Agent LLM`.
 - **Issues** : une par phase de la V1, rattachées au milestone V1.
-- **Protection de `main`** et **secret scanning** : voir ci-dessous.
+- **Protection de `main`** : activée. Pull request obligatoire, les 3 jobs de CI doivent être verts,
+  branche à jour avec `main`, règles appliquées aussi aux administrateurs, force-push et suppression interdits.
+- **Secret scanning / push protection** : **non disponible** sur ce dépôt privé
+  (GitHub répond « Secret scanning is not available for this repository »).
 
-### Limite : dépôt privé sur un compte gratuit
+### Limite : pas de secret scanning GitHub
 
-Sur un compte GitHub gratuit, un dépôt **privé** n'a pas accès à :
+Le secret scanning de GitHub sur un dépôt privé nécessite GitHub Advanced Security.
+En attendant, **gitleaks** en CI tient ce rôle : il analyse tout l'historique à chaque PR,
+et la protection de `main` empêche de fusionner si gitleaks échoue.
 
-- la **protection de branche** (PR obligatoire, CI verte obligatoire) ;
-- le **secret scanning** et la **push protection**.
-
-Tant que c'est le cas :
-
-- la règle « jamais de push direct sur `main` » est tenue **par discipline** (voir `CLAUDE.md`) ;
-- **gitleaks** en CI sert de filet de sécurité contre les secrets.
-
-Pour lever cette limite : passer à GitHub Pro, ou rendre le dépôt public.
-Il suffit ensuite de relancer les commandes de la section « Protection de `main` ».
+Si le dépôt devient public ou si l'option devient disponible, relance la commande
+« Secret scanning + push protection » ci-dessous.
 
 ## Commandes utilisées
 
