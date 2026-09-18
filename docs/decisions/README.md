@@ -20,8 +20,15 @@ Nommage : `ADR-NNN-titre-court.md`.
 
 ## Liste
 
-- [ADR-001 — Exposer Vaultwarden sur le tailnet](ADR-001-exposition-vaultwarden.md)
+- [ADR-001 — Coffre maison à double zone plutôt que Vaultwarden](ADR-001-coffre-maison.md)
 - [ADR-002 — Réseaux Docker, durcissement et dossiers de données](ADR-002-reseaux-et-durcissement.md)
 - [ADR-003 — Lancer tests et linters dans Docker](ADR-003-outils-dans-docker.md)
 - [ADR-004 — Migrations SQLite maison au démarrage](ADR-004-migrations.md)
-- [ADR-005 — Authentification mono-utilisateur](ADR-005-authentification.md)
+- [ADR-005 — Notifications maison, sans service tiers](ADR-005-notifications-maison.md)
+
+## Archives
+
+Décisions remplacées lors de la remise à plat (abandon de Vaultwarden) :
+
+- [Ancien ADR-001 — Exposer Vaultwarden sur le tailnet](archive/ADR-001-exposition-vaultwarden.md)
+- [Ancien ADR-005 — Authentification mono-utilisateur](archive/ADR-005-authentification.md)

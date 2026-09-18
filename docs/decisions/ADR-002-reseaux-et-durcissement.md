@@ -5,7 +5,7 @@
 
 ## Contexte
 
-Serenity manipule l'accès à un coffre de mots de passe. Il faut limiter ce qu'un
+Serenity héberge un coffre de mots de passe chiffré. Il faut limiter ce qu'un
 conteneur compromis pourrait atteindre ou modifier.
 
 ## Décision
@@ -13,13 +13,13 @@ conteneur compromis pourrait atteindre ou modifier.
 **Réseaux**
 
 - `internal` (`internal: true`) : trafic entre services, sans Internet.
-- `edge` : services publiés sur `127.0.0.1` (`web`, `vaultwarden`, `ntfy`).
+- `edge` : services publiés sur `127.0.0.1` (`web`).
 - `egress` : sortie Internet de l'`api` seule (Pwned Passwords).
 - L'`api` n'a aucun port publié.
 
 **Durcissement de chaque conteneur**
 
-- UID fixes non-root : api 10001, ntfy 10002, vaultwarden 10003.
+- UID fixes non-root : api 10001.
   nginx garde son maître root (avec seulement `CHOWN`, `SETUID`, `SETGID`) et ses workers non-root.
 - `read_only: true` + `tmpfs` pour les dossiers temporaires.
 - `cap_drop: ALL`, `no-new-privileges`.

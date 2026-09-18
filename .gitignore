@@ -6,7 +6,7 @@ secrets/
 *.pem
 *.key
 
-# --- Runtime data (Vaultwarden, SQLite, ntfy, backups) ---
+# --- Runtime data (SQLite, server key, backups) ---
 data/
 *.sqlite
 *.sqlite3

@@ -30,7 +30,7 @@ _INLINE_SECRET = re.compile(
     re.IGNORECASE | re.VERBOSE,
 )
 
-# Well-known token formats (ntfy, bearer tokens, argon2 hashes, otpauth URIs).
+# Well-known token formats (tk_ tokens, bearer tokens, argon2 hashes, otpauth URIs).
 _KNOWN_TOKENS = re.compile(
     r"tk_[A-Za-z0-9]{8,}|\$argon2(?:id|i|d)\$\S+|otpauth://\S+|bearer\s+[A-Za-z0-9._~+/=-]{8,}",
     re.IGNORECASE,

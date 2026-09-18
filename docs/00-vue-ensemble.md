@@ -2,57 +2,60 @@
 
 ## En une phrase
 
-Serenity est un **agent** qui veille sur tes mots de passe stockés dans Vaultwarden :
-il détecte les fuites, planifie les rotations et te prévient.
+Serenity est un **gestionnaire de mots de passe auto-hébergé**, avec son propre coffre chiffré,
+et un **agent** qui surveille les fuites et s'occupe des mots de passe que tu lui confies.
 
 ## Principe directeur
 
 **Pas d'humain dans la boucle, mais un humain informé.**
 
-- Sur les comptes **secondaires**, l'agent peut agir seul.
-- Sur les comptes **critiques**, il demande toujours ta validation.
-- Chaque action est notifiée, avec possibilité d'annuler.
+- Tu choisis, entrée par entrée, ce que tu confies à l'agent.
+- Chaque action de l'agent est notifiée et inscrite dans le journal.
 - Un **kill switch** arrête tout, vérifié avant chaque action.
+
+## Le coffre à double zone
+
+| Zone | Contenu | Qui peut lire | Rôle de l'agent |
+|---|---|---|---|
+| **Personnelle** | Comptes critiques | Seulement ton appareil, déverrouillé par ton mot de passe maître | Aucun accès. Il prévient seulement. |
+| **Agent** | Comptes confiés | Ton appareil **et** le serveur (clé d'agent) | Lit, surveille, fait tourner les mots de passe. |
+
+Par défaut, **tout va dans la zone personnelle**.
 
 ## Architecture
 
 ```
 Téléphone / PC (tailnet)
-        │  HTTPS via tailscale serve
+  └─ appli web PWA : toute la crypto de la zone personnelle ici
+        │  HTTPS via tailscale serve (seuls des blocs chiffrés transitent)
         ▼
-┌──────────────── VM serenity (Docker Compose) ────────────────┐
-│  web (nginx : SPA + proxy /api)  ──►  api (FastAPI)           │
-│                                        │   ├─ SQLite (métadonnées)
-│                                        │   ├─ bw serve ──► vaultwarden
-│                                        │   └─ ntfy
-│  vaultwarden        ntfy                                      │
-└───────────────────────────────────────────────────────────────┘
+┌──────────── VM serenity (Docker Compose) ────────────┐
+│  web (nginx : SPA + proxy /api)                        │
+│  api (FastAPI) ── SQLite (blocs chiffrés + métadonnées)│
+│     ├─ agent : clé serveur → clé d'agent → zone agent  │
+│     └─ notifications : flux temps réel vers les clients│
+└────────────────────────────────────────────────────────┘
 ```
 
 | Brique | Rôle |
 |---|---|
-| **Vaultwarden** | Le coffre. Seul endroit où vivent les mots de passe. |
-| **bw serve** | Le Bitwarden CLI en mode API locale, utilisé par l'API pour lire et écrire dans le coffre. |
-| **api** | Le cerveau : FastAPI, planificateur, veille, journal d'audit. |
-| **SQLite** | Uniquement des **métadonnées** (nom, domaine, échéances, alertes). Jamais de secret. |
-| **ntfy** | Les notifications sur ton téléphone. |
-| **web** | L'interface (PWA) servie par nginx. |
+| **Appli web** | Dérive les clés, chiffre et déchiffre la zone personnelle. Les clés restent en mémoire. |
+| **api** | Stocke les blocs chiffrés, authentifie, fait tourner l'agent et la veille. |
+| **SQLite** | Blocs chiffrés et métadonnées. Aucun secret en clair. |
+| **Clé serveur** | Fichier hors de la base. Déchiffre la clé d'agent, donc la zone agent uniquement. |
+| **Notifications** | Maison : stockées par l'api, affichées dans l'appli, récupérées périodiquement par l'appli Android. Aucun service tiers. |
 | **Tailscale** | Le seul accès depuis l'extérieur, en HTTPS, réservé à ton tailnet. |
 
 ## Les trois versions
 
 | Version | Contenu |
 |---|---|
-| **V1 — Veille** | Surveillance des fuites, rappels de rotation, notifications, interface. |
-| **V2 — Rotation** | Changement automatique des mots de passe sur les sites (Playwright). |
-| **V3 — Agent LLM** | Un agent plus autonome, toujours encadré par des règles vérifiées par le code. |
+| **V1 — Coffre maison** | Coffre chiffré, API, PWA, import Bitwarden, veille, délégation, rappels, notifications dans l'appli. |
+| **V2 — Appli Android** | Appli native Kotlin, notifications Android avec Approuver / Refuser, sans icône permanente ni service tiers. |
+| **V3 — Rotation** | Changement automatique des mots de passe sur les sites (Playwright), extension navigateur. |
+| **V4 — Agent LLM** | Un agent plus autonome, toujours encadré par des règles vérifiées par le code. |
 
 ## Règles de sécurité
 
-Elles sont listées dans [`CLAUDE.md`](../CLAUDE.md) et s'appliquent à chaque ligne de code.
-Les plus importantes :
-
-1. Aucun mot de passe en clair, nulle part (logs, base, API, interface, notifications, tests).
-2. Pour vérifier une fuite, seuls les **5 premiers caractères** du hash SHA-1 quittent la machine.
-3. Aucun port n'écoute hors de `127.0.0.1`.
-4. Chaque action de l'agent est inscrite dans le journal d'audit.
+Elles sont dans [`CLAUDE.md`](../CLAUDE.md). La décision de construire notre propre coffre
+est expliquée dans [ADR-001](decisions/ADR-001-coffre-maison.md).

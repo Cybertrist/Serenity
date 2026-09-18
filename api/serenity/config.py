@@ -23,8 +23,6 @@ class Settings(BaseSettings):
     login_lockout_minutes: int = Field(default=15, ge=1, le=1440)
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     public_url: str = "https://localhost"
-    vaultwarden_url: str = "http://vaultwarden:8080"
-    ntfy_url: str = "http://ntfy:8080"
 
 
 @lru_cache

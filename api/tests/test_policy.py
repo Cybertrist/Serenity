@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from serenity.policy import is_rotation_due, next_rotation_at
+from serenity.agent.policy import is_rotation_due, next_rotation_at
 
 NOW = datetime(2026, 9, 18, 12, 0, tzinfo=UTC)
 

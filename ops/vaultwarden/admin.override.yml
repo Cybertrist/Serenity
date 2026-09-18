@@ -1,8 +1,0 @@
-# Temporarily enables the Vaultwarden admin page.
-# Usage (see docs/02-infrastructure.md):
-#   docker compose -f docker-compose.yml -f ops/vaultwarden/admin.override.yml up -d vaultwarden
-# Then disable it again with: docker compose up -d vaultwarden
-services:
-  vaultwarden:
-    environment:
-      ADMIN_TOKEN: ${VW_ADMIN_TOKEN:?set VW_ADMIN_TOKEN (argon2 hash) in .env}

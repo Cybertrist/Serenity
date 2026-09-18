@@ -12,7 +12,7 @@ Closes #
 
 ## Checklist sécurité (CLAUDE.md)
 
-- [ ] Aucun mot de passe en clair (logs, SQLite, API, frontend, ntfy, commits, tests)
+- [ ] Aucun mot de passe en clair (logs, SQLite, API, frontend, notifications, commits, tests)
 - [ ] Aucun `.env` ni secret dans le diff (`git diff --staged` vérifié)
 - [ ] Aucun port exposé hors `127.0.0.1`
 - [ ] Kill switch vérifié avant chaque action de l'agent (si concerné)

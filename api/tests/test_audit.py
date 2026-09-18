@@ -29,7 +29,7 @@ def test_sensitive_keys_are_redacted_recursively() -> None:
         'payload {"password": "hunter2"}',
         "token: hunter2",
         "Authorization: Bearer hunter2hunter2",
-        "ntfy tk_hunter2hunter2hunter2",
+        "token tk_hunter2hunter2hunter2",
         "hash $argon2id$v=19$m=65536,t=3,p=4$hunter2",
         "otpauth://totp/Serenity:tristan?secret=HUNTER2",
     ],
@@ -56,6 +56,6 @@ def test_log_filter_redacts_messages(caplog: pytest.LogCaptureFixture) -> None:
     logger = logging.getLogger("test.audit")
     logger.addFilter(SecretFilter())
     with caplog.at_level(logging.INFO, logger="test.audit"):
-        logger.info("calling bw with password=%s", "hunter2")
+        logger.info("calling a site with password=%s", "hunter2")
     assert "hunter2" not in caplog.text
     assert REDACTED in caplog.text
