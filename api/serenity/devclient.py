@@ -313,13 +313,17 @@ def _find(
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     if not target:
         raise SystemExit("Précise le nom ou l'identifiant de l'entrée.")
+    names = []
+    wanted = target.strip().casefold()
     for item in client.sync()["items"]:
         if item["block"] is None:
             continue
         entry = client.decrypt(keys, item)
-        if target in (item["id"], entry["name"]):
+        names.append(entry["name"])
+        if wanted in (item["id"], entry["name"].strip().casefold()):
             return item, entry
-    raise SystemExit(f"Aucune entrée « {target} ».")
+    available = ", ".join(f"« {n} »" for n in names) or "aucune (ajoute-en une : make client c=add)"
+    raise SystemExit(f"Aucune entrée « {target} ». Entrées disponibles : {available}")
 
 
 def _zone_label(zone: str) -> str:
