@@ -515,7 +515,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Erreur : {exc}", file=sys.stderr)
         return 1
     except KeyError:
-        print("Connecte-toi d'abord : python -m serenity.devclient login", file=sys.stderr)
+        print("Connecte-toi d'abord : make client c=login", file=sys.stderr)
         return 1
     finally:
         state["token"] = client.token

@@ -63,7 +63,8 @@ make e2e         # TypeScript contre le vrai serveur : 11 parcours (comptes + co
 ### En vrai, avec le client en ligne de commande
 
 Chaque commande te redemande ton mot de passe maître (le client ne garde aucune clé entre deux
-commandes).
+commandes). Sa session vit dans le conteneur `api` : après un redéploiement (`make up`), refais
+`make client c=login`.
 
 ```bash
 make client c=add                       # ajoute une entrée (nom, identifiant, mot de passe)
