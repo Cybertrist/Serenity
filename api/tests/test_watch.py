@@ -209,7 +209,7 @@ def _engine(client: TestClient) -> Any:
 def test_agent_watch_scans_the_agent_zone_only(
     account: Account, keys: Keyring, client: TestClient, agent_ready: bytes
 ) -> None:
-    secret_perso = "mot-de-passe-perso-jamais-envoye-7"
+    secret_perso = "mot-de-passe-perso-jamais-envoye-7"  # gitleaks:allow (sample test value)
     personal = account.api.add(
         keys, {"v": 1, "type": "login", "name": "Banque", "password": secret_perso}
     )

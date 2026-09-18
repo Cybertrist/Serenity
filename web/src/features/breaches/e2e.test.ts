@@ -43,7 +43,7 @@ describe.skipIf(!URL)("watch against the Python API", () => {
     const state = new VaultState();
     const [weak] = await addEntries(api, keyring, state, [
       { v: 1, type: "login", name: "Vieux site", password: "password123" },
-      { v: 1, type: "login", name: "Solide", password: "x7Kq-m2Pz-9Lw4-rT8v" },
+      { v: 1, type: "login", name: "Solide", password: "x7Kq-m2Pz-9Lw4-rT8v" }, // gitleaks:allow (sample test password)
     ]);
     if (!weak) throw new Error("missing item");
     await delegate(api, keyring, state, weak, true);
