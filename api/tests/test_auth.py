@@ -1,147 +1,252 @@
-import stat
-import time
-from datetime import timedelta
+"""Accounts and authentication, end to end through the API with the reference client."""
 
-import pyotp
+import re
+import sqlite3
+
+import nacl.utils
 import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import Session, select
 
-from serenity.auth import credentials, sessions
 from serenity.config import Settings
-from serenity.models import AuthSession, utcnow
-from tests.conftest import TEST_PASSWORD, TEST_TOTP_SECRET
+from serenity.crypto import blocks, contexts, sealed
+from serenity.crypto.encoding import b64url_decode, b64url_encode
+from serenity.devclient import ApiError, Client
+from tests.conftest import PASSWORD, USERNAME, Account, Clock
 
 
-def _code(offset_steps: int = 0) -> str:
-    totp = pyotp.TOTP(TEST_TOTP_SECRET)
-    return totp.at(int(time.time()) + offset_steps * totp.interval)
+def _status(fn: object, *args: object) -> int:
+    try:
+        fn(*args)  # type: ignore[operator]
+    except ApiError as exc:
+        return exc.status
+    return 200
 
 
-def _login(client: TestClient, password: str = TEST_PASSWORD, code: str | None = None) -> int:
-    body = {"password": password, "totp": code or _code()}
-    status: int = client.post("/api/auth/login", json=body).status_code
-    return status
+# --- signup --------------------------------------------------------------------------
 
 
-# --- credentials -------------------------------------------------------------
+def test_signup_needs_the_agent(client: TestClient) -> None:
+    with pytest.raises(ApiError) as exc:
+        Client(client).call("POST", "/api/auth/signup", _signup_body(nacl.utils.random(32)))
+    assert exc.value.status == 503
 
 
-def test_credentials_file_is_private_and_hashed(enrolled: Settings) -> None:
-    mode = stat.S_IMODE(enrolled.auth_file.stat().st_mode)
-    assert mode == 0o600
-    content = enrolled.auth_file.read_text()
-    assert TEST_PASSWORD not in content
-    assert "$argon2id$" in content
+def test_signup_then_registration_closes(account: Account, client: TestClient) -> None:
+    assert account.api.call("GET", "/api/auth/me")["user_id"] == account.user_id
+    assert Client(client).call("GET", "/api/auth/status") == {"registration_open": False}
+    other = Client(client)
+    with pytest.raises(ApiError) as exc:
+        other.signup("quelquun", PASSWORD)
+    assert exc.value.status == 403
 
 
-def test_short_password_is_refused() -> None:
-    with pytest.raises(ValueError):
-        credentials.create_credentials("short", TEST_TOTP_SECRET)
+def test_signup_is_pending_until_the_totp_code(
+    client: TestClient, agent_ready: bytes, clock: Clock
+) -> None:
+    api = Client(client)
+    out = api.signup(USERNAME, PASSWORD)
+    with pytest.raises(ApiError) as exc:
+        api.login(USERNAME, PASSWORD, "123456")
+    assert exc.value.status == 401
+    with pytest.raises(ApiError) as exc:
+        api.confirm(out["user_id"], "000000")
+    assert exc.value.status == 401
+    assert Client(client).call("GET", "/api/auth/status") == {"registration_open": True}
 
 
-def test_credentials_repr_hides_secrets(enrolled: Settings) -> None:
-    creds = credentials.load_credentials(enrolled.auth_file)
-    assert creds is not None
-    assert TEST_TOTP_SECRET not in repr(creds)
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("uk_by_mk", b64url_encode(b"\x01\x01" + bytes(40))),
+        ("ak_by_uk", "not base64 !"),
+        ("auth_key", b64url_encode(bytes(31))),
+        ("ak_sealed", b64url_encode(bytes(120))),
+    ],
+)
+def test_signup_refuses_malformed_blocks(
+    client: TestClient, agent_ready: bytes, field: str, value: str
+) -> None:
+    body = _signup_body(agent_ready)
+    body[field] = value
+    with pytest.raises(ApiError) as exc:
+        Client(client).call("POST", "/api/auth/signup", body)
+    assert exc.value.status == 422
 
 
-def test_totp_accepts_one_step_of_drift_and_refuses_replay(enrolled: Settings) -> None:
-    creds = credentials.load_credentials(enrolled.auth_file)
-    assert creds is not None
-    now = time.time()
-    step = credentials.totp_step(creds, _code(), None, now)
-    assert step is not None
-    assert credentials.totp_step(creds, _code(), step, now) is None
-    assert credentials.totp_step(creds, _code(-1), None, now) is not None
-    assert credentials.totp_step(creds, _code(-3), None, now) is None
-    assert credentials.totp_step(creds, "abcdef", None, now) is None
+def test_signup_refuses_weak_kdf_and_foreign_server_key(
+    client: TestClient, agent_ready: bytes
+) -> None:
+    body = _signup_body(agent_ready)
+    body["kdf"]["memlimit"] = 16 * 1024 * 1024
+    assert _status(Client(client).call, "POST", "/api/auth/signup", body) == 422
+    body = _signup_body(nacl.utils.random(32))  # sealed for another server key
+    assert _status(Client(client).call, "POST", "/api/auth/signup", body) == 422
 
 
-# --- login API ---------------------------------------------------------------
+# --- prelogin and login -------------------------------------------------------------------
 
 
-def test_login_without_credentials_is_unavailable(client: TestClient) -> None:
-    assert _login(client) == 503
+def test_prelogin_does_not_reveal_unknown_accounts(account: Account, client: TestClient) -> None:
+    api = Client(client)
+    real = api.call("POST", "/api/auth/prelogin", {"username": USERNAME})
+    fake = api.call("POST", "/api/auth/prelogin", {"username": "personne"})
+    assert fake == api.call("POST", "/api/auth/prelogin", {"username": "personne"})
+    assert len(b64url_decode(fake["salt"])) == len(b64url_decode(real["salt"])) == 16
+    assert (fake["memlimit"], fake["opslimit"]) == (real["memlimit"], real["opslimit"])
+    assert fake["salt"] != api.call("POST", "/api/auth/prelogin", {"username": "autre"})["salt"]
 
 
-def test_login_sets_a_hardened_cookie(enrolled: Settings, client: TestClient) -> None:
-    response = client.post("/api/auth/login", json={"password": TEST_PASSWORD, "totp": _code()})
-    assert response.status_code == 204
-    cookie = response.headers["set-cookie"].lower()
-    assert "httponly" in cookie
-    assert "secure" in cookie
-    assert "samesite=strict" in cookie
-    assert "max-age=43200" in cookie
-    assert "path=/api" in cookie
-    assert client.get("/api/auth/me").status_code == 200
+def test_login_unwraps_the_same_keys_on_another_device(
+    account: Account, client: TestClient
+) -> None:
+    keys = Client(client).login(USERNAME, PASSWORD, account.code())
+    assert keys.user_id == account.user_id
+    assert keys.ak_version == 1
 
 
-def test_protected_routes_require_a_session(client: TestClient) -> None:
-    assert client.get("/api/auth/me").status_code == 401
-    assert client.get("/api/logs").status_code == 401
-    client.cookies.set(sessions.COOKIE_NAME, "forged", domain="testserver", path="/api")
-    assert client.get("/api/auth/me").status_code == 401
+def test_login_errors_are_identical(account: Account, client: TestClient) -> None:
+    api = Client(client)
+    wrong_password = _status(api.login, USERNAME, "une autre phrase de passe", account.code())
+    wrong_code = _status(api.login, USERNAME, PASSWORD, "000000")
+    assert wrong_password == wrong_code == 401
 
 
-def test_wrong_password_or_code_is_rejected(enrolled: Settings, client: TestClient) -> None:
-    assert _login(client, password="wrong-password-123") == 401
-    assert _login(client, code="000000" if _code() != "000000" else "111111") == 401
+def test_totp_code_cannot_be_replayed(account: Account, client: TestClient) -> None:
+    code = account.code()
+    Client(client).login(USERNAME, PASSWORD, code)
+    assert _status(Client(client).login, USERNAME, PASSWORD, code) == 401
 
 
-def test_totp_code_cannot_be_reused(enrolled: Settings, client: TestClient) -> None:
-    code = _code()
-    assert _login(client, code=code) == 204
-    assert _login(client, code=code) == 401
-
-
-def test_lockout_after_too_many_failures(enrolled: Settings, client: TestClient) -> None:
-    # max attempts is 3 in tests
-    assert _login(client, password="wrong-password-1") == 401
-    assert _login(client, password="wrong-password-2") == 401
-    response = client.post("/api/auth/login", json={"password": "wrong-3", "totp": _code()})
+def test_lockout_after_failures(account: Account, client: TestClient) -> None:
+    api = Client(client)
+    for _ in range(2):
+        assert _status(api.login, USERNAME, "mauvaise phrase de passe", account.code()) == 401
+    auth, _ = api.derive(USERNAME, "mauvaise phrase de passe")
+    response = client.post(
+        "/api/auth/login",
+        json={"username": USERNAME, "auth_key": b64url_encode(auth), "totp": account.code()},
+    )
     assert response.status_code == 429
-    assert int(response.headers["retry-after"]) > 0
-    # Even the right credentials are refused during the lockout.
-    assert _login(client) == 429
+    assert 0 < int(response.headers["retry-after"]) <= 60
+    # Even the right credentials wait for the end of the lockout.
+    assert _status(api.login, USERNAME, PASSWORD, account.code()) == 429
 
 
-def test_logout_revokes_the_session(enrolled: Settings, client: TestClient) -> None:
-    assert _login(client) == 204
-    token = client.cookies.get(sessions.COOKIE_NAME)
-    assert client.post("/api/auth/logout").status_code == 204
-    assert token is not None
-    client.cookies.set(sessions.COOKIE_NAME, token, domain="testserver", path="/api")
-    assert client.get("/api/auth/me").status_code == 401
+def test_session_cookie_is_hardened(account: Account, client: TestClient) -> None:
+    api = Client(client)
+    pre = api.derive(USERNAME, PASSWORD)
+    response = client.post(
+        "/api/auth/login",
+        json={"username": USERNAME, "auth_key": b64url_encode(pre[0]), "totp": account.code()},
+    )
+    cookie = response.headers["set-cookie"].lower()
+    for flag in ("httponly", "secure", "samesite=strict", "path=/api", f"max-age={60 * 86400}"):
+        assert flag in cookie
 
 
-def test_expired_session_is_refused(db: Session) -> None:
-    now = utcnow()
-    token = sessions.create_session(db, "k" * 48, now - timedelta(hours=13), timedelta(hours=12))
-    assert sessions.get_session(db, "k" * 48, token, now) is None
+# --- unlocked level, sessions ---------------------------------------------------------------
 
 
-def test_only_token_hash_is_stored(db: Session) -> None:
-    token = sessions.create_session(db, "k" * 48, utcnow(), timedelta(hours=1))
-    row = db.exec(select(AuthSession)).one()
-    assert row.token_hash != token
-    assert token not in row.token_hash
+def test_sensitive_actions_need_an_unlocked_session(account: Account, client: TestClient) -> None:
+    api = account.api
+    other = Client(client)
+    other.login(USERNAME, PASSWORD, account.code())
+    sessions = api.call("GET", "/api/auth/sessions")
+    assert len(sessions) == 2
+    target = next(s["id"] for s in sessions if not s["current"])
+    api.call("POST", "/api/auth/lock")
+    assert _status(api.call, "DELETE", f"/api/auth/sessions/{target}") == 403
+    assert _status(api.unlock, USERNAME, "mauvaise phrase de passe") == 401
+    api.unlock(USERNAME, PASSWORD)
+    api.call("DELETE", f"/api/auth/sessions/{target}")
+    assert _status(other.call, "GET", "/api/auth/me") == 401
 
 
-def test_login_is_audited_without_secrets(enrolled: Settings, client: TestClient) -> None:
-    code = _code()
-    assert _login(client, password="wrong-password-1") == 401
-    assert _login(client, code=code) == 204
-    logs = client.get("/api/logs").json()
-    actions = [(log["action"], log["outcome"]) for log in logs]
-    assert ("auth.login", "success") in actions
-    assert ("auth.login", "failure") in actions
-    raw = enrolled.db_path.read_bytes()
-    assert TEST_PASSWORD.encode() not in raw
-    assert TEST_TOTP_SECRET.encode() not in raw
+def test_logout(account: Account) -> None:
+    account.api.call("POST", "/api/auth/logout")
+    assert _status(account.api.call, "GET", "/api/auth/me") == 401
 
 
-def test_audit_log_is_read_only_through_the_api(enrolled: Settings, client: TestClient) -> None:
-    assert _login(client) == 204
-    assert client.delete("/api/logs").status_code == 405
-    assert client.post("/api/logs", json={}).status_code == 405
+# --- master password change and recovery ------------------------------------------------------
+
+
+def test_change_master_password(account: Account, client: TestClient) -> None:
+    other = Client(client)
+    before = other.login(USERNAME, PASSWORD, account.code())
+    account.api.change_password(USERNAME, PASSWORD, "nouvelle phrase de passe", account.code())
+    assert _status(other.call, "GET", "/api/auth/me") == 401  # other devices logged out
+    assert _status(Client(client).login, USERNAME, PASSWORD, account.code()) == 401
+    after = Client(client).login(USERNAME, "nouvelle phrase de passe", account.code())
+    assert (after.uk, after.ak) == (before.uk, before.ak)  # entries stay readable
+
+
+def test_recovery_with_the_kit(account: Account, client: TestClient) -> None:
+    before = Client(client).login(USERNAME, PASSWORD, account.code())
+    api = Client(client)
+    new_kit = api.recover(
+        USERNAME, account.recovery_kit.lower(), account.code(), "phrase après récupération"
+    )
+    assert new_kit != account.recovery_kit
+    assert _status(account.api.call, "GET", "/api/auth/me") == 401  # every session revoked
+    after = Client(client).login(USERNAME, "phrase après récupération", account.code())
+    assert (after.uk, after.ak) == (before.uk, before.ak)
+    # The old kit is dead, the new one works.
+    old = _status(Client(client).recover, USERNAME, account.recovery_kit, account.code(), "x" * 20)
+    assert old == 401
+    Client(client).recover(USERNAME, new_kit, account.code(), "encore une autre phrase")
+
+
+def test_recovery_needs_the_totp(account: Account, client: TestClient) -> None:
+    assert (
+        _status(Client(client).recover, USERNAME, account.recovery_kit, "000000", "x" * 20) == 401
+    )
+
+
+# --- audit and secrets ---------------------------------------------------------------------------
+
+
+def test_logins_are_audited_per_user(account: Account, client: TestClient) -> None:
+    _status(Client(client).login, USERNAME, "mauvaise phrase de passe", account.code())
+    Client(client).login(USERNAME, PASSWORD, account.code())
+    logs = account.api.call("GET", "/api/logs")
+    actions = {(log["action"], log["outcome"]) for log in logs}
+    assert {("auth.signup", "pending"), ("auth.signup.confirm", "success")} <= actions
+    assert {("auth.login", "failure"), ("auth.login", "success")} <= actions
+
+
+def test_no_secret_in_database(account: Account, settings: Settings, client: TestClient) -> None:
+    keys = Client(client).login(USERNAME, PASSWORD, account.code())
+    auth, mek = Client(client).derive(USERNAME, PASSWORD)
+    raw = settings.db_path.read_bytes() + _wal(settings)
+    for secret in (keys.uk, keys.ak, auth, mek, PASSWORD.encode(), account.totp_secret.encode()):
+        assert secret not in raw
+    assert b64url_encode(auth).encode() not in raw
+    compact_kit = re.sub("-", "", account.recovery_kit).encode()
+    assert compact_kit not in raw
+
+
+def _wal(settings: Settings) -> bytes:
+    wal = settings.db_path.with_name(settings.db_path.name + "-wal")
+    with sqlite3.connect(settings.db_path) as conn:
+        conn.execute("PRAGMA wal_checkpoint(FULL)")
+    return wal.read_bytes() if wal.exists() else b""
+
+
+def _signup_body(server_seed: bytes) -> dict:  # type: ignore[type-arg]
+    import uuid
+
+    user_id = str(uuid.uuid4())
+    uk, ak = nacl.utils.random(32), nacl.utils.random(32)
+    pk, _ = sealed.server_keypair(server_seed)
+    new = Client.new_password(user_id, PASSWORD, uk)
+    return {
+        "user_id": user_id,
+        "username": USERNAME,
+        **new.body,
+        "recovery_auth_key": b64url_encode(nacl.utils.random(32)),
+        "uk_by_rk": b64url_encode(
+            blocks.wrap_key(nacl.utils.random(32), uk, contexts.uk_by_rk(user_id))
+        ),
+        "ak_by_uk": b64url_encode(blocks.wrap_key(uk, ak, contexts.ak_by_uk(user_id, 1))),
+        "ak_sealed": b64url_encode(sealed.seal_for_server(pk, ak, contexts.ak_by_sk(user_id, 1))),
+    }

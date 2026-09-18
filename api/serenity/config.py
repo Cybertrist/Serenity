@@ -13,14 +13,19 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_prefix="SERENITY_", frozen=True)
 
-    # Keys the session token hashes stored in SQLite (HMAC-SHA256).
+    # Keys the session token hashes and the fake prelogin salts (HMAC / keyed BLAKE2b).
     secret_key: SecretStr = Field(min_length=32)
     db_path: Path = Path("/data/serenity.sqlite")
-    # Argon2 hash and TOTP seed of the single user. Kept out of SQLite (see ADR-005).
-    auth_file: Path = Path("/data/auth.json")
-    session_ttl_hours: int = Field(default=12, ge=1, le=168)
+    # Device session: full login (master password + TOTP) every N days (docs/crypto.md §7.3).
+    device_session_days: int = Field(default=60, ge=1, le=365)
+    # Unlocked level: sensitive actions need the master password within this sliding window.
+    unlock_minutes: int = Field(default=15, ge=1, le=240)
+    # Progressive lockout: after N failures, lock for base * 2^(k-1) minutes (max 24 h).
     login_max_attempts: int = Field(default=5, ge=1, le=100)
-    login_lockout_minutes: int = Field(default=15, ge=1, le=1440)
+    login_lockout_base_minutes: int = Field(default=1, ge=1, le=60)
+    # Server-side Argon2id cost for hashing AuthKey / RAK (libsodium crypto_pwhash_str).
+    auth_hash_memlimit: int = Field(default=64 * 1024 * 1024, ge=8 * 1024 * 1024)
+    auth_hash_opslimit: int = Field(default=3, ge=1)
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     public_url: str = "https://localhost"
     # Key files (root:root 0400 on the host, see docs/02-infrastructure.md).

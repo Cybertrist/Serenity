@@ -9,6 +9,20 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- Phase 3 : comptes (`User`, `AgentKey`, `DeviceSession`, `Throttle`), inscription en deux temps
+  (blocs chiffrés puis premier code TOTP), prélogin sans énumération, connexion clé d'auth + TOTP,
+  session d'appareil de 60 jours, déverrouillage de 15 min pour les actions sensibles,
+  sessions listables et révocables, changement de mot de passe maître, récupération par le kit
+  (nouveau kit à chaque fois), verrouillage progressif, `make reset-totp`.
+- Phase 3 : parcours côté navigateur en TypeScript (`web/src/features/account/`), `Keyring` en
+  mémoire, codes TOTP via Web Crypto, client API.
+- Phase 3 : client de référence Python (`make client`), test de bout en bout TypeScript ↔ Python
+  (`make e2e`, job CI), doc `03-authentification.md`, ADR-008, migration v2.
+
+### Retiré
+
+- Phase 3 : ancienne authentification mono-utilisateur (`auth.json`, `make auth-init`, argon2-cffi).
+
 - Phase 2 : conteneur `agent` séparé (même image), seul détenteur de la clé serveur, sans port,
   réseau `egress` uniquement ; publication de la clé publique serveur (`GET /api/crypto/server-key`),
   garde-fou si la clé change.
