@@ -336,8 +336,8 @@ def _zone_label(zone: str) -> str:
 def _cmd_add(client: Client, state: dict[str, Any], _target: str | None) -> None:
     keys = _unlocked(client, state)
     name = input("Nom (ex. Netflix) : ").strip()
-    username = input("Identifiant sur le site : ").strip()
-    password = getpass.getpass("Mot de passe du site (vide = générer) : ")
+    username = input("Identifiant sur le site (ton e-mail ou pseudo chez eux) : ").strip()
+    password = getpass.getpass("Mot de passe du site (saisie masquée ; vide = en générer un) : ")
     if not password:
         password = e(nacl.utils.random(15))
         print("Mot de passe généré (20 caractères).")
@@ -502,32 +502,24 @@ VAULT_COMMANDS = {
 }
 
 
+ACCOUNT_COMMANDS = (
+    "signup",
+    "login",
+    "unlock",
+    "lock",
+    "me",
+    "sessions",
+    "logout",
+    "password",
+    "recover",
+)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m serenity.devclient")
-    parser.add_argument(
-        "command",
-        choices=[
-            "signup",
-            "login",
-            "unlock",
-            "lock",
-            "me",
-            "sessions",
-            "logout",
-            "password",
-            "recover",
-            "add",
-            "list",
-            "show",
-            "edit",
-            "delegate",
-            "reclaim",
-            "delete",
-            "restore",
-            "history",
-        ],
-    )
-    parser.add_argument("target", nargs="?", help="entry name or id (show, edit, delegate...)")
+    parser.add_argument("command", choices=[*ACCOUNT_COMMANDS, *VAULT_COMMANDS])
+    # Entry names may contain spaces: every remaining word is part of the target.
+    parser.add_argument("target", nargs="*", help="entry name or id (show, edit, delegate...)")
     parser.add_argument("--url", default=os.environ.get("SERENITY_URL", "http://127.0.0.1:8000"))
     args = parser.parse_args(argv)
     state = _load()
@@ -570,7 +562,7 @@ def main(argv: list[str] | None = None) -> int:
             client.change_password(state["username"], current, new, input("Code TOTP : ").strip())
             print("Mot de passe maître changé. Les autres appareils sont déconnectés.")
         elif args.command in VAULT_COMMANDS:
-            VAULT_COMMANDS[args.command](client, state, args.target)
+            VAULT_COMMANDS[args.command](client, state, " ".join(args.target) or None)
         elif args.command == "recover":
             username = _ask_username()
             kit = getpass.getpass("Clé de récupération : ")
