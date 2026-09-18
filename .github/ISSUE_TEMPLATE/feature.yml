@@ -1,0 +1,30 @@
+name: Fonctionnalité
+description: Proposer une amélioration
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Ne colle jamais de mot de passe, de jeton ou de contenu de `.env` ici.**
+  - type: textarea
+    id: need
+    attributes:
+      label: Besoin
+      description: Quel problème veux-tu résoudre ?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposition
+      description: À quoi ressemblerait la solution ?
+  - type: dropdown
+    id: version
+    attributes:
+      label: Version visée
+      options: [V1 — Veille, V2 — Rotation, V3 — Agent LLM]
+  - type: textarea
+    id: security
+    attributes:
+      label: Impact sécurité
+      description: Cette idée touche-t-elle aux secrets, au kill switch, à l'allowlist ou au journal d'audit ?

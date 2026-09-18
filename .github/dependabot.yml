@@ -1,0 +1,25 @@
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /api
+    schedule: { interval: weekly }
+    labels: [backend]
+  - package-ecosystem: npm
+    directory: /web
+    schedule: { interval: weekly }
+    labels: [frontend]
+    groups:
+      dev-dependencies:
+        dependency-type: development
+  - package-ecosystem: docker
+    directories: [/api, /web]
+    schedule: { interval: weekly }
+    labels: [infra]
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule: { interval: weekly }
+    labels: [infra]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+    labels: [infra]
