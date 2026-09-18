@@ -55,7 +55,9 @@ tailscale status --json | grep -m1 DNSName
 
 | Commande | Effet |
 |---|---|
-| `make init` | Crée `data/api`, `data/ntfy`, `data/vaultwarden` avec les bons propriétaires |
+| `make init` | Crée `data/api`, `data/ntfy`, `data/vaultwarden` avec les bons propriétaires, et un secret `secrets/bw_master_password` vide |
+| `make auth-init` | Crée ton mot de passe et ton TOTP de connexion (phase 3) |
+| `make bw-secret` | Enregistre le mot de passe maître du compte Serenity (phase 4) |
 | `make up` | Construit les images et démarre la stack |
 | `make down` | Arrête la stack |
 | `make restart` | Redémarre la stack |

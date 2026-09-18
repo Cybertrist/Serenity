@@ -81,6 +81,8 @@ class Entry(SQLModel, table=True):
     password_changed_at: datetime | None = _ts(default=None)
     next_rotation_at: datetime | None = _ts(default=None, index=True)
     last_synced_at: datetime | None = _ts(default=None)
+    # Set when the item is no longer visible in the vault (history is kept).
+    removed_at: datetime | None = _ts(default=None)
     created_at: datetime = _ts(default_factory=utcnow)
     updated_at: datetime = _ts(default_factory=utcnow)
 

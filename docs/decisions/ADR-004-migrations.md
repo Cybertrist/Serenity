@@ -16,6 +16,8 @@ de quelques tables.
   dont le numéro dépasse la version enregistrée dans `setting.schema_version`.
 - Chaque migration et la mise à jour de la version sont validées dans la même transaction.
 - La liste ne fait que grandir : on ne modifie jamais une migration déjà livrée.
+- Les migrations sont **idempotentes** : sur une base neuve, `create_all` a déjà créé le schéma
+  final (d'où l'aide `add_column`, qui n'ajoute une colonne que si elle manque).
 - Si la base est plus récente que le code, l'api refuse de démarrer.
 
 ## Conséquences

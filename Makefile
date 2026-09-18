@@ -1,5 +1,6 @@
 # Serenity shortcuts. Run `make help` for the list.
 
+SHELL     := /bin/bash
 COMPOSE   := docker compose
 DEV_IMAGE := serenity-api-dev
 # Runs the api dev image on the local sources, as the current user.
@@ -11,7 +12,7 @@ UID_API         := 10001
 UID_NTFY        := 10002
 UID_VAULTWARDEN := 10003
 
-.PHONY: help init up down restart logs ps auth-init test lint dev-image
+.PHONY: help init up down restart logs ps auth-init bw-secret test lint dev-image
 
 help: ## Show this help
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-10s %s\n", $$1, $$2}'
@@ -23,6 +24,9 @@ init: ## Create data/ folders with the right owners (asks for sudo once)
 	sudo chown $(UID_NTFY):$(UID_NTFY) data/ntfy
 	sudo chown $(UID_VAULTWARDEN):$(UID_VAULTWARDEN) data/vaultwarden
 	sudo chmod 700 data/api data/ntfy data/vaultwarden
+	@# Placeholder so compose starts before `make bw-secret` (vault stays disabled).
+	sudo install -d -m 755 -o root -g root secrets
+	test -f secrets/bw_master_password || sudo install -m 400 -o $(UID_API) -g $(UID_API) /dev/null secrets/bw_master_password
 
 up: ## Build and start the stack
 	@test -d data/vaultwarden || { echo "Run 'make init' first"; exit 1; }
@@ -42,6 +46,13 @@ ps: ## Show services and health
 
 auth-init: ## Create the login password and TOTP (interactive)
 	$(COMPOSE) exec api python -m serenity.auth init $(if $(force),--force)
+
+bw-secret: ## Store the Serenity account master password as a Docker secret (asks for sudo)
+	sudo install -d -m 755 -o root -g root secrets
+	sudo install -m 400 -o $(UID_API) -g $(UID_API) /dev/null secrets/bw_master_password
+	@read -rs -p "Mot de passe maître du compte Serenity : " P; echo; \
+	  printf '%s' "$$P" | sudo tee secrets/bw_master_password >/dev/null; unset P
+	@sudo stat -c '%U:%G %a %n' secrets/bw_master_password
 
 dev-image:
 	@docker build -q --target dev -t $(DEV_IMAGE) api >/dev/null

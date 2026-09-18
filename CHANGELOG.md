@@ -9,6 +9,14 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- Phase 4 : Bitwarden CLI (`bw-oss-linux` 2026.8.0, empreinte vérifiée) dans l'image api,
+  `bw serve` lancé par l'api sur `127.0.0.1:8087`.
+- Phase 4 : déverrouillage par secret Docker `secrets/bw_master_password` (`make bw-secret`).
+- Phase 4 : `vault.py` (lister, lire, modifier un mot de passe, synchroniser), service de relance.
+- Phase 4 : synchronisation périodique des `Entry` (APScheduler), nouveaux comptes critiques par défaut,
+  migration v2 (`entry.removed_at`).
+- Phase 4 : routes `GET /api/vault/status`, `POST /api/vault/sync`, `GET /api/entries`.
+- Phase 4 : doc `04-coffre.md`, ADR-006 et ADR-007.
 - Phase 3 : configuration `pydantic-settings`, `SERENITY_SECRET_KEY` obligatoire.
 - Phase 3 : modèles SQLModel (`Entry`, `Breach`, `Rotation`, `AuditLog`, `Setting`, `AuthSession`),
   dates toujours en UTC, migrations au démarrage.

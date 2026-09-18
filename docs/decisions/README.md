@@ -25,3 +25,5 @@ Nommage : `ADR-NNN-titre-court.md`.
 - [ADR-003 — Lancer tests et linters dans Docker](ADR-003-outils-dans-docker.md)
 - [ADR-004 — Migrations SQLite maison au démarrage](ADR-004-migrations.md)
 - [ADR-005 — Authentification mono-utilisateur](ADR-005-authentification.md)
+- [ADR-006 — Compte Vaultwarden dédié, via une organisation](ADR-006-compte-dedie.md)
+- [ADR-007 — `bw serve` dans le conteneur api, déverrouillé par secret Docker](ADR-007-bw-serve.md)

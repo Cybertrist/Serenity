@@ -13,6 +13,15 @@ COPY pyproject.toml ./
 COPY serenity ./serenity
 COPY allowlist.yaml ./
 
+# --- Bitwarden CLI (standalone OSS build, checksum pinned) ---
+FROM base AS bw
+ARG BW_VERSION=2026.8.0
+ADD --checksum=sha256:d8bbc213d3dbdb701709386af6ea3bd763482f922ae0b538fdc3fdb88b1b1704 \
+    https://github.com/bitwarden/clients/releases/download/cli-v${BW_VERSION}/bw-oss-linux-${BW_VERSION}.zip \
+    /tmp/bw.zip
+RUN python -c "import zipfile; zipfile.ZipFile('/tmp/bw.zip').extractall('/opt/bw')" \
+    && chmod 755 /opt/bw/bw
+
 # --- Dev image: tests and linters (used by `make test` / `make lint`) ---
 FROM base AS dev
 RUN pip install -e ".[dev]"
@@ -22,6 +31,9 @@ ENV HOME=/tmp
 # --- Runtime image ---
 FROM base AS runtime
 RUN pip install . && rm -rf /app/build /app/*.egg-info
+COPY --from=bw /opt/bw/bw /usr/local/bin/bw
+# bw keeps its state in tmpfs (the root filesystem is read-only).
+ENV HOME=/tmp
 USER serenity
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

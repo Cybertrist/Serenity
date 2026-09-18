@@ -89,8 +89,17 @@ services:
       SERENITY_LOGIN_MAX_ATTEMPTS: ${SERENITY_LOGIN_MAX_ATTEMPTS:-5}
       SERENITY_LOGIN_LOCKOUT_MINUTES: ${SERENITY_LOGIN_LOCKOUT_MINUTES:-15}
       SERENITY_LOG_LEVEL: ${SERENITY_LOG_LEVEL:-INFO}
+      SERENITY_VAULT_SYNC_INTERVAL_MINUTES: ${SERENITY_VAULT_SYNC_INTERVAL_MINUTES:-30}
+      # Dedicated Serenity Vaultwarden account (see docs/04-coffre.md).
+      BW_CLIENTID: ${BW_CLIENTID:-}
+      BW_CLIENTSECRET: ${BW_CLIENTSECRET:-}
+      BW_PASSWORD_FILE: /run/secrets/bw_master_password
       SERENITY_VAULTWARDEN_URL: http://vaultwarden:8080
       SERENITY_NTFY_URL: http://ntfy:8080
+    # Master password of the Serenity account: file owned by the api UID, mode 0400.
+    secrets: [bw_master_password]
+    # tini as PID 1: forwards signals and reaps the `bw` child processes.
+    init: true
     volumes:
       - ./data/api:/data
     # No published port: only reachable by `web` on the internal network.
@@ -117,6 +126,10 @@ services:
     depends_on:
       api:
         condition: service_healthy
+
+secrets:
+  bw_master_password:
+    file: ./secrets/bw_master_password
 
 networks:
   # Service-to-service traffic. No Internet access.

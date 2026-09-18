@@ -1,11 +1,11 @@
 from datetime import UTC, datetime
 
 import pytest
-from sqlalchemy import Engine
+from sqlalchemy import Engine, text
 from sqlalchemy.exc import StatementError
 from sqlmodel import Session
 
-from serenity.db import SCHEMA_VERSION_KEY, Migration, init_db
+from serenity.db import MIGRATIONS, SCHEMA_VERSION_KEY, Migration, add_column, init_db
 from serenity.models import Entry, Setting
 
 
@@ -15,20 +15,31 @@ def test_init_db_is_idempotent(engine: Engine) -> None:
 
 def test_pending_migrations_run_once(engine: Engine) -> None:
     calls: list[int] = []
-    migrations: list[Migration] = [lambda s: None, lambda s: calls.append(2)]
-    assert init_db(engine, migrations) == 2
-    assert init_db(engine, migrations) == 2
-    assert calls == [2]
+    migrations: list[Migration] = [*MIGRATIONS, lambda s: calls.append(1)]
+    expected = len(migrations)
+    assert init_db(engine, migrations) == expected
+    assert init_db(engine, migrations) == expected
+    assert calls == [1]
     with Session(engine) as session:
         row = session.get(Setting, SCHEMA_VERSION_KEY)
         assert row is not None
-        assert row.value == 2
+        assert row.value == expected
 
 
 def test_newer_schema_is_refused(engine: Engine) -> None:
-    init_db(engine, [lambda s: None, lambda s: None])
     with pytest.raises(RuntimeError):
-        init_db(engine, [lambda s: None])
+        init_db(engine, MIGRATIONS[:-1])
+
+
+def test_add_column_migration_upgrades_an_old_database(engine: Engine) -> None:
+    with Session(engine) as session:
+        session.connection().execute(text("ALTER TABLE entry DROP COLUMN removed_at"))
+        session.commit()
+        add_column(session, "entry", "removed_at", "DATETIME")
+        add_column(session, "entry", "removed_at", "DATETIME")  # idempotent
+        session.commit()
+        columns = {r[1] for r in session.connection().execute(text("PRAGMA table_info(entry)"))}
+    assert "removed_at" in columns
 
 
 def test_datetimes_come_back_timezone_aware(db: Session) -> None:
