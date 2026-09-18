@@ -12,14 +12,14 @@ Une page par phase, dans l'ordre de construction.
 | [03 — Authentification](03-authentification.md) | Comptes, connexion, TOTP, déverrouillage, kit de récupération |
 | [04 — Coffre](04-coffre.md) | Entrées chiffrées, synchronisation, délégation, import Bitwarden |
 | [05 — Veille](05-veille.md) | Fuites (k-anonymat), réutilisés, faibles, anciens, e-mails, notifications |
-| 06 — Agent | Politiques, kill switch, planification, notifications *(à venir)* |
+| [06 — Agent](06-agent.md) | Politiques, kill switch, allowlist, échéances, rotation transactionnelle |
 | 07 — Interface | PWA React *(à venir)* |
 | 09 — Sécurité | Sauvegardes, modèle de menace final, risques restants *(à venir)* |
 
 Références :
 
 - [`crypto.md`](crypto.md) : la spécification cryptographique *(phase 1)*
-- `api.md` : l'API REST *(phase 6)*
+- [`api.md`](api.md) : l'API REST, générée depuis OpenAPI
 - `design.md` : la charte graphique *(phase 7)*
 - [`decisions/`](decisions/README.md) : les décisions techniques (ADR)
 

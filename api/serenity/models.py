@@ -235,6 +235,69 @@ class WatchedEmail(SQLModel, table=True):
     last_checked_at: datetime | None = _ts(default=None)
 
 
+class PolicyMode(StrEnum):
+    # The agent rotates on its own when due (agent zone, allowlisted site, V3 executor).
+    AUTONOMOUS = "autonomous"
+    # The agent asks first: Approve / Refuse in a notification.
+    APPROVAL = "approval"
+
+
+# Allowed rotation frequencies, in days (None = never).
+POLICY_FREQUENCIES = (7, 30, 90, 180)
+
+
+class RotationPolicy(SQLModel, table=True):
+    """How often an entry should change. Agent zone: rotation; personal zone: reminder only."""
+
+    __tablename__ = "rotation_policy"
+
+    item_id: str = Field(primary_key=True, foreign_key="item.id", ondelete="CASCADE")
+    user_id: str = Field(foreign_key="user.id", index=True, ondelete="CASCADE")
+    frequency_days: int | None = None
+    mode: PolicyMode = PolicyMode.APPROVAL
+    # Date of the last password change, sent by the client (a date, never the password).
+    changed_at: datetime | None = _ts(default=None)
+    next_due_at: datetime | None = _ts(default=None, index=True)
+    last_reminded_at: datetime | None = _ts(default=None)
+    updated_at: datetime = _ts(default_factory=utcnow)
+
+
+class RotationStatus(StrEnum):
+    SCHEDULED = "scheduled"  # due: waits for a decision (approval) or the executor (autonomous)
+    APPROVED = "approved"  # the user said yes; the executor (V3) will run it
+    REFUSED = "refused"
+    IN_PROGRESS = "in_progress"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    ROLLED_BACK = "rolled_back"
+    CANCELLED = "cancelled"
+
+
+OPEN_ROTATION_STATUSES = (
+    RotationStatus.SCHEDULED,
+    RotationStatus.APPROVED,
+    RotationStatus.IN_PROGRESS,
+)
+
+
+class Rotation(SQLModel, table=True):
+    """A password rotation of an agent-zone entry and its transactional state."""
+
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", index=True, ondelete="CASCADE")
+    item_id: str = Field(foreign_key="item.id", index=True, ondelete="CASCADE")
+    status: RotationStatus = RotationStatus.SCHEDULED
+    # "schedule" (policy due date), "breach" (password exposed) or "manual".
+    trigger: str
+    mode: PolicyMode
+    requested_at: datetime = _ts(default_factory=utcnow)
+    decided_at: datetime | None = _ts(default=None)
+    started_at: datetime | None = _ts(default=None)
+    finished_at: datetime | None = _ts(default=None)
+    # Sanitized reason of a failure (never a secret).
+    error: str | None = None
+
+
 class Throttle(SQLModel, table=True):
     """Failed attempts per key (login:<username>, unlock:<user>...), progressive lockout."""
 

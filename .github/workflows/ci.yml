@@ -46,6 +46,9 @@ jobs:
         run: mypy serenity
       - if: steps.detect.outputs.enabled == 'true'
         run: pytest
+      - if: steps.detect.outputs.enabled == 'true'
+        name: docs/api.md is up to date
+        run: python -m serenity.apidoc --check ../docs/api.md
 
   frontend:
     name: Frontend (eslint, prettier, vitest, build)

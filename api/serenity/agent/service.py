@@ -17,6 +17,7 @@ from sqlalchemy import Engine
 from sqlmodel import Session
 
 from serenity import audit
+from serenity.agent.rotations import run_schedule
 from serenity.agent.watch import run_watch
 from serenity.config import Settings
 from serenity.crypto.encoding import b64url_encode
@@ -73,6 +74,17 @@ class Agent:
         logger.info("agent started, server key id %s", info["key_id"])
         return info
 
+    def schedule_once(self) -> None:
+        """Due dates: rotations for the agent zone, reminders for the personal zone."""
+        with Session(self._engine) as session:
+            report = run_schedule(session, utcnow())
+        logger.info(
+            "schedule: %d rotation(s), %d reminder(s)%s",
+            report.scheduled,
+            report.reminders,
+            " (kill switch)" if report.skipped else "",
+        )
+
     def watch_once(self) -> None:
         """One server-side watch run (agent zone, watched e-mails). Errors never stop the agent."""
         key = self._settings.hibp_api_key
@@ -88,6 +100,15 @@ class Agent:
 
     def run_forever(self) -> None:
         scheduler = BackgroundScheduler(timezone="UTC")
+        scheduler.add_job(
+            self.schedule_once,
+            "interval",
+            minutes=self._settings.schedule_interval_minutes,
+            next_run_time=utcnow() + timedelta(seconds=self._settings.watch_first_delay_seconds),
+            max_instances=1,
+            coalesce=True,
+            id="schedule",
+        )
         scheduler.add_job(
             self.watch_once,
             "interval",

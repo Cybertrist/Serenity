@@ -77,6 +77,8 @@ def test_v4_replaces_the_legacy_breach_table(engine: Engine) -> None:
         conn.execute(text("DROP TABLE breach"))
         conn.execute(text("CREATE TABLE breach (id INTEGER PRIMARY KEY, entry_id INTEGER)"))
         conn.execute(text("CREATE TABLE entry (id INTEGER PRIMARY KEY)"))
+        conn.execute(text("DROP TABLE rotation"))
+        conn.execute(text("CREATE TABLE rotation (id INTEGER PRIMARY KEY, entry_id INTEGER)"))
         MIGRATIONS[3](session)
         MIGRATIONS[3](session)  # idempotent
         session.commit()
@@ -84,3 +86,10 @@ def test_v4_replaces_the_legacy_breach_table(engine: Engine) -> None:
     with Session(engine) as session:
         columns = {r[1] for r in session.connection().execute(text('PRAGMA table_info("breach")'))}
     assert {"subject", "kind", "item_id"} <= columns
+
+
+def test_v4_keeps_the_new_rotation_table(engine: Engine) -> None:
+    with Session(engine) as session:
+        MIGRATIONS[3](session)
+        session.commit()
+    assert "rotation" in _names(engine, "table")
