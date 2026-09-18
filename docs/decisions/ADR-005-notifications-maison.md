@@ -15,20 +15,26 @@ Serenity**, sans dépendre d'un service externe.
 
 - **Côté serveur** : un modèle `Notification` en base (type, gravité, lien vers l'entrée,
   actions possibles, lu / traité), écrit par l'agent et la veille. Aucun secret dedans.
-- **Flux temps réel** : l'api diffuse les nouvelles notifications aux clients connectés
-  (Server-Sent Events sur `/api/events`, authentifié par la session), à travers `tailscale serve`.
-- **V1 (PWA)** : centre de notifications dans l'appli (badge, liste, actions), mis à jour
-  en direct tant que l'appli est ouverte.
-- **V2 (appli Android native, Kotlin)** : un service Android maintient la connexion au serveur
-  par le tailnet et affiche des notifications système, avec les boutons Approuver / Refuser.
-- ntfy est retiré du projet ; Web Push et FCM sont exclus.
+- **Récupération** : `GET /api/notifications?since=<curseur>` renvoie les notifications
+  nouvelles depuis le dernier passage (authentifié, à travers `tailscale serve`).
+  Pendant que l'appli est ouverte, un flux temps réel (Server-Sent Events sur `/api/events`)
+  met l'écran à jour en direct.
+- **V1 (PWA)** : centre de notifications dans l'appli (badge, liste, actions).
+- **V2 (appli Android native, Kotlin)** : **vérification périodique** avec WorkManager.
+  Android réveille l'appli de temps en temps (au mieux toutes les 15 min, parfois plus en
+  veille profonde) ; elle interroge le serveur par le tailnet et n'affiche une notification
+  système, avec Approuver / Refuser, **que s'il y a du nouveau**.
+- **Pas d'icône permanente** : pas de service de premier plan, pas de connexion maintenue.
+- ntfy, Firebase Cloud Messaging, UnifiedPush et Web Push sont exclus.
 
 ## Conséquences
 
 - Aucun tiers ne voit passer une notification, même vide.
-- En V1, pas de notification quand l'appli est fermée : on consulte le centre en l'ouvrant.
-- En V2, l'appli Android doit garder une connexion ouverte : service de premier plan
-  (notification permanente discrète) et exclusion de l'optimisation de batterie. Coût
-  batterie à mesurer ; reconnexion automatique et rattrapage des notifications manquées
-  à prévoir.
+- Délai d'arrivée de 15 min à environ 1 h selon l'état du téléphone : acceptable, car
+  l'agent n'agit jamais sur une entrée en mode « validation » sans accord explicite.
+- Une notification urgente peut donc arriver en retard ; l'appli affiche tout en direct
+  dès qu'elle est ouverte.
+- En V1, rien quand la PWA est fermée : on consulte le centre en l'ouvrant.
 - Le téléphone doit être connecté au tailnet pour recevoir quoi que ce soit.
+- Option possible plus tard, désactivée par défaut : réveil instantané par un « ping » vide
+  via Google (FCM), à décider dans un ADR séparé.

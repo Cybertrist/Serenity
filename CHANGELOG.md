@@ -12,8 +12,8 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 - Phase 0 : **remise à plat**. Serenity devient un gestionnaire de mots de passe complet, avec son
   propre coffre chiffré à double zone (personnelle / agent). Nouveau `CLAUDE.md`, ADR-001
   « Coffre maison à double zone plutôt que Vaultwarden », issues et milestones alignés sur le plan en 8 phases.
-- Phase 0 : notifications **maison** (ADR-005) : centre de notifications et flux temps réel dans l'api,
-  appli Android native en V2. Plan des versions : V2 Android, V3 rotation, V4 agent LLM.
+- Phase 0 : notifications **maison** (ADR-005) : centre de notifications dans l'api, appli Android native
+  en V2 par vérification périodique (sans icône permanente ni service tiers). Plan des versions : V2 Android, V3 rotation, V4 agent LLM.
 - Phase 0 : arborescence alignée sur la cible (`crypto/`, `vault/`, `agent/`, `watcher/`,
   `shared/test-vectors/`, `web/src/crypto`, `web/src/vault`).
 

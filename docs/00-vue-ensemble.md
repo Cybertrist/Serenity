@@ -43,7 +43,7 @@ Téléphone / PC (tailnet)
 | **api** | Stocke les blocs chiffrés, authentifie, fait tourner l'agent et la veille. |
 | **SQLite** | Blocs chiffrés et métadonnées. Aucun secret en clair. |
 | **Clé serveur** | Fichier hors de la base. Déchiffre la clé d'agent, donc la zone agent uniquement. |
-| **Notifications** | Maison : stockées par l'api, poussées en temps réel à l'appli. Aucun service tiers. |
+| **Notifications** | Maison : stockées par l'api, affichées dans l'appli, récupérées périodiquement par l'appli Android. Aucun service tiers. |
 | **Tailscale** | Le seul accès depuis l'extérieur, en HTTPS, réservé à ton tailnet. |
 
 ## Les trois versions
@@ -51,7 +51,7 @@ Téléphone / PC (tailnet)
 | Version | Contenu |
 |---|---|
 | **V1 — Coffre maison** | Coffre chiffré, API, PWA, import Bitwarden, veille, délégation, rappels, notifications dans l'appli. |
-| **V2 — Appli Android** | Appli native Kotlin, notifications Android avec Approuver / Refuser, sans service tiers. |
+| **V2 — Appli Android** | Appli native Kotlin, notifications Android avec Approuver / Refuser, sans icône permanente ni service tiers. |
 | **V3 — Rotation** | Changement automatique des mots de passe sur les sites (Playwright), extension navigateur. |
 | **V4 — Agent LLM** | Un agent plus autonome, toujours encadré par des règles vérifiées par le code. |
 
