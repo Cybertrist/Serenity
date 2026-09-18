@@ -72,7 +72,7 @@ def watch_now() -> int:
         report = run_watch(engine, server_key, PwnedPasswords(http), hibp, utcnow())
     if report.skipped:
         print("Kill switch actif : veille non lancée.")
-        return 1
+        return 0
     print(f"Veille terminée : {report.users} compte(s), {report.new_alerts} nouvelle(s) alerte(s).")
     print("E-mails : " + ("vérifiés (HIBP)" if hibp else "non vérifiés (pas de HIBP_API_KEY)"))
     return 0
@@ -88,8 +88,9 @@ def schedule_now() -> int:
     with Session(engine) as session:
         report = run_schedule(session, utcnow())
     if report.skipped:
+        # Expected state, not an error: the agent is stopped on purpose.
         print("Kill switch actif : aucune échéance traitée.")
-        return 1
+        return 0
     print(
         f"Échéances : {report.scheduled} rotation(s) programmée(s), {report.reminders} rappel(s)."
     )
