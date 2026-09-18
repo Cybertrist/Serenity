@@ -97,11 +97,22 @@ Pour tout retirer : `sudo tailscale serve reset`.
 ### Créer ton compte
 
 1. Dans `.env`, mets `VW_SIGNUPS_ALLOWED=true`, puis `docker compose up -d vaultwarden`.
-2. Depuis un appareil du tailnet, ouvre `https://<vm>:10000` et crée ton compte.
+2. Depuis un appareil du tailnet, ouvre une **fenêtre de navigation privée** sur
+   `https://<vm>:10000/#/signup` et crée ton compte.
    Choisis un mot de passe maître long, et note-le hors ligne.
-3. Crée aussi le compte **dédié Serenity** (utilisé en phase 4), avec une autre adresse e-mail.
+3. Déconnecte-toi et crée le compte **dédié Serenity** (utilisé en phase 4) avec une autre
+   adresse e-mail (par exemple `ton.adresse+serenity@...` : aucun e-mail n'est envoyé).
+   Enregistre son mot de passe maître dans ton compte perso.
 4. **Referme les inscriptions** : remets `VW_SIGNUPS_ALLOWED=false`, puis `docker compose up -d vaultwarden`.
 5. Vérifie : la page d'inscription doit refuser les nouveaux comptes.
+6. Active la **connexion en deux étapes** (application d'authentification) sur ton compte perso,
+   et garde le code de récupération sur papier. Pas de 2FA sur le compte Serenity :
+   il se connectera avec une clé d'API.
+
+> **Pas de lien « Créer un compte » ?** L'interface web garde en mémoire la config du serveur
+> dans le stockage du navigateur. Si tu as ouvert la page quand les inscriptions étaient
+> fermées, elle croit qu'elles le sont toujours et redirige vers `#/login` (`Ctrl + F5` ne suffit pas).
+> Utilise une fenêtre privée, ou efface les données du site (cadenas → Paramètres du site).
 
 Applis Bitwarden (téléphone, navigateur) : au moment de te connecter, choisis
 « auto-hébergé » et saisis `https://<vm>:10000`.
@@ -155,13 +166,20 @@ Configuration : `ops/ntfy/server.yml`.
 docker compose exec ntfy ntfy user add tristan
 docker compose exec ntfy ntfy access tristan serenity read-only
 
-# Serenity : écriture seule, avec un token
-docker compose exec ntfy ntfy user add serenity
+# Serenity : écriture seule. Mot de passe aléatoire jamais affiché (on n'utilise que le token)
+PW=$(openssl rand -base64 32)
+docker compose exec -e NTFY_PASSWORD="$PW" ntfy ntfy user add serenity
+unset PW
 docker compose exec ntfy ntfy access serenity serenity write-only
-docker compose exec ntfy ntfy token add serenity
+
+# Token écrit directement dans .env, sans l'afficher
+T=$(docker compose exec -T ntfy ntfy token add serenity | grep -oE 'tk_[a-z0-9]+')
+sed -i "s/^NTFY_TOKEN=.*/NTFY_TOKEN=$T/" .env; unset T
+grep -c '^NTFY_TOKEN=tk_' .env   # doit afficher 1
 ```
 
-Copie le token affiché (`tk_...`) dans `.env`, variable `NTFY_TOKEN`.
+> Colle ces commandes **une ligne à la fois** : un retour à la ligne au milieu d'une commande
+> la casse (par exemple `ntfy user add` sans nom d'utilisateur).
 
 Vérifier : `docker compose exec ntfy ntfy access` liste les droits.
 
@@ -176,10 +194,10 @@ Vérifier : `docker compose exec ntfy ntfy access` liste les droits.
 5. Active la **livraison instantanée** sur cet abonnement. Sans elle, Android peut retarder
    les notifications : un serveur auto-hébergé ne passe pas par Firebase.
 
-Test depuis la VM (remplace `tk_...` par le token de `serenity`) :
+Test depuis la VM (doit afficher `200` et faire vibrer le téléphone) :
 
 ```bash
-curl -H "Authorization: Bearer tk_..." -d "Coucou depuis Serenity" http://127.0.0.1:8090/serenity
+curl -s -o /dev/null -w '%{http_code}\n' -H "Authorization: Bearer $(grep '^NTFY_TOKEN=' .env | cut -d= -f2)" -H "Title: Serenity" -d "Tout va bien." http://127.0.0.1:8090/serenity
 ```
 
 ## Comment vérifier que tout tourne
