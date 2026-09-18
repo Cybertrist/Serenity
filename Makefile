@@ -9,7 +9,7 @@ DEV_RUN   := docker run --rm --user $(shell id -u):$(shell id -g) \
 # Container UIDs (see docker-compose.yml and api/Dockerfile).
 UID_API := 10001
 
-.PHONY: help init keys up down restart logs ps client reset-totp watch-now schedule-now test lint vectors web-test crypto-interop e2e api-doc dev-image
+.PHONY: help init keys up down restart logs ps client reset-totp watch-now schedule-now test lint vectors web-test crypto-interop e2e ui-smoke api-doc dev-image
 
 help: ## Show this help
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-10s %s\n", $$1, $$2}'
@@ -86,6 +86,10 @@ e2e: dev-image ## End-to-end: TypeScript account flows against the real Python A
 	  -e SERENITY_E2E_URL=http://127.0.0.1:8765 -v "$(CURDIR):/repo" -w /repo/web node:22-slim \
 	  sh -c 'for i in $$(seq 1 30); do node -e "fetch(process.env.SERENITY_E2E_URL+\"/api/health\").then(r=>process.exit(r.ok?0:1),()=>process.exit(1))" && break; sleep 1; done; npx vitest --run --no-file-parallelism e2e.test'; \
 	  status=$$?; docker rm -f serenity-e2e >/dev/null; exit $$status
+
+ui-smoke: dev-image ## Walk every screen in Chromium (production web image, strict CSP); screenshots in web/e2e/shots
+	$(COMPOSE) build web
+	scripts/ui-smoke.sh web/e2e/shots
 
 api-doc: dev-image ## Regenerate docs/api.md from the OpenAPI schema
 	docker run --rm --user $(shell id -u):$(shell id -g) -v "$(CURDIR)/api:/app" -v "$(CURDIR)/docs:/docs" \

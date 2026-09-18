@@ -9,20 +9,32 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
-    "build": "tsc --noEmit"
+    "build": "tsc --noEmit && vite build",
+    "dev": "vite",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "libsodium-wrappers-sumo": "^0.8.4"
+    "@phosphor-icons/react": "^2.1.10",
+    "@tanstack/react-query": "^5.103.1",
+    "libsodium-wrappers-sumo": "^0.8.4",
+    "motion": "^13.4.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^22.20.3",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
     "eslint": "^10.10.0",
     "globals": "^17.12.0",
     "prettier": "^3.9.8",
+    "tailwindcss": "^4.3.3",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.70.0",
     "vite": "^8.3.0",
+    "vite-plugin-pwa": "^1.3.0",
     "vitest": "^5.0.1"
   }
 }

@@ -144,6 +144,24 @@ jobs:
           SERENITY_E2E_URL: http://127.0.0.1:8765
         run: npx vitest --run --no-file-parallelism e2e.test
 
+  ui-smoke:
+    name: UI smoke (Chromium, production image, strict CSP)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the images
+        run: |
+          docker build -q --target dev -t serenity-api-dev api
+          docker build -q -t serenity-web:local web
+      - name: Walk every screen
+        run: scripts/ui-smoke.sh "$RUNNER_TEMP/shots"
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-screenshots
+          path: ${{ runner.temp }}/shots
+          if-no-files-found: ignore
+
   secrets:
     name: Secret scan (gitleaks)
     runs-on: ubuntu-latest

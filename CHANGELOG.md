@@ -9,6 +9,18 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- Phase 7 : appli web PWA (React 18, Tailwind v4, Motion, Phosphor, TanStack Query) : création de
+  compte avec kit de récupération, connexion, déverrouillage, récupération ; onglets Coffre, Fuites,
+  Journal, Agent ; fiche d'entrée en panneau glissant (copie avec effacement du presse-papiers après
+  30 s, code TOTP en direct, rotation, historique, confier / reprendre) ; réglages (verrouillage,
+  appareils, adresses surveillées, import Bitwarden, export chiffré, mot de passe maître).
+- Phase 7 : hors ligne (cache chiffré dans IndexedDB, déverrouillage local en lecture seule),
+  notifications en temps réel, polices servies localement.
+- Phase 7 : nginx avec CSP stricte (`wasm-unsafe-eval` seulement pour libsodium) et en-têtes de
+  sécurité ; image `web` construite depuis les sources.
+- Phase 7 : `make ui-smoke` (Chromium sur l'image de production, tous les écrans, hors ligne),
+  job CI avec captures, docs `07-interface.md` et `design.md`.
+
 - Phase 6 : politiques de rotation par entrée (fréquence, mode autonome / validation ; rappels
   seulement en zone personnelle), échéancier horaire de l'agent, rotation après fuite, kill switch
   (API, enclencher / relâcher), allowlist lue par le code, limite de rotations par jour,
