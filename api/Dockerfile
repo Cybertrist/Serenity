@@ -20,12 +20,11 @@ COPY tests ./tests
 ENV HOME=/tmp
 
 # --- Runtime image ---
+# Starts as root on purpose: `serenity.run` reads the root-only key file, then drops to
+# UID 10001 before serving anything (see docs/decisions/ADR-007).
 FROM base AS runtime
 RUN pip install . && rm -rf /app/build /app/*.egg-info
-USER serenity
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3)"]
-# Only the web (nginx) container can reach the api on the internal network,
-# so forwarded headers are trusted from any peer.
-CMD ["uvicorn", "--factory", "serenity.main:create_app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*", "--no-server-header"]
+CMD ["python", "-m", "serenity.run", "api"]

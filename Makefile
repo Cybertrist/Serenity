@@ -9,7 +9,7 @@ DEV_RUN   := docker run --rm --user $(shell id -u):$(shell id -g) \
 # Container UIDs (see docker-compose.yml and api/Dockerfile).
 UID_API := 10001
 
-.PHONY: help init up down restart logs ps auth-init test lint vectors web-test crypto-interop dev-image
+.PHONY: help init keys up down restart logs ps auth-init test lint vectors web-test crypto-interop dev-image
 
 help: ## Show this help
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-10s %s\n", $$1, $$2}'
@@ -20,7 +20,15 @@ init: ## Create data/ folders with the right owners (asks for sudo once)
 	sudo chown $(UID_API):$(UID_API) data/api
 	sudo chmod 700 data/api
 
-up: ## Build and start the stack
+keys: ## Create the server and TOTP keys if missing (root:root 0400, never overwritten)
+	sudo install -d -m 700 -o root -g root data/keys
+	@for k in server totp; do \
+	  if sudo test -f data/keys/$$k.key; then echo "data/keys/$$k.key: kept"; \
+	  else sudo sh -c "umask 377; head -c 32 /dev/urandom > data/keys/$$k.key" && echo "data/keys/$$k.key: created"; fi; \
+	done
+	@sudo stat -c '%U:%G %a %s bytes %n' data/keys/server.key data/keys/totp.key
+
+up: keys ## Build and start the stack (creates the keys on first start)
 	@test -d data/api || { echo "Run 'make init' first"; exit 1; }
 	$(COMPOSE) up -d --build
 
@@ -37,7 +45,7 @@ ps: ## Show services and health
 	$(COMPOSE) ps
 
 auth-init: ## Create the login password and TOTP (interactive)
-	$(COMPOSE) exec api python -m serenity.auth init $(if $(force),--force)
+	$(COMPOSE) exec --user $(UID_API):$(UID_API) api python -m serenity.auth init $(if $(force),--force)
 
 dev-image:
 	@docker build -q --target dev -t $(DEV_IMAGE) api >/dev/null
@@ -66,4 +74,4 @@ lint: dev-image ## Run linters and type checks
 	$(DEV_RUN) ruff format --check .
 	$(DEV_RUN) mypy serenity
 	@# .env.example has no secret key: provide a dummy one only for validation.
-	SERENITY_SECRET_KEY=lint-only $(COMPOSE) --env-file .env.example config --quiet
+	SERENITY_SECRET_KEY=lint-only $(COMPOSE) --env-file .env.example config --quiet --no-path-resolution

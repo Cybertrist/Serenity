@@ -14,12 +14,12 @@ conteneur compromis pourrait atteindre ou modifier.
 
 - `internal` (`internal: true`) : trafic entre services, sans Internet.
 - `edge` : services publiés sur `127.0.0.1` (`web`).
-- `egress` : sortie Internet de l'`api` seule (Pwned Passwords).
-- L'`api` n'a aucun port publié.
+- `egress` : sortie Internet de l'`agent` seul (Pwned Passwords).
+- L'`api` et l'`agent` n'ont aucun port publié ; l'`agent` n'est joignable par aucun service.
 
 **Durcissement de chaque conteneur**
 
-- UID fixes non-root : api 10001.
+- UID fixe non-root : api et agent 10001 (après abandon de privilèges, voir ADR-007).
   nginx garde son maître root (avec seulement `CHOWN`, `SETUID`, `SETGID`) et ses workers non-root.
 - `read_only: true` + `tmpfs` pour les dossiers temporaires.
 - `cap_drop: ALL`, `no-new-privileges`.

@@ -9,6 +9,15 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- Phase 2 : conteneur `agent` séparé (même image), seul détenteur de la clé serveur, sans port,
+  réseau `egress` uniquement ; publication de la clé publique serveur (`GET /api/crypto/server-key`),
+  garde-fou si la clé change.
+- Phase 2 : clés `data/keys/server.key` et `data/keys/totp.key` (`root:root 0400`, `make keys`,
+  créées au premier `make up`), lues en root puis abandon de privilèges vers l'UID 10001 (ADR-007).
+- Phase 2 : nginx résout l'api dynamiquement (plus de `502` après recréation), SQLite `busy_timeout`
+  pour l'accès partagé api / agent.
+- Phase 2 : doc `02-infrastructure.md` réécrite (sauvegarde séparée des clés).
+
 - Phase 1 : spécification cryptographique `docs/crypto.md` (validée) et ADR-006.
 - Phase 1 : modules crypto Python (`api/serenity/crypto/`, PyNaCl) et TypeScript
   (`web/src/crypto/`, libsodium-wrappers-sumo) : Argon2id, sous-clés, blocs AEAD, boîtes scellées,
