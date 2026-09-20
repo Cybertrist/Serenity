@@ -11,13 +11,14 @@ Serenity a maintenant de vrais comptes, conformes à [`crypto.md`](crypto.md) §
 | **Déverrouillage** (au quotidien) | Mot de passe maître seul | Clé d'auth |
 | **Changement du mot de passe maître** | Rechiffre UK avec la nouvelle clé | Ancienne et nouvelle clé d'auth, code, nouveau bloc |
 | **Récupération** | Kit + code TOTP, nouveau mot de passe, **nouveau kit** | Clé d'auth de récupération, code, nouveaux blocs |
+| **Régénération du kit** (réglages) | Mot de passe maître + code TOTP, tire un kit neuf pour la même UK | Clé d'auth, code, nouvelle clé d'auth de récupération et nouveau bloc |
 
 Côté serveur (`api/serenity/auth/`) :
 
 | Module | Rôle |
 |---|---|
 | `accounts.py` | Inscription, prélogin, connexion, déverrouillage |
-| `credentials.py` | Changement de mot de passe maître, récupération |
+| `credentials.py` | Changement de mot de passe maître, récupération, régénération du kit |
 | `sessions.py` | Sessions d'appareil (cookie → HMAC en base) |
 | `throttle.py`, `guards.py` | Limitation des tentatives et verrouillage progressif |
 | `totp.py` | Code TOTP de connexion, chiffré en base avec la clé TOTP |
@@ -40,6 +41,7 @@ au verrouillage (`web/src/vault/keyring.ts`).
 | `GET /api/auth/me`, `/keys`, `/sessions` | session | Compte, clés **chiffrées**, appareils connectés |
 | `DELETE /api/auth/sessions/{id}` | déverrouillé | Déconnecter un appareil à distance |
 | `POST /api/auth/password` | déverrouillé | Changer le mot de passe maître |
+| `POST /api/auth/recovery-kit` | déverrouillé | Régénérer le kit de récupération (§7.11) |
 | `POST /api/auth/recover/start`, `/complete` | libre | Récupération par le kit |
 | `POST /api/auth/logout` | session | Déconnexion de cet appareil |
 
@@ -54,6 +56,10 @@ au verrouillage (`web/src/vault/keyring.ts`).
   sont en base, ils survivent à un redémarrage.
 - **Pas d'énumération** : un compte inconnu reçoit un faux sel stable, et le serveur calcule
   quand même un Argon2id, pour que le temps de réponse ne trahisse rien.
+- **Un kit se refait, il ne se réaffiche pas.** Le serveur n'en garde que le hachage de la clé
+  d'auth de récupération : réafficher est impossible, régénérer demande le mot de passe maître
+  **et** un code TOTP — une session ouverte ne suffit pas. L'ancien kit meurt à l'instant où le
+  nouveau s'affiche, avertissement à l'appui. Voir [ADR-013](decisions/ADR-013-regeneration-kit.md).
 - **Mono-utilisateur en V1** : les inscriptions se ferment dès qu'un compte est actif. Le modèle
   de données, lui, est multi-utilisateur. Voir [ADR-008](decisions/ADR-008-comptes.md).
 - L'ancien système (mot de passe côté serveur, fichier `auth.json`, `make auth-init`) est retiré.
@@ -63,9 +69,9 @@ au verrouillage (`web/src/vault/keyring.ts`).
 ### Tests automatiques (sur la VM)
 
 ```bash
-make test         # Python : 74 tests, dont tous les parcours via le client de référence
+make test         # Python : 141 tests, dont tous les parcours via le client de référence
 make web-test     # TypeScript : lint, types, tests unitaires
-make e2e          # Le client TypeScript contre le vrai serveur Python (6 parcours)
+make e2e          # Le client TypeScript contre le vrai serveur Python (7 parcours)
 ```
 
 `make e2e` lance un serveur de test jetable (base temporaire, clés aléatoires, horloge TOTP

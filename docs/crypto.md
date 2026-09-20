@@ -407,6 +407,30 @@ l'ancienne clé et la rescelle pour la nouvelle, sans intervention du client.
    chiffre la liste des entrées déchiffrées (les deux zones), contexte `export/…`.
 3. Le fichier est produit **dans le navigateur** et ne transite pas par le serveur.
 
+### 7.11 Régénération du kit de récupération
+
+À faire si tu as perdu la feuille, ou si quelqu'un a pu la voir. UK ne change pas : **aucune
+entrée n'est rechiffrée** et les autres appareils ne sont pas touchés.
+
+1. ▶ (Coffre déverrouillé, UK en mémoire.) Un avertissement rappelle que l'ancien kit cessera de
+   valoir dès la confirmation. Tu saisis ton mot de passe maître **et** un code TOTP : une session
+   ouverte ne suffit pas à refaire le filet de secours.
+2. ▶ Dérive MK → AuthKey. Elle ne sert qu'à prouver le mot de passe ; MEK n'est pas dérivée, rien
+   n'est rechiffré avec elle.
+3. ▶ Génère RK' (20 o), RKS' = `crypto_generichash(32, RK')`, puis RAK' et RWK' (§5.5, §5.6).
+4. ▶ Chiffre `UK_par_RWK'` avec l'UK déjà en mémoire.
+5. ▶ → ◆ Envoie AuthKey, code TOTP, RAK' et `UK_par_RWK'`.
+6. ◆ Vérifie AuthKey et le code (même limitation de tentatives qu'en 7.7), remplace le hachage de
+   RAK et `UK_par_RWK` **en une transaction**, puis écrit la ligne d'audit. Les sessions restent
+   ouvertes : ni AuthKey ni UK ne changent, aucun autre appareil n'est concerné.
+7. ▶ Affiche RK' **une seule fois** ; tu confirmes l'avoir notée, puis RK' est effacée de la
+   mémoire. L'ancien kit ne vaut plus rien depuis l'étape 6.
+
+Entre 6 et 7, fermer l'onglet sans noter RK' laisse le compte **sans kit utilisable** : le mot de
+passe maître continue de fonctionner, mais la voie de secours est perdue jusqu'à la prochaine
+régénération. C'est assumé (ADR-013) : l'avertissement de l'étape 1 vient avant, et le kit affiché
+s'imprime ou se copie d'un bouton. Le §7.8 se termine déjà par un kit neuf, avec la même fenêtre.
+
 ## 8. Modèle de menace
 
 ### 8.1 Fuite de la base seule (copie de `serenity.sqlite`, sauvegarde volée…)

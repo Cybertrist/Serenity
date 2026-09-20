@@ -77,7 +77,7 @@ gh label create backend --color 1d76db --description "API FastAPI"
 # ... (un par label)
 
 # Milestones
-gh api repos/Cybertrist/serenity/milestones -f title="V1 — Veille"
+gh api repos/Cybertrist/Serenity/milestones -f title="V1 — Veille"
 
 # Issues
 gh issue create --title "Phase 1 — Dépôt et GitHub" --milestone "V1 — Veille" --label v1,infra,docs
@@ -86,7 +86,7 @@ gh issue create --title "Phase 1 — Dépôt et GitHub" --milestone "V1 — Veil
 ### Protection de `main`
 
 ```bash
-gh api -X PUT repos/Cybertrist/serenity/branches/main/protection --input - <<'JSON'
+gh api -X PUT repos/Cybertrist/Serenity/branches/main/protection --input - <<'JSON'
 {
   "required_status_checks": {
     "strict": true,
@@ -103,7 +103,7 @@ gh api -X PUT repos/Cybertrist/serenity/branches/main/protection --input - <<'JS
 JSON
 
 # Secret scanning + push protection
-gh api -X PATCH repos/Cybertrist/serenity --input - <<'JSON'
+gh api -X PATCH repos/Cybertrist/Serenity --input - <<'JSON'
 { "security_and_analysis": {
     "secret_scanning": { "status": "enabled" },
     "secret_scanning_push_protection": { "status": "enabled" } } }
@@ -115,7 +115,7 @@ JSON
 ```bash
 # Labels, milestones, issues
 gh label list
-gh api repos/Cybertrist/serenity/milestones --jq '.[].title'
+gh api repos/Cybertrist/Serenity/milestones --jq '.[].title'
 gh issue list --milestone "V1 — Veille"
 
 # CI de la pull request

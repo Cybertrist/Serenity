@@ -1,4 +1,4 @@
-"""Master password change and recovery with the kit (docs/crypto.md §7.7, §7.8)."""
+"""Master password change and recovery with the kit (docs/crypto.md §7.7, §7.8, §7.11)."""
 
 import secrets
 from dataclasses import dataclass
@@ -84,6 +84,47 @@ def change_password(
         details={"revoked_sessions": revoked},
     )
     return revoked
+
+
+def rotate_recovery_kit(
+    session: Session,
+    settings: Settings,
+    totp_key: bytes,
+    row: DeviceSession,
+    current_auth_key: bytes,
+    code: str,
+    new_recovery_auth_key: bytes,
+    new_uk_by_rk: bytes,
+    now: datetime,
+) -> None:
+    """§7.11: a new kit for the same UK. Entries, AuthKey and sessions are untouched."""
+    key = f"recovery-kit:{row.user_id}"
+    check_lock(session, key, now, row.user_id)
+    user = session.get(User, row.user_id)
+    if user is None:
+        raise AuthError(AuthErrorKind.NOT_FOUND, "Compte introuvable.")
+    ok = verify_key(user.auth_hash, current_auth_key)
+    step = totp.matching_step(
+        totp.decrypt_secret(totp_key, user.id, user.totp_secret_enc), code, user.totp_last_step
+    )
+    if not ok or step is None:
+        fail(
+            session,
+            settings,
+            key,
+            now,
+            user.id,
+            "auth.recovery.rotate",
+            "Mot de passe ou code incorrect.",
+        )
+    throttle.reset(session, key)
+    user.recovery_hash = hash_key(settings, new_recovery_auth_key)
+    user.uk_by_rk = new_uk_by_rk
+    user.totp_last_step = step
+    user.updated_at = now
+    session.add(user)
+    session.commit()
+    audit.record(session, Actor.USER, "auth.recovery.rotate", user_id=user.id)
 
 
 def start_recovery(

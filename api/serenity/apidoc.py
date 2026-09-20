@@ -31,6 +31,7 @@ ROLES = {
     "GET /api/auth/sessions": "Appareils connectés",
     "DELETE /api/auth/sessions/{session_id}": "Déconnecter un appareil à distance",
     "POST /api/auth/password": "Changer le mot de passe maître (déconnecte les autres appareils)",
+    "POST /api/auth/recovery-kit": "Régénérer le kit de récupération (mot de passe maître + TOTP)",
     "POST /api/auth/recover/start": "Récupération : clé de récupération + TOTP",
     "POST /api/auth/recover/complete": "Récupération : nouveau mot de passe maître et nouveau kit",
     "GET /api/logs": "Journal d'audit (le compte et le système)",

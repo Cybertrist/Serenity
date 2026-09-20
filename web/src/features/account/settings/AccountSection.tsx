@@ -1,13 +1,14 @@
-import { KeyIcon, SignOutIcon } from "@phosphor-icons/react";
+import { SignOutIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { useSession } from "../../../app/session";
 import { useToast } from "../../../app/toast";
-import { Button, Confirm, ErrorNote, Field, Note } from "../../../design";
+import { Button, Confirm, ErrorNote, Field } from "../../../design";
 import { changePassword } from "../credentials";
 import { errorText, passwordHint } from "../screens/wording";
+import { RecoveryKitSection } from "./RecoveryKitSection";
 
-/** Master password change and sign-out. Both end the sessions of the other devices. */
+/** Master password, recovery kit and sign-out for this account. */
 export function AccountSection({ onClose }: { onClose: () => void }) {
   const session = useSession();
   const toast = useToast();
@@ -108,20 +109,7 @@ export function AccountSection({ onClose }: { onClose: () => void }) {
         </form>
       </section>
 
-      <section className="flex flex-col gap-3">
-        <div className="flex flex-col gap-2">
-          <p className="m-0 text-body font-medium">Kit de récupération</p>
-          <p className="m-0 text-caption text-muted">
-            Affiché une seule fois, à la création du compte. Il ne peut pas être réaffiché : le
-            serveur n'en garde aucune copie lisible.
-          </p>
-        </div>
-        <Note icon={KeyIcon}>
-          Kit perdu ? Passe par « Utiliser mon kit de récupération » sur l'écran de connexion tant
-          que tu connais ton mot de passe maître : la récupération t'en donne un neuf et rend
-          l'ancien inutilisable.
-        </Note>
-      </section>
+      <RecoveryKitSection />
 
       <section className="flex flex-col gap-3">
         <div className="flex flex-col gap-2">

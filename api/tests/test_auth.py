@@ -202,6 +202,31 @@ def test_recovery_needs_the_totp(account: Account, client: TestClient) -> None:
     )
 
 
+def test_regenerate_the_recovery_kit(account: Account, client: TestClient) -> None:
+    before = Client(client).login(USERNAME, PASSWORD, account.code())
+    new_kit = account.api.rotate_recovery_kit(USERNAME, PASSWORD, account.code())
+    assert new_kit != account.recovery_kit
+    # The master password and the sessions are untouched.
+    assert account.api.call("GET", "/api/auth/me")["user_id"] == account.user_id
+    Client(client).login(USERNAME, PASSWORD, account.code())
+    # The old kit is dead, the new one opens the same vault.
+    old = _status(Client(client).recover, USERNAME, account.recovery_kit, account.code(), "x" * 20)
+    assert old == 401
+    Client(client).recover(USERNAME, new_kit, account.code(), "phrase après régénération")
+    after = Client(client).login(USERNAME, "phrase après régénération", account.code())
+    assert (after.uk, after.ak) == (before.uk, before.ak)
+
+
+def test_regenerating_the_kit_needs_the_password_and_the_code(account: Account) -> None:
+    wrong_code = _status(account.api.rotate_recovery_kit, USERNAME, PASSWORD, "000000")
+    wrong_password = _status(
+        account.api.rotate_recovery_kit, USERNAME, "une autre phrase de passe", account.code()
+    )
+    assert wrong_code == wrong_password == 401
+    logs = account.api.call("GET", "/api/logs")
+    assert ("auth.recovery.rotate", "failure") in {(log["action"], log["outcome"]) for log in logs}
+
+
 # --- audit and secrets ---------------------------------------------------------------------------
 
 

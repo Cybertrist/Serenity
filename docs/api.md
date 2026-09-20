@@ -33,6 +33,7 @@ chiffrés (voir [`crypto.md`](crypto.md)).
 | `POST /api/auth/prelogin` | libre | `PreloginIn` | `KdfOut` | Sel et paramètres Argon2id (faux sel stable si compte inconnu) |
 | `POST /api/auth/recover/complete` | libre | `RecoverCompleteIn` | `LoginOut` | Récupération : nouveau mot de passe maître et nouveau kit |
 | `POST /api/auth/recover/start` | libre | `RecoverStartIn` | `RecoverStartOut` | Récupération : clé de récupération + TOTP |
+| `POST /api/auth/recovery-kit` | déverrouillé | `RecoveryKitIn` |  | Régénérer le kit de récupération (mot de passe maître + TOTP) |
 | `GET /api/auth/sessions` | session |  | `SessionOut` (liste) | Appareils connectés |
 | `DELETE /api/auth/sessions/{session_id}` | déverrouillé |  |  | Déconnecter un appareil à distance |
 | `POST /api/auth/signup` | libre | `SignupIn` | `SignupOut` | Création du compte (blocs chiffrés) ; renvoie le TOTP à enrôler |
@@ -126,6 +127,7 @@ chiffrés (voir [`crypto.md`](crypto.md)).
 - **RecoverCompleteIn** : `ticket`, `new`, `recovery_auth_key`, `uk_by_rk`
 - **RecoverStartIn** : `username`, `recovery_auth_key`, `totp`
 - **RecoverStartOut** : `user_id`, `ticket`, `uk_by_rk`, `agent_key`
+- **RecoveryKitIn** : `current_auth_key`, `totp`, `recovery_auth_key`, `uk_by_rk`
 - **ReportIn** : `scanned`, `checked`, `alerts`
 - **RevisionOut** : `revision`, `zone`, `block`, `created_at`
 - **RotationOut** : `id`, `item_id`, `status`, `trigger`, `mode`, `requested_at`, `decided_at`, `finished_at`, `error`

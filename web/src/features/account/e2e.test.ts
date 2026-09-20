@@ -6,7 +6,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { Api, ApiError, type Fetch } from "../../lib/api";
 import { totpCode } from "../../lib/totp";
 import { ready } from "../../crypto/sodium";
-import { changePassword, lock, login, recover, signup, unlock } from ".";
+import { changePassword, lock, login, recover, regenerateRecoveryKit, signup, unlock } from ".";
 
 const URL = process.env.SERENITY_E2E_URL;
 const USER = "tristan";
@@ -96,6 +96,21 @@ describe.skipIf(!URL)("account flows against the Python API", () => {
     expect(await status(laptop.get("/api/auth/me"))).toBe(401);
     const again = await login(device(), USER, "nouvelle phrase de passe", await code());
     expect(again.keyring.userKey()).toEqual(uk);
+  });
+
+  it("regenerates the kit: the old one dies, the vault and the sessions stay", async () => {
+    const { keyring } = await unlock(phone, USER, "nouvelle phrase de passe");
+    const fresh = await regenerateRecoveryKit(
+      phone,
+      keyring,
+      USER,
+      "nouvelle phrase de passe",
+      await code(),
+    );
+    expect(fresh).not.toBe(kit);
+    expect(await status(phone.get("/api/auth/me"))).toBe(200);
+    expect(await status(recover(device(), USER, kit, await code(), "encore une phrase"))).toBe(401);
+    kit = fresh;
   });
 
   it("recovers with the kit, which is then replaced", async () => {

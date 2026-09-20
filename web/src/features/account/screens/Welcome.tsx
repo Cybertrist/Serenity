@@ -1,14 +1,9 @@
-import {
-  ArrowRightIcon,
-  CheckCircleIcon,
-  CopyIcon,
-  DownloadSimpleIcon,
-  ShieldCheckIcon,
-} from "@phosphor-icons/react";
+import { ArrowRightIcon, CheckCircleIcon, ShieldCheckIcon } from "@phosphor-icons/react";
 import { useState, type FormEvent } from "react";
 import { useSession } from "../../../app/session";
 import { Button, Card, ErrorNote, Field, Note } from "../../../design";
 import { CodeField } from "../CodeField";
+import { RecoveryKitPanel } from "../RecoveryKitPanel";
 import { signup, type PendingSignup } from "../signup";
 import { errorText, passwordHint } from "./wording";
 import { AuthHead, AuthShell } from "./AuthShell";
@@ -64,15 +59,6 @@ export function Welcome() {
   };
 
   const kit = pending?.recoveryKit ?? "";
-  const download = () => {
-    const text = `Serenity : kit de récupération\n\nIdentifiant : ${username}\nClé : ${kit}\n\nGarde ce fichier hors ligne (papier, clé USB). Il permet, avec ton code TOTP, de retrouver ton coffre si tu oublies ton mot de passe maître.\n`;
-    const url = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "serenity-kit-de-recuperation.txt";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
 
   return (
     <AuthShell step={`creation-${String(step)}`}>
@@ -170,36 +156,7 @@ export function Welcome() {
             subtitle="La seule façon de rouvrir ton coffre si tu oublies ton mot de passe maître."
             step={[3, 3]}
           />
-          <Card>
-            <div className="grid grid-cols-3 gap-2 font-mono text-body tracking-wider">
-              {kit.split("-").map((group, i) => (
-                <span
-                  key={i}
-                  className={`select-all rounded-chip bg-raised py-2.5 text-center ${i === 8 ? "text-muted" : ""}`}
-                >
-                  {group}
-                </span>
-              ))}
-            </div>
-          </Card>
-          <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              icon={DownloadSimpleIcon}
-              className="flex-1"
-              onClick={download}
-            >
-              Télécharger
-            </Button>
-            <Button
-              variant="secondary"
-              icon={CopyIcon}
-              className="flex-1"
-              onClick={() => void navigator.clipboard.writeText(kit)}
-            >
-              Copier
-            </Button>
-          </div>
+          <RecoveryKitPanel kit={kit} username={username} />
           <Note tone="warn">
             Il ne sera plus jamais affiché. Note-le sur papier ou garde le fichier hors ligne.
           </Note>
