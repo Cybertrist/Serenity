@@ -4,34 +4,44 @@
 @theme {
   /* Pure black behind everything; the app's square keeps its own, lighter surface. */
   --color-bg: #000000;
-  --color-surface: #16171a;
-  --color-raised: #1f2126;
+  --color-surface: #13161d;
+  --color-raised: #1b1f2a;
   --color-line: rgb(255 255 255 / 0.28);
   --color-line-soft: rgb(255 255 255 / 0.14);
-  --color-text: #ecedef;
-  --color-muted: #9a9ca3;
-  /* The orange of the logo, and the only orange in the app. */
-  --color-accent: #f2711c;
-  --color-accent-soft: rgb(242 113 28 / 0.14);
-  --color-on-accent: #150d05;
+  --color-text: #eceef2;
+  --color-muted: #99a0ad;
+  /* Bleu de France, opened up for a black background: the only blue that acts in the app. */
+  --color-accent: #5b8def;
+  --color-accent-soft: rgb(91 141 239 / 0.16);
+  --color-on-accent: #05101f;
   --color-ok: #6bd49a;
   --color-ok-soft: rgb(107 212 154 / 0.12);
-  --color-warn: #f5c26b;
-  --color-warn-soft: rgb(245 194 107 / 0.12);
-  --color-crit: #f27a7a;
-  --color-crit-soft: rgb(242 122 122 / 0.12);
+  --color-warn: #edc64b;
+  --color-warn-soft: rgb(237 198 75 / 0.12);
+  /* Rouge Marianne, opened up for a black background. */
+  --color-crit: #f76d72;
+  --color-crit-soft: rgb(247 109 114 / 0.12);
   --color-neutral-soft: rgb(255 255 255 / 0.06);
   --color-hover: rgb(255 255 255 / 0.04);
-  /* The cream of the logo: the padlock and the wordmark, nothing else. */
-  --color-mark: #ece8e1;
+  /* The white of the flag: the padlock and the wordmark, nothing else. */
+  --color-mark: #f2f4f8;
+  /*
+   * The flag, and only where it means something: the rule under the title bar, the steps of
+   * the account creation, the head of the unlock fall. Never as decoration on a screen.
+   */
+  --color-bleu: #3b7dd8;
+  --color-blanc: #f2f4f8;
+  --color-rouge: #e8434b;
   /* Pieces that cannot be borrowed from the palette above. */
   --color-frame: rgb(255 255 255 / 0.45);
+  --color-glow: rgb(91 141 239 / 0.18);
+  --color-glow-strong: rgb(91 141 239 / 0.5);
   --color-scrim: rgb(0 0 0 / 0.55);
-  --color-knob: #fff4ec;
+  --color-knob: #ffffff;
   --color-shade: rgb(0 0 0 / 0.6);
   --color-shade-strong: rgb(0 0 0 / 0.85);
   /* Trail of the unlock rain, as a canvas needs it: three numbers. */
-  --rain-trail: 214 210 203;
+  --rain-trail: 226 232 240;
   --rain-alpha: 0.34;
 
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
@@ -56,46 +66,66 @@
 }
 
 /*
+ * The flag, drawn once: three equal bands, hard stops, in the reading direction. It dresses
+ * the rule under the title bar and the steps of the account creation — nothing else.
+ */
+@utility tricolore {
+  background-image: linear-gradient(
+    90deg,
+    var(--color-bleu) 0 33.34%,
+    var(--color-blanc) 33.34% 66.67%,
+    var(--color-rouge) 66.67% 100%
+  );
+}
+
+/*
  * Light theme. `data-theme` is set by web/src/design/theme.ts on every load, from the
  * preference of this device; the media query below only dresses the very first paint,
  * before the script runs.
  */
 [data-theme="light"] {
-  --color-bg: #eceae6;
+  --color-bg: #ebeef3;
   --color-surface: #ffffff;
-  --color-raised: #f4f3f0;
-  --color-line: rgb(20 21 23 / 0.14);
-  --color-line-soft: rgb(20 21 23 / 0.08);
-  --color-text: #141517;
-  --color-muted: #5f6168;
-  /* The logo orange is too pale on white: darkened just enough to stay readable (4.5:1). */
-  --color-accent: #c85a17;
-  --color-accent-soft: rgb(200 90 23 / 0.12);
+  --color-raised: #f2f4f8;
+  --color-line: rgb(11 22 46 / 0.14);
+  --color-line-soft: rgb(11 22 46 / 0.08);
+  --color-text: #0f1626;
+  --color-muted: #5b6577;
+  /* The flag blue reads at 7:1 on paper: no need to tamper with it. */
+  --color-accent: #0055a4;
+  --color-accent-soft: rgb(0 85 164 / 0.1);
   --color-on-accent: #ffffff;
   --color-ok: #1b8553;
   --color-ok-soft: rgb(27 133 83 / 0.12);
-  --color-warn: #96670a;
-  --color-warn-soft: rgb(150 103 10 / 0.14);
-  --color-crit: #c23b3b;
-  --color-crit-soft: rgb(194 59 59 / 0.1);
-  --color-neutral-soft: rgb(20 21 23 / 0.05);
-  --color-hover: rgb(20 21 23 / 0.04);
-  /* The mark turns to ink: a cream padlock on cream paper is not a padlock. */
-  --color-mark: #16171a;
-  --color-frame: rgb(20 21 23 / 0.18);
-  --color-scrim: rgb(20 21 23 / 0.3);
+  --color-warn: #8c6a00;
+  --color-warn-soft: rgb(140 106 0 / 0.14);
+  /* Rouge Marianne, the cut that holds on white. */
+  --color-crit: #c9191e;
+  --color-crit-soft: rgb(201 25 30 / 0.1);
+  --color-neutral-soft: rgb(11 22 46 / 0.05);
+  --color-hover: rgb(11 22 46 / 0.04);
+  /* The mark turns to ink: a white padlock on white paper is not a padlock. */
+  --color-mark: #0f1626;
+  /* On paper, the white of the flag has to be drawn, or the rule looks broken in the middle. */
+  --color-bleu: #0055a4;
+  --color-blanc: #c9d3e2;
+  --color-rouge: #e1000f;
+  --color-frame: rgb(11 22 46 / 0.18);
+  --color-glow: rgb(0 85 164 / 0.12);
+  --color-glow-strong: rgb(0 85 164 / 0.35);
+  --color-scrim: rgb(11 22 46 / 0.3);
   --color-knob: #ffffff;
-  --color-shade: rgb(20 21 23 / 0.14);
-  --color-shade-strong: rgb(20 21 23 / 0.18);
-  --rain-trail: 44 46 50;
-  /* Ink on paper needs more body than cream on black. */
+  --color-shade: rgb(11 22 46 / 0.14);
+  --color-shade-strong: rgb(11 22 46 / 0.18);
+  --rain-trail: 20 28 48;
+  /* Ink on paper needs more body than white on black. */
   --rain-alpha: 0.5;
 }
 
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
-    --color-bg: #eceae6;
-    --color-text: #141517;
+    --color-bg: #ebeef3;
+    --color-text: #0f1626;
   }
 }
 

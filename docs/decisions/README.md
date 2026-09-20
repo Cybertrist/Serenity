@@ -36,6 +36,7 @@ Nommage : `ADR-NNN-titre-court.md`.
 - [ADR-014 — Thème clair, réglé par appareil](ADR-014-theme-clair.md)
 - [ADR-015 — L'exécuteur de rotation : conteneur à part, recettes de sites](ADR-015-executeur-rotation.md)
 - [ADR-016 — Sauvegardes restic, clés incluses, exercice de restauration](ADR-016-sauvegardes.md)
+- [ADR-017 — Identité française : bleu de France, blanc, rouge Marianne](ADR-017-identite-francaise.md)
 
 ## Archives
 

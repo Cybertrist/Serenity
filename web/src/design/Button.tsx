@@ -13,7 +13,7 @@ type Native = Omit<
 > & { style?: MotionStyle };
 
 const VARIANTS: Record<Variant, string> = {
-  // A disabled primary reads as unavailable, not as a dimmed orange smear.
+  // A disabled primary reads as unavailable, not as a dimmed blue smear.
   primary:
     "bg-accent text-on-accent font-semibold hover:brightness-110 disabled:bg-raised disabled:text-muted disabled:opacity-100",
   secondary: "bg-surface border border-line text-text font-medium hover:bg-raised",

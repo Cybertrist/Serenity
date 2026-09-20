@@ -4,7 +4,8 @@ import { EASE_OUT, PART_SPRING } from "./motion";
 
 /**
  * The padlock of the logo, redrawn as SVG so its parts can move: filled body, thick shackle
- * held a little above it (the stencil gap), orange keyhole. Geometry measured on the original
+ * held a little above it (the stencil gap), red keyhole — the mark carries the flag:
+ * a blue tile in the app icon, a white padlock, a Marianne red keyhole. Geometry measured on the original
  * artwork in `web/public/brand/`.
  */
 const SHACKLE = "M25 101 V75 A75 75 0 0 1 175 75 V101 H145 V75 A45 45 0 0 0 55 75 V101 Z";
@@ -91,7 +92,7 @@ export function LockMark({
           />
         ) : null}
       </g>
-      <circle cx="100" cy="175" r="23" fill="var(--color-accent)" />
+      <circle cx="100" cy="175" r="23" fill="var(--color-rouge)" />
     </svg>
   );
 }
