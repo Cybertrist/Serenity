@@ -202,6 +202,8 @@ def save_pending(session: Session, item: Item, block: bytes, now: datetime) -> I
         raise InvalidRequestError("Entrée dans la corbeille.")
     if item.zone != Zone.AGENT:
         raise InvalidRequestError("Zone personnelle : l'agent n'y touche pas.")
+    if item.pending_block is not None:
+        raise ConflictError("Une rotation est déjà en cours sur cette entrée.", item)
     item.pending_block = block
     item.pending_revision = item.revision + 1
     session.add(item)
@@ -220,9 +222,16 @@ def save_pending(session: Session, item: Item, block: bytes, now: datetime) -> I
 
 
 def commit_pending(session: Session, item: Item, now: datetime) -> Item:
-    """The site took the new password: the pending block becomes the entry."""
+    """The site took the new password: the pending block becomes the entry.
+
+    The block is bound to its revision by the AEAD context (docs/crypto.md §5.2): committing
+    it under any other revision would store something no client could ever open. If the entry
+    moved while the rotation was in flight, the caller re-encrypts first.
+    """
     if item.pending_block is None:
         raise InvalidRequestError("Aucun bloc en attente.")
+    if item.pending_revision != item.revision + 1:
+        raise ConflictError("Entrée modifiée pendant la rotation : bloc en attente périmé.", item)
     block = item.pending_block
     item.pending_block = None
     item.pending_revision = None

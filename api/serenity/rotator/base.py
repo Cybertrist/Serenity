@@ -31,7 +31,7 @@ TRANSITIONS: dict[Step, frozenset[Step]] = {
     Step.READY: frozenset({Step.PENDING_SAVED, Step.FAILED}),
     Step.PENDING_SAVED: frozenset({Step.SITE_CHANGED, Step.ROLLED_BACK}),
     Step.SITE_CHANGED: frozenset({Step.VERIFIED, Step.ROLLED_BACK, Step.FAILED}),
-    Step.VERIFIED: frozenset({Step.COMMITTED, Step.ROLLED_BACK}),
+    Step.VERIFIED: frozenset({Step.COMMITTED, Step.ROLLED_BACK, Step.FAILED}),
     Step.COMMITTED: frozenset(),
     Step.ROLLED_BACK: frozenset(),
     Step.FAILED: frozenset(),
@@ -122,7 +122,14 @@ class RotationRun:
             self.error = "la reconnexion avec le nouveau mot de passe a échoué"
             return self._rollback(rotator, vault, current, new, site_changed=True)
         self._move(Step.VERIFIED)
-        vault.commit_pending()
+        try:
+            vault.commit_pending()
+        except Exception as exc:
+            # The site already took the new password: the pending block is the only copy,
+            # so it is kept, and the entry is flagged instead of rolled back.
+            self.error = f"enregistrement final impossible ({type(exc).__name__})"
+            self._move(Step.FAILED)
+            return self.step
         self._move(Step.COMMITTED)
         return self.step
 
