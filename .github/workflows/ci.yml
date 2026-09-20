@@ -156,7 +156,7 @@ jobs:
       - name: Walk every screen
         run: scripts/ui-smoke.sh "$RUNNER_TEMP/shots"
       - if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ui-screenshots
           path: ${{ runner.temp }}/shots
