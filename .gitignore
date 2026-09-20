@@ -42,7 +42,8 @@ dev-dist/
 coverage/
 npm-debug.log*
 
-# --- Playwright (V2) ---
+# --- Playwright ---
+web/e2e/shots/
 playwright/.auth/
 playwright-report/
 test-results/

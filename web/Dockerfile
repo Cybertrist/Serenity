@@ -1,8 +1,18 @@
 # syntax=docker/dockerfile:1
-# Phase 2: nginx with a placeholder page. Phase 7 adds a Vite build stage.
+# --- Build the PWA ---
+FROM node:22.20.0-slim AS build
+WORKDIR /web
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY . .
+# The crypto test vectors are not needed to build.
+RUN npx vite build
+
+# --- Serve it ---
 FROM nginx:1.30.5-alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY placeholder/ /usr/share/nginx/html/
+COPY security-headers.conf /etc/nginx/snippets/security-headers.conf
+COPY --from=build /web/dist/ /usr/share/nginx/html/
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
     CMD ["wget", "-q", "--spider", "http://127.0.0.1:8080/healthz"]

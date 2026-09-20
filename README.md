@@ -5,7 +5,12 @@ Gestionnaire de mots de passe **complet et auto-hébergé**, avec son propre cof
 Sa particularité : un **agent** qui surveille les fuites de données et s'occupe des mots de passe
 que tu lui confies. Pas d'humain dans la boucle, mais un humain toujours informé.
 
-> Capture d'écran à venir (phase 7).
+<p>
+  <img src="docs/img/coffre.png" alt="Le coffre" width="200">
+  <img src="docs/img/fiche.png" alt="Fiche d'une entrée" width="200">
+  <img src="docs/img/fuites.png" alt="Fuites" width="200">
+  <img src="docs/img/agent.png" alt="Agent" width="200">
+</p>
 
 ## Le coffre à double zone
 

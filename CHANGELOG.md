@@ -9,6 +9,62 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- Phase 7 : la barre d'onglets tombe à **trois entrées** (Coffre, Fuites, Agent) : le journal
+  devient un volet des réglages, où l'écran Agent renvoie d'un bouton. « Verrouiller maintenant »
+  quitte la barre de titre pour les réglages.
+- Phase 7 : l'ajout d'une entrée devient un **bouton flottant** en bas à droite du carré, au lieu
+  d'un bouton coincé à côté du titre.
+- Phase 7 : **guide en cinq écrans** (le coffre, les deux zones, les fuites, l'agent, et un
+  parcours d'essai), ouvert par le point d'interrogation de la barre de titre ou depuis un coffre
+  vide.
+- Phase 7 : fond **noir pur**, sans aucun décor ; contour blanc franc de 2 px autour du carré et
+  bordures à 28 % pour délimiter le reste ; titres
+  d'écran en capitales espacées comme le logotype, et un seul orange partout — celui du logo
+  (`#F2711C`).
+- Phase 7 : l'appli tient dans **un carré centré** (côté = min(92vw, 92vh, 980px)), plein écran
+  sous 768 px : barre de titre (marque, notifications, verrouiller, réglages), écran au milieu,
+  onglets en bas. La mise en page interne se règle sur le carré (container queries), pas sur la
+  fenêtre (ADR-012, `docs/design.md`).
+- Phase 7 : les écrans d'entrée (création du compte, connexion, code, déverrouillage,
+  récupération) partagent un seul cadre sobre : le logotype, une carte, et les actions
+  secondaires en **vrais boutons** dessous. Compteur d'étapes (`Étape 2 sur 3` + barre),
+  code à six cases, et les mêmes composants que l'intérieur de l'appli.
+- Phase 7 : le déverrouillage joue **une cascade de données chiffrées qui tombe du haut de
+  l'écran** ; son front découvre le coffre au fur et à mesure, puis les traînées sortent par le
+  bas (1,65 s). Décor animé derrière (deux lumières lentes, grille en perspective sur l'écran
+  d'entrée). SVG, canevas et Motion, sans dépendance ajoutée ; `prefers-reduced-motion` réduit le
+  tout à un fondu.
+  La connexion se fait donc en deux temps à l'écran, pour un seul appel à l'API, inchangé.
+- Phase 7 : `session.unlock` accepte un temps d'animation (`beforeEnter`) entre « le mot de passe
+  est prouvé » et « les clés entrent en mémoire », pour que la mise en scène ne soit pas coupée.
+- Phase 7 : toutes les animations passent par un seul système (`web/src/design/motion.ts`) :
+  courbes, ressorts, perspective commune et variantes nommées (carré, écran, dialogue, listes),
+  plus les micro-interactions de survol et d'appui.
+- Phase 7 : la marque Serenity (cadenas crème à serrure orange, logotype pochoir) entre dans
+  l'appli : logotype dans la barre de titre et sur l'écran d'entrée, icônes de l'appli installée
+  et favicon redécoupés du logo, jeton de couleur `mark`.
+- Phase 7 : centre de notifications derrière la cloche (`/api/notifications`, non lues, tout
+  marquer comme lu) et **corbeille** dans les réglages (restaurer une entrée supprimée) : deux
+  capacités du serveur qui n'avaient pas d'écran.
+- Phase 7 : réglages en volets (Verrouillage, Appareils, Surveillance, Import et export,
+  Corbeille, Compte) au lieu d'un seul long défilement.
+- Phase 7 : confirmations explicites (`<Confirm>`) avant supprimer, confier, reprendre,
+  déconnecter un appareil, arrêter ou relancer l'agent.
+- Phase 7 : `make ui-smoke` fait un second passage en 1440 px (connexion, coffre, fiche, agent,
+  notifications, réglages) ; captures de bureau dans `web/e2e/shots/`.
+- Phase 7 : appli web PWA (React 18, Tailwind v4, Motion, Phosphor, TanStack Query) : création de
+  compte avec kit de récupération, connexion, déverrouillage, récupération ; onglets Coffre, Fuites,
+  Journal, Agent ; fiche d'entrée (copie avec effacement du presse-papiers après
+  30 s, code TOTP en direct, rotation, historique, confier / reprendre) ; réglages (verrouillage,
+  appareils, adresses surveillées, import Bitwarden, export chiffré, mot de passe maître).
+- Phase 7 : hors ligne (cache chiffré dans IndexedDB, déverrouillage local en lecture seule),
+  notifications en temps réel, polices servies localement.
+- Phase 7 : générateur avec robustesse en clair (« Faible » à « Très solide ») en plus des bits.
+- Phase 7 : nginx avec CSP stricte (`wasm-unsafe-eval` seulement pour libsodium) et en-têtes de
+  sécurité ; image `web` construite depuis les sources.
+- Phase 7 : `make ui-smoke` (Chromium sur l'image de production, tous les écrans, hors ligne),
+  job CI avec captures, docs `07-interface.md` et `design.md`.
+
 - Phase 6 : politiques de rotation par entrée (fréquence, mode autonome / validation ; rappels
   seulement en zone personnelle), échéancier horaire de l'agent, rotation après fuite, kill switch
   (API, enclencher / relâcher), allowlist lue par le code, limite de rotations par jour,
@@ -19,7 +75,48 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
   (`make api-doc`, vérifié en CI), client TypeScript de l'agent, `make schedule-now`, commandes
   `make client` (policy, rotations, approve, refuse, stop, start), doc `06-agent.md`, ADR-011.
 
+### Modifié
+
+- Phase 7 : les panneaux glissants venus du bas (fiche, éditeur, réglages) deviennent des
+  **dialogues centrés** avec focus piégé, fermeture par Échap et page bloquée derrière.
+- Phase 7 : les messages éphémères passent en bas de l'écran, un à la fois, avec une icône d'état
+  et une fermeture au clic.
+
 ### Corrigé
+
+- Phase 7 : le coffre apparaissait **avant la fin** de la cascade, sous une pluie encore en
+  cours : le rideau se levait au bout de 950 ms au lieu d'attendre que les traînées soient
+  sorties et que le coffre soit monté. Le coffre arrive maintenant de loin, rideau levé sur lui.
+- Phase 7 : le rideau de la cascade ne masquait en réalité rien — un ancien `clip-path` le
+  réduisait à une hauteur nulle, et l'écran de déverrouillage restait visible sous la pluie.
+- Phase 7 : le champ de recherche était noir sur fond noir ; il prend la surface surélevée,
+  comme les cases du code à six chiffres.
+- Phase 7 : les marques des deux zones disaient le contraire du modèle — la zone personnelle
+  portait un bouclier gris et la zone agent un bouclier vert. C'est désormais un **bouclier vert**
+  pour « seuls tes appareils peuvent lire » et un **robot orange** pour « confié à l'agent », sur
+  l'entrée comme sur le titre de sa zone.
+- Phase 7 : une **barre de défilement horizontale** apparaissait et disparaissait en bas du
+  contenu à chaque changement d'onglet (l'écran entrant glisse, et `overflow-y: auto` force
+  `overflow-x: auto`).
+- Phase 7 : régler un rappel ou une rotation n'affichait **aucune erreur** quand le serveur
+  refusait ; le message est maintenant montré dans le panneau.
+- Phase 7 : ouvrir les réglages depuis la roue dentée affichait un volet vide — l'événement de
+  clic arrivait à la place du nom de section.
+- Phase 7 : l'animation de déverrouillage se jouait **deux fois** — React démontait la pluie avec
+  l'écran de déverrouillage puis la remontait au-dessus du coffre ; `App` garde maintenant trois
+  emplacements fixes.
+- Phase 7 : un bouton principal désactivé s'affichait en orange délavé ; il prend désormais une
+  surface neutre.
+- Phase 7 : la grille du décor défilait derrière la vitre translucide du formulaire, ce qui
+  donnait une animation parasite en boucle juste derrière les champs de saisie.
+- Phase 7 : un sous-arbre laissé à `rotateY(180deg)` ne recevait plus les clics de souris
+  (le clavier, si) : le cadenas change désormais de face de profil, sans jamais rester retourné.
+- Phase 7 : `make ui-smoke` dit maintenant ce que la page affichait quand une étape échoue, au
+  lieu d'un simple dépassement de délai.
+- Phase 7 : un message éphémère pouvait masquer le titre de l'écran.
+- Phase 7 : « Supprimer » effaçait une entrée au premier clic, sans confirmation.
+- Phase 7 : l'écran Agent annonçait qu'il fallait le mot de passe maître pour relancer l'agent,
+  ce qui n'était pas le cas.
 
 - Phase 6 : la migration v4 pouvait supprimer la nouvelle table `rotation` sur une base neuve.
 
