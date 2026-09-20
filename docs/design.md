@@ -216,9 +216,11 @@ et il suit en direct : le basculement automatique du soir change l'appli sans la
 
 ## Typographie
 
-**Les titres d'écran portent la manière du logotype** : capitales, interlettrage large, centrées
-sous la marque. Geist (interface) et JetBrains Mono (codes, clés, heures du journal), servies localement
-(`web/public/fonts/`, licence OFL). **Quatre tailles** : `text-display` 26 px (titre d'écran sur
+**Les titres d'écran sont dans le pochoir du logotype** : capitales, interlettrage large,
+centrées sous la marque, et dessinées dans la même famille de lettres que « SEREN**I**TY ».
+C'est Black Ops One, la seule police à fentes de l'appli, et elle ne sert **qu'à ça** : trois
+mots par écran, jamais une phrase. Le reste est en Geist (interface) et JetBrains Mono (codes,
+clés, heures du journal). Les trois sont servies localement (`web/public/fonts/`, licence OFL). **Quatre tailles** : `text-display` 26 px (titre d'écran sur
 ordinateur seulement), `text-title` 20 px semi-gras, `text-body` 15 px, `text-caption` 13 px.
 
 ## Formes
