@@ -46,6 +46,8 @@
 
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  /* The logotype's manner, in a real typeface: screen titles, and nothing else. */
+  --font-stencil: "Black Ops One", "Geist", ui-sans-serif, sans-serif;
 
   /* Four sizes: display is reserved for page titles on a wide screen. */
   --text-display: 26px;
@@ -133,6 +135,13 @@
   font-family: "Geist";
   src: url("/fonts/geist-latin.woff2") format("woff2");
   font-weight: 400 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Black Ops One";
+  src: url("/fonts/black-ops-one-latin.woff2") format("woff2");
+  font-weight: 400;
   font-display: swap;
 }
 

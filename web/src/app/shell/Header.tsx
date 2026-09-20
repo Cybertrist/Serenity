@@ -5,6 +5,9 @@ import { EASE_OUT } from "../../design";
 /**
  * Page header inside the square: the name of the screen and, under it, what the screen is for.
  * The app-wide buttons (notifications, lock, settings) live in the frame, above this.
+ *
+ * The title is set in the stencil of the logotype: the screen names are the only place in the
+ * app that borrows the mark's own letters.
  */
 export function Header({
   title,
@@ -19,7 +22,7 @@ export function Header({
     <header className="mb-5 flex flex-col items-center gap-3 text-center">
       <div className="flex min-w-0 flex-col items-center gap-1">
         <motion.h1
-          className="m-0 text-title font-semibold uppercase tracking-[0.16em] @[620px]:text-display"
+          className="m-0 font-stencil text-title font-normal uppercase tracking-[0.16em] @[620px]:text-display"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: EASE_OUT }}

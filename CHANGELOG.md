@@ -102,6 +102,10 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- **Les titres d'écran passent au pochoir du logotype.** « COFFRE », « FUITES » et « AGENT »
+  sont maintenant dessinés dans les mêmes lettres que « SERENITY », avec Black Ops One servie
+  localement comme les deux autres polices. Elle ne sert qu'aux titres : trois mots par écran,
+  jamais une phrase.
 - **La revue de sécurité** (`docs/10-securite.md`) : ce qui a été vérifié avec la commande pour
   le rejouer (surface réseau, privilèges des conteneurs, secrets dans l'historique, dépendances
   Python et npm, en-têtes HTTP), le modèle de menace résumé en un tableau de ce que gagne un
