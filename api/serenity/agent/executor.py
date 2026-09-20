@@ -42,6 +42,9 @@ ROTATION_DONE = "rotation.done"
 ROTATION_FAILED = "rotation.failed"
 ROTATION_MANUAL = "rotation.manual"
 
+# Shown as is in the interface: this site has no recipe, so nothing will happen.
+NO_RECIPE = "aucune recette pour ce site : l'agent ne sait pas encore le changer"
+
 # What the user sees, and what the journal keeps. Never a password, never a page.
 OUTCOME = {
     Step.COMMITTED: ("succeeded", ROTATION_DONE),
@@ -147,21 +150,28 @@ def execute_rotation(
     urls = [u for u in entry.get("urls", []) if isinstance(u, str) and u.strip()]
     recipe = _pick_recipe(urls, recipes)
     if recipe is None:
-        # Not a failure: nobody taught the executor this site yet.
-        audit.record(
-            session,
-            Actor.AGENT,
-            "agent.rotation.execute",
-            outcome="skipped",
-            user_id=item.user_id,
-            target_type="item",
-            target_id=item.id,
-            details={"reason": "no_recipe"},
-        )
+        # Not a failure: nobody taught the executor this site yet. It must not look like
+        # silence either — an approved rotation that sleeps for ever is the thing phase 6
+        # was built to avoid. Say it on the rotation, once.
+        if rotation.error != NO_RECIPE:
+            rotation.error = NO_RECIPE
+            session.add(rotation)
+            session.commit()
+            audit.record(
+                session,
+                Actor.AGENT,
+                "agent.rotation.execute",
+                outcome="skipped",
+                user_id=item.user_id,
+                target_type="item",
+                target_id=item.id,
+                details={"reason": "no_recipe"},
+            )
         return Step.READY
 
     rotation.status = RotationStatus.IN_PROGRESS
     rotation.started_at = now
+    rotation.error = None
     session.add(rotation)
     session.commit()
 

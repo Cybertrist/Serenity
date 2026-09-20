@@ -6,9 +6,19 @@ import pytest
 from sqlalchemy import Engine
 from sqlmodel import Session, desc, select
 
-from serenity.agent.executor import _pick_recipe
+from serenity.agent.executor import NO_RECIPE, _pick_recipe, execute_rotation
 from serenity.agent.watch import open_agent_key
-from serenity.models import AgentKey, Item, User, Zone, utcnow
+from serenity.config import Settings
+from serenity.models import (
+    AgentKey,
+    Item,
+    PolicyMode,
+    Rotation,
+    RotationStatus,
+    User,
+    Zone,
+    utcnow,
+)
 from serenity.rotator.base import Credentials, RotationError, RotationRun, Step
 from serenity.rotator.passwords import CLASSES, new_password
 from serenity.rotator.remote import RemoteSiteRotator, totp_code
@@ -131,6 +141,48 @@ def test_an_http_error_from_the_executor_is_refused() -> None:
     site = rotator(lambda request: httpx.Response(500, json={}))
     with pytest.raises(RotationError, match="réponse 500"):
         site.login(Credentials("tristan", "x"))
+
+
+def test_a_site_without_a_recipe_says_so_on_the_rotation(
+    account: Account, engine: Engine, settings: Settings, agent_ready: bytes
+) -> None:
+    """An approved rotation the executor cannot run must not look like silence."""
+    keys = account.keys()
+    entry = {
+        "v": 1,
+        "type": "login",
+        "name": "Ailleurs",
+        "username": "tristan",
+        "password": DEMO_SECRET,
+        "urls": ["https://un-site-sans-recette.example/connexion"],
+    }
+    item = account.api.move(keys, account.api.add(keys, entry), "agent")
+    with Session(engine) as session:
+        rotation = Rotation(
+            user_id=account.user_id,
+            item_id=item["id"],
+            status=RotationStatus.APPROVED,
+            trigger="manual",
+            mode=PolicyMode.APPROVAL,
+            decided_at=utcnow(),
+        )
+        session.add(rotation)
+        session.commit()
+        row = session.get(Item, item["id"])
+        assert row is not None
+        step = execute_rotation(
+            session,
+            settings,
+            rotation,
+            row,
+            agent_ready,
+            {"demo": frozenset({"demo.serenity.test"})},
+            httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(500))),
+            utcnow(),
+        )
+        assert step == Step.READY
+        assert rotation.status == RotationStatus.APPROVED  # still waiting, not failed
+        assert rotation.error == NO_RECIPE
 
 
 # --- the vault side of the transaction ---------------------------------------------------------

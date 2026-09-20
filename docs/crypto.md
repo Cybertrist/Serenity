@@ -457,8 +457,15 @@ reconnexion** (règle 6 de `CLAUDE.md`).
 7. **Échec du retour arrière** (le site peut accepter l'un ou l'autre, ou ne répond plus) : le
    bloc en attente est **conservé**, l'entrée est signalée, et l'appli te montre les deux
    révisions. C'est le seul cas où deux mots de passe coexistent, et il demande ton œil.
-8. Chaque étape écrit une ligne dans le journal d'audit ; aucun mot de passe, ancien ou nouveau,
-   n'y figure jamais.
+8. **Échec du coffre après le changement du site** (base indisponible, entrée déplacée…) : le
+   bloc en attente est **conservé** lui aussi — c'est désormais la seule copie du mot de passe
+   que le site attend. La rotation est marquée en échec, sans rien jeter.
+9. **Entrée modifiée pendant la rotation** : le bloc en attente est lié à sa révision par les
+   données associées (§5.2). Avant de valider, l'agent **re-chiffre** sur l'entrée à jour : ta
+   modification l'emporte sur tous les champs, la rotation sur le seul mot de passe. Un bloc en
+   attente dont la révision n'est plus la suivante n'est jamais écrit tel quel.
+10. Chaque étape écrit une ligne dans le journal d'audit ; aucun mot de passe, ancien ou
+    nouveau, n'y figure jamais.
 
 Ce que ça change dans ce qui est stocké : **un bloc chiffré de plus** pour une entrée en cours de
 rotation, du même format, de la même clé et du même contexte qu'une révision ordinaire (§6).
