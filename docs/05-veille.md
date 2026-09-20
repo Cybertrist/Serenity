@@ -49,7 +49,7 @@ Serenity vérifie tes mots de passe et te prévient.
 - **Réutilisation : seul le navigateur en décide**. L'agent ne voit pas ta zone personnelle ;
   s'il jugeait la réutilisation, il fermerait à tort une alerte trouvée par ton navigateur.
 - **Kill switch** : l'agent le vérifie avant chaque compte et chaque adresse. S'il est
-  enclenché, la veille ne part pas, et c'est noté au journal. Son bouton arrive en phase 6.
+  enclenché, la veille ne part pas, et c'est noté au journal. Son bouton est dans l'écran Agent.
 - **Mêmes règles des deux côtés** : `shared/test-vectors/watch.json` est vérifié par Python et
   par TypeScript.
 - **Seul l'agent sort sur Internet** (réseau `egress`). La clé HIBP n'est donnée qu'à lui ;
@@ -61,9 +61,9 @@ Serenity vérifie tes mots de passe et te prévient.
 ### Tests automatiques (sur la VM)
 
 ```bash
-make test        # Python : 112 tests (dont 14 sur la veille)
+make test        # Python : toute la suite, dont les règles de veille
 make web-test    # TypeScript : règles partagées, scan, k-anonymat
-make e2e         # 12 parcours, dont scan -> rapport -> alertes -> notifications
+make e2e         # dont scan -> rapport -> alertes -> notifications
 ```
 
 ### En vrai
@@ -80,8 +80,8 @@ make client c=breaches                # « Test fuite : mot de passe exposé »,
 make client c=notifications
 ```
 
-Le scan du navigateur, en attendant l'interface (sans Pwned Passwords : le conteneur `api` n'a
-pas Internet, l'appli web le fera) :
+Le scan côté navigateur se joue dans l'onglet **Fuites** de l'appli. En ligne de commande, le
+client le simule sans Pwned Passwords (le conteneur `api` n'a pas Internet) :
 
 ```bash
 make client c=scan

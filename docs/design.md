@@ -68,7 +68,7 @@ Les fichiers d'origine sont découpés en trois usages (`web/public/`) :
 | Fichier | Usage |
 |---|---|
 | `brand/wordmark.png` | Le logotype seul, en haut des écrans d'entrée et dans la barre de titre |
-| `brand/wordmark-clair.png` | La même chose pour le thème clair, prêt mais pas encore utilisé |
+| `brand/wordmark-clair.png` | La même chose pour le thème clair ; `<Wordmark>` choisit la découpe |
 | `icon-192.png`, `icon-512.png`, `maskable-512.png`, `apple-touch-icon.png` | Icônes de l'appli installée, découpées du logo |
 | `icon.svg`, `maskable.svg` | La même forme, redessinée en vectoriel : **la source des PNG** |
 

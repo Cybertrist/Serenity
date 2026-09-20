@@ -55,9 +55,9 @@ sous forme de blocs illisibles pour lui (sauf la zone agent, pour le seul proces
 ### Tests automatiques (sur la VM)
 
 ```bash
-make test        # Python : 97 tests (dont 13 sur le coffre)
+make test        # Python : toute la suite, dont le coffre et ses révisions
 make web-test    # TypeScript : générateur, import Bitwarden, export chiffré, verrouillage auto…
-make e2e         # TypeScript contre le vrai serveur : 11 parcours (comptes + coffre)
+make e2e         # TypeScript contre le vrai serveur : comptes + coffre
 ```
 
 ### En vrai, avec le client en ligne de commande
@@ -78,5 +78,5 @@ make client c="delete Netflix"          # corbeille
 make client c="restore Netflix"
 ```
 
-L'import Bitwarden et l'export chiffré se feront depuis l'interface (phase 7) : ils sont faits
-pour tourner dans le navigateur, testés ici par `make web-test` et `make e2e`.
+L'import Bitwarden et l'export chiffré se font depuis l'appli (**Réglages → Import et export**) :
+ils tournent dans le navigateur, là où sont les clés. `make web-test` et `make e2e` les couvrent.

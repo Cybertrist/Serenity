@@ -25,9 +25,9 @@ Côté serveur (`api/serenity/auth/`) :
 | `hashing.py` | Argon2id des clés d'auth |
 | `validation.py` | Format des blocs reçus (le serveur ne peut pas les lire, il vérifie leur forme) |
 
-Côté navigateur (`web/src/features/account/`) : les mêmes parcours en TypeScript, prêts pour
-les écrans de la phase 7. Les clés déverrouillées vivent dans un `Keyring` en mémoire, effacé
-au verrouillage (`web/src/vault/keyring.ts`).
+Côté navigateur (`web/src/features/account/`) : les mêmes parcours en TypeScript, avec leurs
+écrans ([07 — Interface](07-interface.md)). Les clés déverrouillées vivent dans un `Keyring` en
+mémoire, effacé au verrouillage (`web/src/vault/keyring.ts`).
 
 ### Routes
 
@@ -69,9 +69,9 @@ au verrouillage (`web/src/vault/keyring.ts`).
 ### Tests automatiques (sur la VM)
 
 ```bash
-make test         # Python : 141 tests, dont tous les parcours via le client de référence
+make test         # Python : toute la suite, dont chaque parcours via le client de référence
 make web-test     # TypeScript : lint, types, tests unitaires
-make e2e          # Le client TypeScript contre le vrai serveur Python (7 parcours)
+make e2e          # Le client TypeScript contre le vrai serveur Python
 ```
 
 `make e2e` lance un serveur de test jetable (base temporaire, clés aléatoires, horloge TOTP
@@ -79,8 +79,9 @@ de test) : il ne touche pas à ta stack.
 
 ### En vrai, avec le client en ligne de commande
 
-Les écrans arrivent en phase 7. D'ici là, `make client` fait exactement ce que fera l'appli,
-depuis le conteneur `api`. Crée ton compte :
+Tout cela se fait dans l'appli ([07 — Interface](07-interface.md)). `make client` reste le même
+parcours depuis le conteneur `api` : pratique pour l'administration de la VM, et c'est lui que
+les tests rejouent. Crée ton compte :
 
 ```bash
 make up
@@ -106,4 +107,5 @@ Et si besoin : `make client c=password` (changer le mot de passe maître), `make
 (récupération par le kit), `make reset-totp u=<identifiant>` (nouveau TOTP de connexion,
 administrateur de la VM).
 
-Le journal d'audit (`/api/logs`) enregistre chaque connexion ; son écran arrive en phase 7.
+Le journal d'audit (`/api/logs`) enregistre chaque connexion ; il se lit dans l'appli,
+**Réglages → Journal**.

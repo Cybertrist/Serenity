@@ -30,8 +30,12 @@ min(92vw, 92vh, 980px)), qui devient le plein écran sous 768 px, et s'ouvre par
 </p>
 
 <p>
-  <img src="img/connexion.png" alt="La connexion" width="430">
   <img src="img/kit.png" alt="Le kit de récupération" width="210">
+  <img src="img/reglages.png" alt="Les réglages sur téléphone" width="210">
+  <img src="img/connexion.png" alt="La connexion" width="430">
+</p>
+
+<p>
   <img src="img/bureau-coffre.png" alt="Le carré sur ordinateur" width="430">
 </p>
 
@@ -60,6 +64,10 @@ min(92vw, 92vh, 980px)), qui devient le plein écran sous 768 px, et s'ouvre par
   `/api/events`, mettent l'écran à jour et s'empilent dans le centre de notifications (la cloche).
 - **Rien d'irréversible sans un mot d'explication** : supprimer, confier, reprendre, déconnecter
   un appareil ou couper l'agent passent par un dialogue qui dit ce qui va se passer (ADR-012).
+- **Bleu blanc rouge** : le bleu de France porte les actions, le rouge Marianne les alertes, et
+  le drapeau entier ne sort qu'à trois endroits qui disent quelque chose — le filet sous la barre
+  de titre, les trois étapes de la création de compte, la cascade de déverrouillage
+  ([ADR-017](decisions/ADR-017-identite-francaise.md)).
 - **Charte** respectée : voir [`design.md`](design.md).
 
 ## Comment tester
@@ -73,9 +81,9 @@ make ui-smoke     # Chromium parcourt tous les écrans (image de production, CSP
                   # y compris le mode hors ligne ; captures dans web/e2e/shots/
 ```
 
-`make ui-smoke` parcourt les écrans sur un gabarit de téléphone (390 px), puis se reconnecte
-dans une seconde fenêtre de 1440 px pour la mise en page de bureau. Il échoue à la moindre erreur
-JavaScript ou violation de CSP, et tourne aussi en CI (captures dans l'artefact
+`make ui-smoke` fait trois passages : un gabarit de téléphone (390 px), une fenêtre de 1440 px
+pour la mise en page de bureau, puis un passage complet en **thème clair**. Il échoue à la
+moindre erreur JavaScript ou violation de CSP, et tourne aussi en CI (captures dans l'artefact
 `ui-screenshots`).
 
 ### En vrai (navigateur, depuis un appareil du tailnet)

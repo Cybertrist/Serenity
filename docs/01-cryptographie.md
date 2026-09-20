@@ -38,7 +38,7 @@ Aucun code applicatif (comptes, coffre, interface) : ça commence en phase 2.
 Sur la VM, dans `~/code/serenity` :
 
 ```bash
-git fetch && git checkout phase/01-crypto
+git pull
 make test             # tests Python, dont tous les vecteurs partagés
 make web-test         # eslint, prettier, tsc, vitest (dans Docker, image Node 22)
 make crypto-interop   # Python -> TypeScript -> Python avec des blocs neufs
