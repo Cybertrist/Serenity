@@ -9,6 +9,9 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- **`make recipe-inspect URL=…`** : le rotateur ouvre une page et liste ses champs (sélecteur,
+  type, libellé), ses boutons et ses `iframe`. Écrire la recette d'un site devient mécanique au
+  lieu d'être deviné ; rien n'est tapé ni soumis, aucun identifiant n'est nécessaire.
 - **Sauvegardes** : instantané nocturne restic de la base chiffrée (par `VACUUM INTO`, jamais
   une copie de fichier vivant) et des deux fichiers de clés, avec rétention 7 jours / 4 semaines
   / 6 mois. `make backup-now`, `make restore-check`, et surtout **`make backup-check`** : un

@@ -105,6 +105,90 @@ async def recipes(authorization: Token = None) -> dict[str, object]:
     }
 
 
+class InspectIn(BaseModel):
+    """A page to look at. No credentials: this only reads what a form asks for."""
+
+    url: str = Field(max_length=2048)
+
+
+class Field_(BaseModel):
+    selector: str
+    tag: str
+    type: str | None = None
+    id: str | None = None
+    name: str | None = None
+    placeholder: str | None = None
+    label: str | None = None
+    visible: bool = True
+
+
+class InspectOut(BaseModel):
+    title: str
+    url: str
+    fields: list[Field_]
+    buttons: list[Field_]
+    frames: int
+    note: str | None = None
+
+
+# What the browser is asked to report about a form. Kept in one place so the shape of the
+# answer and the page stay in step.
+_PROBE = """() => {
+  const label = (el) => {
+    if (el.labels && el.labels[0]) return el.labels[0].innerText.trim();
+    const aria = el.getAttribute('aria-label');
+    return aria ? aria.trim() : null;
+  };
+  const pick = (el) => {
+    const box = el.getBoundingClientRect();
+    const selector = el.id ? '#' + CSS.escape(el.id)
+      : el.name ? el.tagName.toLowerCase() + '[name="' + el.name + '"]'
+      : el.tagName.toLowerCase();
+    return {
+      selector,
+      tag: el.tagName.toLowerCase(),
+      type: el.getAttribute('type'),
+      id: el.id || null,
+      name: el.getAttribute('name'),
+      placeholder: el.getAttribute('placeholder'),
+      label: label(el),
+      visible: box.width > 0 && box.height > 0,
+    };
+  };
+  const fields = [...document.querySelectorAll('input, select, textarea')]
+    .filter((el) => el.type !== 'hidden').map(pick);
+  const buttons = [...document.querySelectorAll('button, input[type=submit]')].map(pick);
+  return { title: document.title, url: location.href, fields, buttons,
+           frames: document.querySelectorAll('iframe').length };
+}"""
+
+
+@app.post("/inspecter")
+async def inspect(body: InspectIn, authorization: Token = None) -> InspectOut:
+    """List the fields of a page, to write a recipe from what is there rather than from
+    guesswork. Opens the page and reads it: nothing is typed, nothing is submitted."""
+    _check_token(authorization)
+    browser = BROWSER.get("chromium")
+    if browser is None:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "navigateur indisponible")
+    context = await browser.new_context(accept_downloads=False)
+    context.set_default_timeout(STEP_TIMEOUT_MS)
+    page = await context.new_page()
+    try:
+        await page.goto(body.url, wait_until="domcontentloaded")
+        found = await page.evaluate(_PROBE)
+    except PlaywrightError as exc:
+        raise HTTPException(
+            status.HTTP_502_BAD_GATEWAY, f"page illisible ({type(exc).__name__})"
+        ) from None
+    finally:
+        await context.close()
+    note = None
+    if found["frames"]:
+        note = "la page contient des cadres (iframe) : le formulaire est peut-être dedans"
+    return InspectOut(**found, note=note)
+
+
 @app.post("/verify")
 async def verify(body: Credentials, authorization: Token = None) -> Result:
     """Log in from scratch. This is what proves a password works — before and after a change."""
