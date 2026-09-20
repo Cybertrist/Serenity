@@ -1,4 +1,4 @@
-# Spécification cryptographique — Serenity v1
+# Spécification cryptographique : Serenity v1
 
 > **Statut : validée le 2026-09-18.** Toute modification de ce document ou du code crypto
 > demande un nouvel accord explicite (règle 10 de `CLAUDE.md`).
@@ -36,7 +36,7 @@ les vecteurs de test de `shared/test-vectors/` le vérifient.
 | Bourrage | ISO/IEC 7816-4 | `sodium_pad` / `sodium_unpad` |
 | Hachage de la clé d'auth (serveur) | Argon2id | `crypto_pwhash_str` |
 | Aléa | CSPRNG du système | `randombytes_buf` |
-| Effacement mémoire | — | `memzero` (navigateur), best effort |
+| Effacement mémoire | sans algorithme | `memzero` (navigateur), best effort |
 
 **Note PyNaCl** : PyNaCl n'expose pas `crypto_kdf_derive_from_key`. On l'obtient par
 `crypto_generichash_blake2b_salt_personal`, exactement comme libsodium le construit en interne :
@@ -50,15 +50,15 @@ Vérifié : sorties identiques octet pour octet à libsodium.js 1.0.22 (voir §1
 flowchart TD
     PW["Mot de passe maître<br/>(dans ta tête)"]
     SALT["Sel 16 o<br/>(serveur, public)"]
-    MK["MK — clé maître 32 o<br/>jamais stockée, jamais envoyée"]
+    MK["MK : clé maître 32 o<br/>jamais stockée, jamais envoyée"]
     AUTH["AuthKey 32 o<br/>envoyée au serveur"]
-    MEK["MEK — clé d'enveloppe 32 o"]
-    UK["UK — clé utilisateur 32 o<br/>aléatoire"]
-    RK["RK — clé de récupération 20 o<br/>kit papier"]
+    MEK["MEK : clé d'enveloppe 32 o"]
+    UK["UK : clé utilisateur 32 o<br/>aléatoire"]
+    RK["RK : clé de récupération 20 o<br/>kit papier"]
     RKS["RKS 32 o"]
-    RAK["RAK — auth de récupération"]
-    RWK["RWK — enveloppe de récupération"]
-    AK["AK — clé d'agent 32 o<br/>aléatoire"]
+    RAK["RAK : auth de récupération"]
+    RWK["RWK : enveloppe de récupération"]
+    AK["AK : clé d'agent 32 o<br/>aléatoire"]
     SK["Clé serveur (graine 32 o)<br/>fichier root:root 0400"]
     SKP["Paire X25519 serveur"]
     PERSO["Entrées zone personnelle"]
@@ -82,7 +82,7 @@ flowchart TD
 
 | Clé | Taille | Origine | Où elle vit | Le serveur la voit ? |
 |---|---|---|---|---|
-| Mot de passe maître | — | Toi | Ta tête | Jamais |
+| Mot de passe maître | libre | Toi | Ta tête | Jamais |
 | **MK** | 32 o | Argon2id(mot de passe, sel) | Mémoire du client, quelques ms | Jamais |
 | **AuthKey** | 32 o | KDF(MK, 1, `srn-auth`) | Envoyée à la connexion | Oui, stockée **hachée** (Argon2id) |
 | **MEK** | 32 o | KDF(MK, 1, `srn-wrap`) | Mémoire du client, quelques ms | Jamais |
@@ -91,8 +91,8 @@ flowchart TD
 | **RAK** | 32 o | KDF(RKS, 1, `srn-rcva`) | Envoyée lors d'une récupération | Oui, stockée **hachée** |
 | **RWK** | 32 o | KDF(RKS, 1, `srn-rcvw`) | Mémoire du client pendant la récupération | Jamais |
 | **AK** | 32 o | Aléa, créée à l'inscription | Mémoire du client ; processus agent | Oui, **dans le processus agent uniquement** |
-| **Clé serveur (SK)** | graine 32 o | Aléa, créée au 1er démarrage | Fichier `root:root 0400`, hors base | — |
-| **Clé TOTP serveur** | 32 o | Aléa, créée au 1er démarrage | Fichier séparé, lu par l'api | — |
+| **Clé serveur (SK)** | graine 32 o | Aléa, créée au 1er démarrage | Fichier `root:root 0400`, hors base | sans objet, elle est à lui |
+| **Clé TOTP serveur** | 32 o | Aléa, créée au 1er démarrage | Fichier séparé, lu par l'api | sans objet, elle est à lui |
 
 Pourquoi MEK plutôt que MK directement pour chiffrer UK : MK ne sert **qu'à** dériver des
 sous-clés. AuthKey (envoyée) et MEK (gardée) sont indépendantes : connaître AuthKey ne révèle
@@ -109,9 +109,9 @@ clé TOTP, qui protège les secrets de double authentification en base.
 | Algorithme | Argon2id v1.3 | `crypto_pwhash_ALG_ARGON2ID13` |
 | Mémoire | **64 Mio** (67 108 864 o) | `memlimit` |
 | Itérations | **3** | `opslimit` |
-| Parallélisme | 1 (imposé par libsodium) | — |
+| Parallélisme | 1 (imposé par libsodium) | sans constante |
 | Sel | 16 o aléatoires, par utilisateur | `crypto_pwhash_SALTBYTES` |
-| Sortie | 32 o | — |
+| Sortie | 32 o | sans constante |
 
 **Justification (navigateur mobile)** :
 
@@ -142,7 +142,7 @@ Longueur : 12 caractères minimum (après normalisation), 1024 octets maximum.
   (UUID, zones et entiers décimaux seulement), donc pas d'ambiguïté.
 - Dates : ISO 8601 en UTC, précision milliseconde, suffixe `Z`.
 
-### 5.2 Bloc chiffré (AEAD) — `type 0x01`
+### 5.2 Bloc chiffré (AEAD), `type 0x01`
 
 | Décalage | Taille | Champ | Valeur |
 |---|---|---|---|
@@ -157,7 +157,7 @@ attend (utilisateur, entrée, zone, révision). S'il ne correspond pas, le déch
 
 Taille minimale d'un bloc valide : 42 octets. Un bloc de version ou de type inconnu est refusé.
 
-### 5.3 Bloc scellé pour le serveur — `type 0x02`
+### 5.3 Bloc scellé pour le serveur, `type 0x02`
 
 Sert uniquement à transmettre AK au processus agent, sans que l'api ne la voie jamais en clair.
 
@@ -458,7 +458,7 @@ reconnexion** (règle 6 de `CLAUDE.md`).
    bloc en attente est **conservé**, l'entrée est signalée, et l'appli te montre les deux
    révisions. C'est le seul cas où deux mots de passe coexistent, et il demande ton œil.
 8. **Échec du coffre après le changement du site** (base indisponible, entrée déplacée…) : le
-   bloc en attente est **conservé** lui aussi — c'est désormais la seule copie du mot de passe
+   bloc en attente est **conservé** lui aussi : c'est désormais la seule copie du mot de passe
    que le site attend. La rotation est marquée en échec, sans rien jeter.
 9. **Entrée modifiée pendant la rotation** : le bloc en attente est lié à sa révision par les
    données associées (§5.2). Avant de valider, l'agent **re-chiffre** sur l'entrée à jour : ta
@@ -570,7 +570,7 @@ Même interface des deux côtés, noms adaptés à chaque langage :
 | Boîte scellée | `seal_for_server`, `open_sealed` | `sealForServer`, `openSealed` |
 | Kit de récupération | `encode_recovery_key`, `decode_recovery_key`, `derive_recovery_keys` | idem en camelCase |
 | Entrée | `encrypt_item`, `decrypt_item` | `encryptItem`, `decryptItem` |
-| Clé serveur | `load_server_key`, `server_public_key` | — |
+| Clé serveur | `load_server_key`, `server_public_key` | sans équivalent |
 
 Les fonctions de chiffrement acceptent un nonce **uniquement dans les tests** (paramètre
 réservé), pour produire des vecteurs déterministes ; en production le nonce est toujours
