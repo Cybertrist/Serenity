@@ -48,52 +48,14 @@ function totp(secret, t) {
 }
 const tick = async () => (await (await fetch(API + "/__test/tick", { method: "POST" })).json()).now;
 
-/** The subtitle bar, injected into whatever page is on screen. No voice, just a line. */
-async function say(page, text, kicker = "") {
-  await page.evaluate(
-    ({ text, kicker, font, stencil }) => {
-      let bar = document.getElementById("film-sub");
-      if (!bar) {
-        const style = document.createElement("style");
-        style.textContent = `
-          @font-face { font-family: "FilmText"; src: url(data:font/woff2;base64,${font}) format("woff2"); font-weight: 500; }
-          @font-face { font-family: "FilmTitle"; src: url(data:font/woff2;base64,${stencil}) format("woff2"); }
-          #film-sub {
-            position: fixed; left: 0; right: 0; bottom: 16px; z-index: 2147483647;
-            padding: 0 24px; pointer-events: none;
-            font-family: "FilmText", system-ui, sans-serif; font-variant-ligatures: none;
-            display: flex; justify-content: center;
-            opacity: 0; transition: opacity 260ms ease;
-          }
-          #film-sub .box {
-            display: flex; flex-direction: column; align-items: center; gap: 3px;
-            padding: 9px 20px 11px; border-radius: 16px;
-            background: rgb(5 8 14 / 0.94); border: 1px solid rgb(255 255 255 / 0.16);
-            box-shadow: 0 14px 40px -12px rgb(0 0 0 / 0.8);
-          }
-          #film-sub .k {
-            font-family: "FilmTitle", sans-serif; font-size: 11px; letter-spacing: 0.22em;
-            text-transform: uppercase; color: #5b8def;
-          }
-          #film-sub .t { font-size: 21px; color: #f2f4f8; text-align: center; }
-          #film-flag { position: fixed; left: 0; right: 0; bottom: 0; height: 4px; z-index: 2147483647;
-            background: linear-gradient(90deg, #3b7dd8 0 33.34%, #f2f4f8 33.34% 66.67%, #e8434b 66.67% 100%); }
-        `;
-        document.head.appendChild(style);
-        bar = document.createElement("div");
-        bar.id = "film-sub";
-        bar.innerHTML = '<div class="box"><span class="k"></span><span class="t"></span></div>';
-        document.body.appendChild(bar);
-        const flag = document.createElement("div");
-        flag.id = "film-flag";
-        document.body.appendChild(flag);
-      }
-      bar.querySelector(".k").textContent = kicker;
-      bar.querySelector(".t").textContent = text;
-      bar.style.opacity = text ? "1" : "0";
-    },
-    { text, kicker, font: FONT, stencil: STENCIL },
-  );
+/**
+ * Subtitles are never painted on the app: they are cues, and the band under the picture is
+ * drawn afterwards. Nothing of the interface is ever hidden by a word.
+ */
+const cues = [];
+function say(page, text, kicker = "") {
+  cues.push({ at: Date.now() / 1000, text, kicker });
+  return Promise.resolve();
 }
 
 const beat = (page, ms) => page.waitForTimeout(ms);
@@ -141,12 +103,12 @@ await wings.close();
 mkdirSync(OUT, { recursive: true });
 const stage = await browser.newContext({
   viewport: { width: 1280, height: 720 },
+  // Twice the pixels: the film is shot at 2560 x 1440 and printed at 1280 x 720, which is what
+  // makes the text sharp instead of merely present.
+  deviceScaleFactor: 2,
   locale: "fr-FR",
   colorScheme: "dark",
   permissions: ["clipboard-read", "clipboard-write"],
-  // The subtitles are injected into the page; the app's own CSP forbids an inline stylesheet,
-  // which is exactly what it should do. Only this recording browser looks the other way.
-  bypassCSP: true,
 });
 const page = await stage.newPage();
 
@@ -171,8 +133,8 @@ cdp.on("Page.screencastFrame", async ({ data, sessionId, metadata }) => {
 const roll = () =>
   cdp.send("Page.startScreencast", {
     format: "png",
-    maxWidth: 1280,
-    maxHeight: 720,
+    maxWidth: 2560,
+    maxHeight: 1440,
     everyNthFrame: 1,
   });
 await roll();
@@ -256,7 +218,6 @@ await beat(page, 300);
 
 await cdp.send("Page.stopScreencast").catch(() => {});
 await stage.close();
-await browser.close();
 
 // The cut list: every frame with the time it stayed on screen. ffmpeg needs the last twice.
 const lines = [];
@@ -269,3 +230,61 @@ if (shots.length) lines.push(`file 'frames/${shots[shots.length - 1].name}'`);
 writeFileSync(`${OUT}/frames.txt`, lines.join("\n") + "\n");
 const span = shots.length ? shots[shots.length - 1].at - shots[0].at : 0;
 console.log(`film: ${String(shots.length)} images, ${span.toFixed(1)} s`);
+
+/*
+ * The subtitle band, drawn once per cue, out of the picture. Same typefaces as the app, taken
+ * from the repository rather than from a page, so the band owes nothing to the site it follows.
+ */
+const BAND_W = 1280;
+const BAND_H = 112;
+const bands = await browser.newContext({
+  viewport: { width: BAND_W, height: BAND_H },
+  deviceScaleFactor: 2,
+});
+const card = await bands.newPage();
+const start = shots.length ? shots[0].at : 0;
+const timed = [];
+for (let i = 0; i < cues.length; i += 1) {
+  const cue = cues[i];
+  const from = Math.max(0, cue.at - start);
+  const to = i + 1 < cues.length ? Math.max(from, cues[i + 1].at - start) : span;
+  if (!cue.text || to - from < 0.25) continue;
+  const file = `band-${String(timed.length).padStart(3, "0")}.png`;
+  await card.setContent(`<style>
+    @font-face { font-family: "T"; src: url(data:font/woff2;base64,${FONT}) format("woff2"); font-weight: 500; }
+    @font-face { font-family: "K"; src: url(data:font/woff2;base64,${STENCIL}) format("woff2"); }
+    html, body { margin: 0; height: 100%; }
+    body { background: #05070c; display: flex; flex-direction: column; align-items: center;
+           justify-content: center; gap: 5px; font-family: "T", sans-serif;
+           font-variant-ligatures: none; -webkit-font-smoothing: antialiased; }
+    .k { font-family: "K", sans-serif; font-size: 12px; letter-spacing: 0.24em;
+         text-transform: uppercase; color: #5b8def; }
+    .t { font-size: 26px; color: #f2f4f8; }
+    .f { position: fixed; left: 0; right: 0; bottom: 0; height: 4px;
+         background: linear-gradient(90deg, #3b7dd8 0 33.34%, #f2f4f8 33.34% 66.67%, #e8434b 66.67% 100%); }
+  </style>
+  <div class="k">${cue.kicker}</div><div class="t">${cue.text}</div><div class="f"></div>`);
+  await card.evaluate(() => document.fonts.ready);
+  await card.screenshot({ path: `${OUT}/${file}` });
+  timed.push({ file, from, to });
+}
+await bands.close();
+await browser.close();
+
+// The filter graph: print the picture, add the band under it, then each subtitle in its turn.
+const parts = [
+  `[0:v]fps=25,scale=1280:720:flags=lanczos,pad=1280:${String(720 + BAND_H)}:0:0:color=#05070c[bg]`,
+];
+timed.forEach((cue, i) => {
+  parts.push(`[${String(i + 1)}:v]scale=${String(BAND_W)}:${String(BAND_H)}[b${String(i)}]`);
+  const from = i === 0 ? "[bg]" : `[v${String(i - 1)}]`;
+  const to = i === timed.length - 1 ? "[out]" : `[v${String(i)}]`;
+  parts.push(
+    `${from}[b${String(i)}]overlay=0:720:enable='between(t,${cue.from.toFixed(2)},${cue.to.toFixed(2)})'${to}`,
+  );
+});
+if (!timed.length) parts.push("[bg]null[out]");
+writeFileSync(`${OUT}/filter.txt`, parts.join(";\n"));
+// Relative names: ffmpeg runs with the working directory set to this folder.
+writeFileSync(`${OUT}/bands.txt`, timed.map((c) => `-i ${c.file}`).join(" "));
+console.log(`film: ${String(timed.length)} sous-titres, hors champ`);

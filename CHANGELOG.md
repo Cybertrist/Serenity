@@ -125,7 +125,9 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
   off. La preuve est demandée au site lui-même à la fin : l'ancien mot de passe est refusé, le
   nouveau ouvre la porte. Sortie en GIF pour le README et en MP4. Le film est monté à partir des
   images réelles de la page (screencast CDP), pas de l'enregistrement vidéo de Playwright, qui
-  compresse tellement que le texte devient de la bouillie. Le serveur de test sait maintenant
+  compresse tellement que le texte devient de la bouillie. Il est tourné à 2560 x 1440 et tiré à
+  1280 x 720 : c'est la réduction qui rend le texte net. Les sous-titres vivent dans une bande
+  sous l'image, jamais par-dessus l'appli. Le serveur de test sait maintenant
   jouer les rotations approuvées (`POST /__test/rotate`).
 - **Import depuis Google.** Le CSV du gestionnaire de mots de passe de Google, et les codes à
   deux facteurs de Google Authenticator par le lien `otpauth-migration://` de son QR code, dont
