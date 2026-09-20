@@ -35,11 +35,11 @@ export function AppFrame({
         variants={FRAME}
         initial="initial"
         animate="animate"
-        className="@container relative flex h-dvh w-full flex-col overflow-hidden border-frame bg-surface md:h-[min(92vh,92vw,980px)] md:w-[min(92vh,92vw,980px)] md:rounded-[32px] md:border-2 md:shadow-[0_40px_120px_-30px_rgb(242_113_28/0.18)]"
+        className="@container relative flex h-dvh w-full flex-col overflow-hidden border-frame bg-surface md:h-[min(92vh,92vw,980px)] md:w-[min(92vh,92vw,980px)] md:rounded-[32px] md:border-2 md:shadow-[0_40px_120px_-30px_var(--color-glow)]"
       >
         <motion.header
           variants={FRAME_PART}
-          className="relative flex shrink-0 items-center gap-2 border-b border-line px-4 py-3 sm:px-5"
+          className="relative flex shrink-0 items-center gap-2 px-4 py-3 sm:px-5"
         >
           <Wordmark className="h-[13px] w-auto" />
           <span className="flex-1" />
@@ -56,6 +56,8 @@ export function AppFrame({
             ) : null}
           </span>
           <IconButton icon={GearIcon} label="Réglages" onClick={onSettings} />
+          {/* The rule that closes the title bar is the flag: a letterhead, not a decoration. */}
+          <span aria-hidden="true" className="tricolore absolute inset-x-0 bottom-0 h-0.5" />
         </motion.header>
         <div className="relative flex min-h-0 flex-1 flex-col">
           {children}

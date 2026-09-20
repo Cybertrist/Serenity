@@ -45,6 +45,12 @@ export function AuthShell({
   );
 }
 
+/**
+ * Three steps, three bands: the account creation fills the flag as it goes. Any other count
+ * falls back to the accent — the flag only means something when it is whole.
+ */
+const FLAG = ["bg-bleu", "bg-blanc", "bg-rouge"];
+
 /** Title and one line of explanation, at the top of a card. */
 export function AuthHead({
   title,
@@ -65,12 +71,15 @@ export function AuthHead({
             className="flex flex-1 gap-1.5"
             aria-label={`Étape ${String(step[0])} sur ${String(step[1])}`}
           >
-            {Array.from({ length: step[1] }, (_, i) => (
-              <span
-                key={i}
-                className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i < step[0] ? "bg-accent" : "bg-raised"}`}
-              />
-            ))}
+            {Array.from({ length: step[1] }, (_, i) => {
+              const done = step[1] === FLAG.length ? (FLAG[i] ?? "bg-accent") : "bg-accent";
+              return (
+                <span
+                  key={i}
+                  className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i < step[0] ? done : "bg-raised"}`}
+                />
+              );
+            })}
           </span>
         </div>
       ) : null}

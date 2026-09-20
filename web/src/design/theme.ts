@@ -11,7 +11,7 @@ export type Theme = "light" | "dark";
 const KEY = "serenity.theme";
 const CHOICES: readonly ThemeChoice[] = ["system", "light", "dark"];
 /** The browser bar, so the phone chrome does not stay black over a light app. */
-const BAR: Record<Theme, string> = { dark: "#141517", light: "#eceae6" };
+const BAR: Record<Theme, string> = { dark: "#13161d", light: "#ebeef3" };
 
 const listeners = new Set<() => void>();
 let resolved: Theme = "dark";

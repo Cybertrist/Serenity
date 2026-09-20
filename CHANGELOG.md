@@ -102,6 +102,14 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Modifié
 
+- **L'interface passe au bleu blanc rouge.** L'orange du logo cède la place au **bleu de France**
+  (`#0055A4`, ouvert sur fond sombre) pour tout ce qui agit, au **rouge Marianne** pour tout ce
+  qui alerte, et au blanc pour la marque. Le drapeau entier ne sort que trois fois, là où il dit
+  quelque chose : le filet sous la barre de titre, les trois étapes de la création de compte, et
+  les têtes de la cascade de déverrouillage. La marque devient le drapeau en un objet — pavé
+  bleu, cadenas blanc, serrure rouge — et les icônes de l'appli se regénèrent depuis les SVG
+  (`scripts/brand-icons.sh`). Les deux thèmes, les jetons et la charte suivent
+  (ADR-017, `docs/design.md`).
 - Phase 7 : les panneaux glissants venus du bas (fiche, éditeur, réglages) deviennent des
   **dialogues centrés** avec focus piégé, fermeture par Échap et page bloquée derrière.
 - Phase 7 : les messages éphémères passent en bas de l'écran, un à la fois, avec une icône d'état

@@ -26,6 +26,8 @@ interface Drop {
   y: number;
   v: number;
   tail: number;
+  /** Colour of the head: the column's band of the flag. */
+  head: string;
   chars: string[];
 }
 
@@ -78,16 +80,17 @@ export function DataRain({
 
     const ctx = surface.getContext("2d");
     if (!ctx) return;
-    // The trail follows the theme: cream over black, ink over paper.
-    const trail =
-      getComputedStyle(document.documentElement).getPropertyValue("--rain-trail").trim() ||
-      "214 210 203";
+    const style = getComputedStyle(document.documentElement);
+    // The trail follows the theme: white over black, ink over paper.
+    const trail = style.getPropertyValue("--rain-trail").trim() || "226 232 240";
     const [tr, tg, tb] = trail.split(/\s+/).map(Number);
-    const accent =
-      getComputedStyle(document.documentElement).getPropertyValue("--color-accent").trim() ||
-      "#f2711c";
-    const peak =
-      Number(getComputedStyle(document.documentElement).getPropertyValue("--rain-alpha")) || 0.34;
+    // The heads fall in three bands: the flag comes down with the data. Its white band takes
+    // the colour of the mark, which turns to ink on paper — a white head on paper is nothing.
+    const FALLBACK = ["#3b7dd8", "#f2f4f8", "#e8434b"] as const;
+    const flag = ["--color-bleu", "--color-mark", "--color-rouge"].map(
+      (name, i) => style.getPropertyValue(name).trim() || (FALLBACK[i] ?? "#3b7dd8"),
+    );
+    const peak = Number(style.getPropertyValue("--rain-alpha")) || 0.34;
     const dpr = Math.min(window.devicePixelRatio, 2);
     const w = window.innerWidth;
     const h = window.innerHeight;
@@ -99,11 +102,13 @@ export function DataRain({
     ctx.textBaseline = "middle";
 
     const step = FONT * 1.15;
-    const drops: Drop[] = Array.from({ length: Math.ceil(w / CELL) }, (_, i) => ({
+    const columns = Math.ceil(w / CELL);
+    const drops: Drop[] = Array.from({ length: columns }, (_, i) => ({
       x: i * CELL + CELL / 2,
       y: -Math.random() * h * 0.5,
       v: 0.8 * (0.75 + Math.random() * 0.6),
       tail: TAIL + Math.floor(Math.random() * 8),
+      head: flag[Math.min(flag.length - 1, Math.floor((i / columns) * flag.length))] ?? FALLBACK[0],
       chars: [],
     }));
 
@@ -148,8 +153,8 @@ export function DataRain({
           const y = drop.y - k * step;
           if (y < -step || y > h + step) continue;
           if (k === 0 && drop.chars.length > 2) {
-            ctx.fillStyle = accent;
-            ctx.shadowColor = accent;
+            ctx.fillStyle = drop.head;
+            ctx.shadowColor = drop.head;
             ctx.shadowBlur = 9;
           } else {
             // Kept dim on purpose: the fall should read as data, not as a wall of white.

@@ -130,7 +130,7 @@ const PAGES: Page[] = [
     body: (
       <ol className="m-0 flex list-none flex-col gap-3 p-0 text-body text-muted">
         {[
-          "Ajoute une entrée avec le bouton orange, en laissant le générateur proposer le mot de passe.",
+          "Ajoute une entrée avec le bouton bleu, en laissant le générateur proposer le mot de passe.",
           "Ouvre-la : copie le mot de passe (il s'efface du presse-papiers après 30 s).",
           "Confie-la à l'agent, puis règle une rotation tous les 30 jours.",
           "Passe dans l'onglet Fuites : la veille se lance et te dit ce qu'elle trouve.",

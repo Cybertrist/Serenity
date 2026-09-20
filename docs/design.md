@@ -58,9 +58,10 @@ réagissent à la place réellement disponible.
 
 ## La marque
 
-Le logo est un **cadenas plein**, crème (`--color-mark`, `#ECE8E1`), anse épaisse **détachée du
-corps** (le trait pochoir), serrure orange. Le logotype « SEREN**I**TY » est en pochoir, le « I »
-en orange.
+Le logo est un **cadenas plein**, blanc (`--color-mark`, `#F2F4F8`), anse épaisse **détachée du
+corps** (le trait pochoir), **serrure rouge Marianne**. Le logotype « SEREN**I**TY » est en
+pochoir, le « I » **en rouge**. Posé sur le pavé **bleu de France** de l'icône, le tout donne le
+drapeau en un seul objet : un fond bleu, un cadenas blanc, une serrure rouge — sans rayures.
 
 Les fichiers d'origine sont découpés en trois usages (`web/public/`) :
 
@@ -69,10 +70,39 @@ Les fichiers d'origine sont découpés en trois usages (`web/public/`) :
 | `brand/wordmark.png` | Le logotype seul, en haut des écrans d'entrée et dans la barre de titre |
 | `brand/wordmark-clair.png` | La même chose pour le thème clair, prêt mais pas encore utilisé |
 | `icon-192.png`, `icon-512.png`, `maskable-512.png`, `apple-touch-icon.png` | Icônes de l'appli installée, découpées du logo |
-| `icon.svg`, `maskable.svg` | La même forme, redessinée en vectoriel |
+| `icon.svg`, `maskable.svg` | La même forme, redessinée en vectoriel : **la source des PNG** |
 
 La marque dans la barre de titre (`design/Lock.tsx`) reprend **exactement** cette géométrie,
 mesurée sur le fichier d'origine.
+
+Les PNG d'icône ne se retouchent pas à la main : ils se **regénèrent** depuis les deux SVG par
+`scripts/brand-icons.sh` (Chromium dans Docker). Changer la marque = changer le SVG, puis
+relancer le script.
+
+## Bleu, blanc, rouge
+
+Serenity est un coffre français, et cela se voit — **sans déguisement**. Les trois couleurs ont
+chacune un métier, et le drapeau entier n'apparaît qu'à trois endroits où il sert à quelque chose.
+
+| Couleur | Jeton | Son métier |
+|---|---|---|
+| **Bleu de France** | `accent` | Tout ce qui agit : bouton principal, onglet actif, interrupteur, choix sélectionné, couleur de l'agent |
+| **Blanc** | `mark` | La marque : le cadenas et le logotype. Sur papier, il passe à l'encre |
+| **Rouge Marianne** | `crit` | Ce qui alerte : erreurs, suppressions, compteurs de fuites — et la serrure du logo |
+
+Le drapeau **en entier** (`tricolore`, trois bandes à arêtes franches) sert trois fois :
+
+1. **Le filet sous la barre de titre** — l'en-tête de l'objet, comme un papier à en-tête.
+2. **Les trois étapes de la création de compte** — une bande par étape franchie, le drapeau est
+   complet quand le coffre l'est. Une procédure à un autre nombre d'étapes retombe sur le bleu :
+   le drapeau ne veut dire quelque chose que s'il est entier.
+3. **La cascade de déverrouillage** — les colonnes tombent en trois bandes.
+
+Nulle part ailleurs. Une bande tricolore posée sur une carte serait de la décoration, et la
+première règle de cette charte l'interdit.
+
+Le bleu et le rouge sont ceux de l'État (`#0055A4`, `#E1000F`), éclaircis pour le thème sombre
+comme le reste de la palette. Voir [ADR-017](decisions/ADR-017-identite-francaise.md).
 
 ## Les écrans d'entrée
 
@@ -84,10 +114,11 @@ secondaires dessous. Rien d'autre : c'est la première chose qu'un inconnu voit 
   les mêmes composants que l'intérieur de l'appli (`Field`, `Button`, `Note`) — pas de langage
   visuel séparé pour l'entrée.
 - **Une procédure se compte** : `Étape 2 sur 3` et une barre en trois segments, en haut de la
-  carte. Le passage d'une étape à l'autre fait glisser la carte de 24 px.
+  carte — **bleu, blanc, rouge**, une bande par étape franchie. Le passage d'une étape à l'autre
+  fait glisser la carte de 24 px.
 - **Les actions secondaires sont de vrais boutons** sous la carte — « Changer de compte »,
   « Utiliser mon kit de récupération », « Retour à la connexion » — jamais des liens en petit.
-- **Le code à six chiffres** est en six cases, la case active cerclée d'orange. Le vrai champ
+- **Le code à six chiffres** est en six cases, la case active cerclée de bleu. Le vrai champ
   est transparent par-dessus : collage, clavier numérique et remplissage automatique des codes
   marchent toujours.
 
@@ -96,9 +127,11 @@ secondaires dessous. Rien d'autre : c'est la première chose qu'un inconnu voit 
 Le coffre a répondu oui : **une cascade de données chiffrées tombe du haut de l'écran**
 (`design/DataRain.tsx`).
 
-- L'alphabet est celui des blocs du coffre : base64 et hexadécimal. La tête de chaque colonne
-  est orange avec un halo, la traînée est **volontairement pâle** (34 % au plus) — c'est une
-  chute de données, pas un mur de blanc.
+- L'alphabet est celui des blocs du coffre : base64 et hexadécimal. **Les têtes de colonnes
+  tombent en trois bandes** — bleu à gauche, blanc au centre, rouge à droite : le drapeau
+  descend avec les données. La traînée est **volontairement pâle** (34 % au plus) — c'est une
+  chute de données, pas un mur de blanc. Sur papier, la bande blanche passe à l'encre
+  (`--color-mark`) : une tête blanche sur fond clair ne serait rien.
 - **Le front de la pluie est la ligne de révélation** : au-dessus, l'écran de déverrouillage a
   déjà disparu ; en dessous, il tient encore. Le bord est fondu sur 70 px, pour que la pluie
   ait l'air de manger l'écran plutôt que d'y poser un rectangle.
@@ -130,35 +163,40 @@ Définies dans `web/src/design/theme.css` (`@theme` de Tailwind v4) :
 | Jeton | Valeur | Usage |
 |---|---|---|
 | `bg` | `#000000` | **Noir pur**, derrière tout : le carré doit se détacher comme un objet |
-| `surface` | `#16171A` | Cartes, fond du carré |
-| `raised` | `#1F2126` | Dialogues, messages éphémères |
+| `surface` | `#13161D` | Cartes, fond du carré |
+| `raised` | `#1B1F2A` | Dialogues, messages éphémères |
 | `line` | `rgba(255,255,255,0.28)` | Bordures franches : sur un fond noir, c'est ce qui délimite |
 | `hover` | `rgba(255,255,255,0.04)` | Survol d'une ligne ou d'un bouton discret |
-| `text` / `muted` | `#ECEDEF` / `#9A9CA3` | Texte principal / secondaire |
-| `mark` | `#ECE8E1` | Le crème du logo : le cadenas et le logotype, rien d'autre |
-| `accent` / `accent-soft` | `#F2711C` / 14 % | **Avec parcimonie** : bouton principal, onglet actif, kill switch |
-| `ok` / `warn` / `crit` | `#6BD49A` / `#F5C26B` / `#F27A7A` | États, chacun avec son fond doux à 12 % |
+| `text` / `muted` | `#ECEEF2` / `#99A0AD` | Texte principal / secondaire |
+| `mark` | `#F2F4F8` | Le blanc du logo : le cadenas et le logotype, rien d'autre |
+| `accent` / `accent-soft` | `#5B8DEF` / 16 % | **Avec parcimonie** : bouton principal, onglet actif, kill switch |
+| `ok` / `warn` / `crit` | `#6BD49A` / `#EDC64B` / `#F76D72` | États, chacun avec son fond doux à 12 % |
+| `bleu` / `blanc` / `rouge` | `#3B7DD8` / `#F2F4F8` / `#E8434B` | Le drapeau, **et seulement là où il sert** (`tricolore`) |
+| `glow` / `glow-strong` | accent à 18 % / 50 % | Le halo sous le carré, l'ombre sous le bouton d'ajout |
 
-L'orange est celui du logo, `#F2711C`, **le même partout** : bouton principal, onglet actif,
-choix sélectionné, tête de la cascade.
+Le bleu est **le même partout** : bouton principal, onglet actif, choix sélectionné, robot de la
+zone agent. Le rouge du logo est celui des alertes — c'est la même couleur, pas un quatrième
+jeton.
 
 ## Couleurs — thème clair
 
 Même grille de jetons, redéfinie sous `[data-theme="light"]`. Rien dans les composants ne code
-une couleur en dur : un écran qui écrit `#F2711C` ou `white/45` casse le thème clair.
+une couleur en dur : un écran qui écrit `#5B8DEF` ou `white/45` casse le thème clair.
 
 | Jeton | Sombre | Clair | Pourquoi |
 |---|---|---|---|
-| `bg` | `#000000` | `#ECEAE6` | Un papier chaud plutôt qu'un blanc d'écran : le carré blanc s'y pose |
-| `surface` / `raised` | `#16171A` / `#1F2126` | `#FFFFFF` / `#F4F3F0` | Le carré est la feuille, les dialogues sont légèrement en retrait |
+| `bg` | `#000000` | `#EBEEF3` | Un papier légèrement bleuté plutôt qu'un blanc d'écran : le carré blanc s'y pose |
+| `surface` / `raised` | `#13161D` / `#1B1F2A` | `#FFFFFF` / `#F2F4F8` | Le carré est la feuille, les dialogues sont légèrement en retrait |
 | `line` | blanc 28 % | encre 14 % | Sur du clair, une bordure franche devient une balafre |
-| `accent` | `#F2711C` | `#C85A17` | L'orange du logo passe sous 4,5:1 sur blanc ; il est foncé juste assez |
-| `mark` | `#ECE8E1` | `#16171A` | **Le cadenas passe à l'encre** : un cadenas crème sur du papier crème n'est plus un cadenas |
+| `accent` | `#5B8DEF` | `#0055A4` | **Le bleu du drapeau tient 7:1 sur papier** : inutile d'y toucher. Sur noir, il est ouvert |
+| `crit` | `#F76D72` | `#C9191E` | Le rouge Marianne, dans la coupe qui tient sur chaque fond |
+| `mark` | `#F2F4F8` | `#0F1626` | **Le cadenas passe à l'encre** : un cadenas blanc sur du papier blanc n'est plus un cadenas |
+| `blanc` | `#F2F4F8` | `#C9D3E2` | Sur papier, la bande blanche du drapeau doit être dessinée, sinon le filet paraît cassé |
 | `frame` | blanc 45 % | encre 18 % | Le contour du carré |
-| `rain-trail` | crème | encre | La cascade tombe en encre sur le papier, tête orange inchangée |
+| `rain-trail` | blanc | encre | La cascade tombe en encre sur le papier, têtes bleue et rouge inchangées |
 
-Le logotype a ses deux découpes dans `web/public/brand/` : `wordmark.png` (crème) et
-`wordmark-clair.png` (encre). Le composant `<Wordmark>` choisit, personne d'autre.
+Le logotype a ses deux découpes dans `web/public/brand/` : `wordmark.png` (blanc) et
+`wordmark-clair.png` (encre), le « I » en rouge dans les deux. Le composant `<Wordmark>` choisit, personne d'autre.
 
 ## Choisir son thème
 
@@ -196,10 +234,10 @@ zone (`features/vault/zone.ts`) :
 | Zone | Marque | Pourquoi |
 |---|---|---|
 | **Protégé par toi** | bouclier **vert** | C'est la zone la plus sûre : seuls tes appareils déverrouillés la lisent |
-| **Confié à l'agent** | robot **orange** | L'orange est la couleur de l'agent partout dans l'appli ; ici, il te dit que le serveur peut lire |
+| **Confié à l'agent** | robot **bleu** | Le bleu est la couleur de l'agent partout dans l'appli ; ici, il te dit que le serveur peut lire |
 
 Le vert n'est donc jamais « le statut est bon » sur une entrée : il dit « personne d'autre que
-toi ». Et l'orange ne dit pas « attention » : il dit « l'agent s'en occupe ».
+toi ». Et le bleu ne dit pas « attention » : il dit « l'agent s'en occupe ».
 
 ## Icônes
 
@@ -249,6 +287,6 @@ bouton qui le fait (`<EmptyState>`). Jamais une icône seule au milieu du vide.
 
 ## Accessibilité
 
-Contraste AA, zones tactiles de 44 px au moins, navigation au clavier (focus visible orange),
+Contraste AA, zones tactiles de 44 px au moins, navigation au clavier (focus visible bleu),
 `aria-label` sur chaque bouton-icône, dialogues en `role="dialog"` avec focus piégé et fermés par
 Échap, `aria-live` sur les messages éphémères.
