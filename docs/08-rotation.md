@@ -174,5 +174,6 @@ hors ligne à partir du secret déjà présent dans l'entrée.
 - La reprise d'une entrée en zone personnelle est **refusée** pendant une rotation (§7.12).
 - Le plafond `SERENITY_MAX_ROTATIONS_PER_DAY` porte sur les approbations, pas sur les
   exécutions : une rotation approuvée hier peut s'exécuter aujourd'hui.
-- Les sauvegardes restic sont en place ([09 : Sauvegardes](09-sauvegardes.md)) ; la revue de
-  sécurité finale et la `v0.1.0` restent à faire (issue #27).
+- Les sauvegardes restic sont en place ([09 : Sauvegardes](09-sauvegardes.md)) et la revue de
+  sécurité est écrite ([10 : Sécurité](10-securite.md)) ; il reste le renouvellement des clés
+  de développement et la `v0.1.0` (issue #27).

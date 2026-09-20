@@ -3,6 +3,7 @@ import {
   CloudSlashIcon,
   DevicesIcon,
   type Icon,
+  InfoIcon,
   LockKeyIcon,
   PaintBrushIcon,
   TerminalWindowIcon,
@@ -14,6 +15,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "../../app/session";
 import { Modal, Note } from "../../design";
 import { JournalSection } from "../logs/JournalSection";
+import { AboutSection } from "./settings/AboutSection";
 import { AccountSection } from "./settings/AccountSection";
 import { AppearanceSection } from "./settings/AppearanceSection";
 import { DevicesSection } from "./settings/DevicesSection";
@@ -34,6 +36,7 @@ const SECTIONS: { id: SettingsSection; label: string; icon: Icon; online: boolea
   { id: "transfer", label: "Import et export", icon: ArrowsLeftRightIcon, online: true },
   { id: "trash", label: "Corbeille", icon: TrashIcon, online: true },
   { id: "account", label: "Compte", icon: UserCircleIcon, online: true },
+  { id: "about", label: "À propos", icon: InfoIcon, online: false },
 ];
 
 /** Settings: one section at a time, so nothing is an endless scroll. */
@@ -78,6 +81,8 @@ export function SettingsDialog({
         return <TrashSection />;
       case "account":
         return <AccountSection onClose={onClose} />;
+      case "about":
+        return <AboutSection />;
     }
   };
 
