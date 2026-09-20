@@ -14,6 +14,7 @@ import httpx
 from sqlmodel import Session, select
 
 from serenity import audit
+from serenity.agent.executor import run_rotations
 from serenity.agent.rotations import run_schedule
 from serenity.agent.watch import run_watch
 from serenity.auth import sessions, totp
@@ -97,6 +98,27 @@ def schedule_now() -> int:
     return 0
 
 
+def rotate_now() -> int:
+    """Run the rotations that are waiting, now (docs/08-rotation.md)."""
+    settings = get_settings()
+    server_key = read_key_file(settings.server_key_file)
+    drop_privileges()
+    engine = create_db_engine(settings.db_path)
+    check_schema(engine)
+    if not settings.rotator_url or settings.rotator_token is None:
+        print("Aucun exécuteur configuré : renseigne SERENITY_ROTATOR_TOKEN dans .env.")
+        return 0
+    report = run_rotations(engine, server_key, settings, utcnow())
+    if report.skipped:
+        print("Kill switch actif : aucune rotation exécutée.")
+        return 0
+    print(
+        f"Rotations : {report.run} exécutée(s), {report.succeeded} réussie(s), "
+        f"{report.rolled_back} annulée(s), {report.failed} en échec."
+    )
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m serenity.admin")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -104,11 +126,14 @@ def main(argv: list[str] | None = None) -> int:
     reset.add_argument("username")
     sub.add_parser("watch-now", help="run the agent-zone watch now (agent container)")
     sub.add_parser("schedule-now", help="run the rotation due-date check now")
+    sub.add_parser("rotate-now", help="execute the rotations that are waiting")
     args = parser.parse_args(argv)
     if args.command == "watch-now":
         return watch_now()
     if args.command == "schedule-now":
         return schedule_now()
+    if args.command == "rotate-now":
+        return rotate_now()
     try:
         username = normalize_username(args.username)
     except InvalidInputError as exc:

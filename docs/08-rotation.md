@@ -95,6 +95,12 @@ docker compose logs agent --tail 20
 curl -s http://127.0.0.1:8090/sante
 ```
 
+L'agent n'exécute que toutes les heures ; pour ne pas attendre :
+
+```bash
+make rotate-now
+```
+
 Le compteur `changes` du site a bougé, l'entrée porte un nouveau mot de passe, et le journal
 montre la suite `vault.item.pending` → `agent.rotation.execute`.
 
