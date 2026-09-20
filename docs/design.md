@@ -59,21 +59,21 @@ réagissent à la place réellement disponible.
 ## La marque
 
 Le logo est un **cadenas plein**, blanc (`--color-mark`, `#F2F4F8`), anse épaisse **détachée du
-corps** (le trait pochoir), **serrure rouge Marianne**. Le logotype « SEREN**I**TY » est en
-pochoir, le « I » **en rouge**. Posé sur le pavé **bleu de France** de l'icône, le tout donne le
-drapeau en un seul objet, sans rayures : un fond bleu, un cadenas blanc, une serrure rouge.
+corps** (le trait pochoir), **serrure rouge Marianne**. Le logotype « SEREN**I**TY » est
+composé en **Black Ops One**, la police des titres d'écran, le « I » **en rouge**. Marque et
+titres sont donc dessinés dans les mêmes lettres. Posé sur le pavé **bleu de France** de
+l'icône, le tout donne le drapeau en un seul objet, sans rayures : un fond bleu, un cadenas
+blanc, une serrure rouge.
 
-Les fichiers d'origine sont découpés en trois usages (`web/public/`) :
+Ce qui reste en fichier, c'est la forme du cadenas (`web/public/`) :
 
 | Fichier | Usage |
 |---|---|
-| `brand/wordmark.png` | Le logotype seul, en haut des écrans d'entrée et dans la barre de titre |
-| `brand/wordmark-clair.png` | La même chose pour le thème clair ; `<Wordmark>` choisit la découpe |
 | `icon-192.png`, `icon-512.png`, `maskable-512.png`, `apple-touch-icon.png` | Icônes de l'appli installée, découpées du logo |
 | `icon.svg`, `maskable.svg` | La même forme, redessinée en vectoriel : **la source des PNG** |
 
-La marque dans la barre de titre (`design/Lock.tsx`) reprend **exactement** cette géométrie,
-mesurée sur le fichier d'origine.
+Le cadenas de l'appli (`design/Lock.tsx`) reprend **exactement** cette géométrie, mesurée sur
+le dessin d'origine.
 
 Les PNG d'icône ne se retouchent pas à la main : ils se **regénèrent** depuis les deux SVG par
 `make brand` (Chromium dans Docker), qui produit aussi la bannière du dépôt
@@ -196,8 +196,9 @@ une couleur en dur : un écran qui écrit `#5B8DEF` ou `white/45` casse le thèm
 | `frame` | blanc 45 % | encre 18 % | Le contour du carré |
 | `rain-trail` | blanc | encre | La cascade tombe en encre sur le papier, têtes bleue et rouge inchangées |
 
-Le logotype a ses deux découpes dans `web/public/brand/` : `wordmark.png` (blanc) et
-`wordmark-clair.png` (encre), le « I » en rouge dans les deux. Le composant `<Wordmark>` choisit, personne d'autre.
+Le logotype n'est plus une image : `<Wordmark>` le compose en texte, dans la police des titres.
+Il prend donc `--color-mark` comme tout le reste de la marque, blanc sur noir et encre sur
+papier, sans deux fichiers à tenir à jour.
 
 ## Choisir son thème
 

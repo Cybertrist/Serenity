@@ -41,7 +41,7 @@ export function AppFrame({
           variants={FRAME_PART}
           className="relative flex shrink-0 items-center gap-2 px-4 py-3 sm:px-5"
         >
-          <Wordmark className="h-[13px] w-auto" />
+          <Wordmark size={17} />
           <span className="flex-1" />
           <IconButton icon={QuestionIcon} label="Guide" onClick={onGuide} />
           <span className="relative">

@@ -170,6 +170,8 @@
 @layer base {
   html {
     color-scheme: dark;
+    /* Chakra Petch ties "fi" into one glyph, which eats the dot: « confiée » looked broken. */
+    font-variant-ligatures: none;
     background: var(--color-bg);
     color: var(--color-text);
     font-family: var(--font-sans);

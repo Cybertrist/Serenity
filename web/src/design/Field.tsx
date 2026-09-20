@@ -37,7 +37,7 @@ export function Field({
           spellCheck={false}
           aria-invalid={error ? true : undefined}
           aria-describedby={error || hint ? `${id}-help` : undefined}
-          className={`min-w-0 flex-1 bg-transparent py-3 text-body outline-none placeholder:text-muted ${mono ? "font-mono" : ""}`}
+          className={`min-w-0 flex-1 bg-transparent py-3 text-body outline-none placeholder:text-muted ${mono || secret ? "font-mono" : ""} ${secret ? "tracking-[0.06em]" : ""}`}
         />
         {secret ? (
           <IconButton
