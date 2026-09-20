@@ -106,9 +106,7 @@ def test_inspecting_a_page_lists_its_fields() -> None:
 
 
 def test_inspecting_needs_the_token() -> None:
-    response = httpx.post(
-        f"{ROTATOR_URL}/inspecter", json={"url": DEMO_URL}, timeout=30
-    )
+    response = httpx.post(f"{ROTATOR_URL}/inspecter", json={"url": DEMO_URL}, timeout=30)
     assert response.status_code == 401
 
 
