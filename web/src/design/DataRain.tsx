@@ -78,6 +78,16 @@ export function DataRain({
 
     const ctx = surface.getContext("2d");
     if (!ctx) return;
+    // The trail follows the theme: cream over black, ink over paper.
+    const trail =
+      getComputedStyle(document.documentElement).getPropertyValue("--rain-trail").trim() ||
+      "214 210 203";
+    const [tr, tg, tb] = trail.split(/\s+/).map(Number);
+    const accent =
+      getComputedStyle(document.documentElement).getPropertyValue("--color-accent").trim() ||
+      "#f2711c";
+    const peak =
+      Number(getComputedStyle(document.documentElement).getPropertyValue("--rain-alpha")) || 0.34;
     const dpr = Math.min(window.devicePixelRatio, 2);
     const w = window.innerWidth;
     const h = window.innerHeight;
@@ -138,13 +148,13 @@ export function DataRain({
           const y = drop.y - k * step;
           if (y < -step || y > h + step) continue;
           if (k === 0 && drop.chars.length > 2) {
-            ctx.fillStyle = "#f2711c";
-            ctx.shadowColor = "rgba(242,113,28,0.8)";
+            ctx.fillStyle = accent;
+            ctx.shadowColor = accent;
             ctx.shadowBlur = 9;
           } else {
             // Kept dim on purpose: the fall should read as data, not as a wall of white.
-            const alpha = Math.max(0, 0.34 - (k / drop.tail) * 0.34);
-            ctx.fillStyle = `rgba(214,210,203,${alpha.toFixed(3)})`;
+            const alpha = Math.max(0, peak - (k / drop.tail) * peak);
+            ctx.fillStyle = `rgba(${String(tr)},${String(tg)},${String(tb)},${alpha.toFixed(3)})`;
             ctx.shadowBlur = 0;
           }
           ctx.fillText(drop.chars[k] ?? "", drop.x, y);

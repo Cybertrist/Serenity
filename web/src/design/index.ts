@@ -4,6 +4,7 @@ export { Chip, Pill } from "./Chip";
 export { Confirm } from "./Confirm";
 export { EmptyState, ErrorNote, Note, Skeleton } from "./Feedback";
 export { Field } from "./Field";
+export { LockMark, Shackle } from "./Lock";
 export { Modal } from "./Modal";
 export {
   DIALOG,
@@ -25,5 +26,16 @@ export {
 } from "./motion";
 export { Row } from "./Row";
 export { Segmented } from "./Segmented";
+export {
+  applyTheme,
+  resolveTheme,
+  setThemeChoice,
+  startTheme,
+  themeChoice,
+  useTheme,
+  type Theme,
+  type ThemeChoice,
+} from "./theme";
 export { Toggle } from "./Toggle";
+export { Wordmark } from "./Wordmark";
 export type { Tone } from "./tone";

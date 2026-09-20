@@ -167,7 +167,7 @@ export function Welcome() {
               onChange={(e) => {
                 setNoted(e.target.checked);
               }}
-              className="h-[22px] w-[22px] accent-[#f2711c]"
+              className="h-[22px] w-[22px] accent-accent"
             />
             Je l'ai noté dans un endroit sûr.
           </label>

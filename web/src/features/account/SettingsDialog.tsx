@@ -4,6 +4,7 @@ import {
   DevicesIcon,
   type Icon,
   LockKeyIcon,
+  PaintBrushIcon,
   TerminalWindowIcon,
   TrashIcon,
   UserCircleIcon,
@@ -14,6 +15,7 @@ import { useSession } from "../../app/session";
 import { Modal, Note } from "../../design";
 import { JournalSection } from "../logs/JournalSection";
 import { AccountSection } from "./settings/AccountSection";
+import { AppearanceSection } from "./settings/AppearanceSection";
 import { DevicesSection } from "./settings/DevicesSection";
 import { LockSection } from "./settings/LockSection";
 import { TransferSection } from "./settings/TransferSection";
@@ -25,6 +27,7 @@ import type { SettingsSection } from "../../app/shell/context";
 /** `online` marks a section that cannot work without the server. */
 const SECTIONS: { id: SettingsSection; label: string; icon: Icon; online: boolean }[] = [
   { id: "lock", label: "Verrouillage", icon: LockKeyIcon, online: false },
+  { id: "appearance", label: "Apparence", icon: PaintBrushIcon, online: false },
   { id: "journal", label: "Journal", icon: TerminalWindowIcon, online: true },
   { id: "devices", label: "Appareils", icon: DevicesIcon, online: true },
   { id: "watch", label: "Surveillance", icon: WatchIcon, online: true },
@@ -61,6 +64,8 @@ export function SettingsDialog({
     switch (current) {
       case "lock":
         return <LockSection onClose={onClose} />;
+      case "appearance":
+        return <AppearanceSection />;
       case "journal":
         return <JournalSection />;
       case "devices":

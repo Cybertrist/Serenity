@@ -123,7 +123,7 @@ et l'animation se joue deux fois.
 arrière-plan : le carré se détache seul, par son contour. Ce qui bouge dans Serenity bouge
 *dans* l'interface, jamais derrière elle.
 
-## Couleurs (thème sombre)
+## Couleurs — thème sombre (par défaut sur un système sombre)
 
 Définies dans `web/src/design/theme.css` (`@theme` de Tailwind v4) :
 
@@ -139,10 +139,41 @@ Définies dans `web/src/design/theme.css` (`@theme` de Tailwind v4) :
 | `accent` / `accent-soft` | `#F2711C` / 14 % | **Avec parcimonie** : bouton principal, onglet actif, kill switch |
 | `ok` / `warn` / `crit` | `#6BD49A` / `#F5C26B` / `#F27A7A` | États, chacun avec son fond doux à 12 % |
 
-Un thème clair est prêt (`[data-theme="light"]`) mais pas activé en V1.
-
 L'orange est celui du logo, `#F2711C`, **le même partout** : bouton principal, onglet actif,
 choix sélectionné, tête de la cascade.
+
+## Couleurs — thème clair
+
+Même grille de jetons, redéfinie sous `[data-theme="light"]`. Rien dans les composants ne code
+une couleur en dur : un écran qui écrit `#F2711C` ou `white/45` casse le thème clair.
+
+| Jeton | Sombre | Clair | Pourquoi |
+|---|---|---|---|
+| `bg` | `#000000` | `#ECEAE6` | Un papier chaud plutôt qu'un blanc d'écran : le carré blanc s'y pose |
+| `surface` / `raised` | `#16171A` / `#1F2126` | `#FFFFFF` / `#F4F3F0` | Le carré est la feuille, les dialogues sont légèrement en retrait |
+| `line` | blanc 28 % | encre 14 % | Sur du clair, une bordure franche devient une balafre |
+| `accent` | `#F2711C` | `#C85A17` | L'orange du logo passe sous 4,5:1 sur blanc ; il est foncé juste assez |
+| `mark` | `#ECE8E1` | `#16171A` | **Le cadenas passe à l'encre** : un cadenas crème sur du papier crème n'est plus un cadenas |
+| `frame` | blanc 45 % | encre 18 % | Le contour du carré |
+| `rain-trail` | crème | encre | La cascade tombe en encre sur le papier, tête orange inchangée |
+
+Le logotype a ses deux découpes dans `web/public/brand/` : `wordmark.png` (crème) et
+`wordmark-clair.png` (encre). Le composant `<Wordmark>` choisit, personne d'autre.
+
+## Choisir son thème
+
+Trois choix, dans **Réglages → Apparence** : *Système*, *Clair*, *Sombre*. Par défaut **Système**,
+et il suit en direct : le basculement automatique du soir change l'appli sans la recharger.
+
+- La préférence vit dans `localStorage` (`serenity.theme`), propre à cet appareil, jamais envoyée
+  au serveur — c'est un goût, pas un secret.
+- `web/src/design/theme.ts` pose `data-theme` sur `<html>` **avant le premier rendu** et met à
+  jour la couleur de la barre du navigateur. Une requête média dans `theme.css` habille la toute
+  première peinture, avant que le script tourne : pas d'éclair sombre sur un bureau clair.
+- L'écran de démarrage de l'appli installée (manifeste PWA) reste sombre : une seule couleur y
+  est possible, et c'est le visage de la marque.
+- `make ui-smoke` fait trois passages : téléphone et bureau en sombre, puis un passage complet en
+  clair (`web/e2e/shots/2*-clair-*.png`), cascade de déverrouillage comprise.
 
 ## Typographie
 

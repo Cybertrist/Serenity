@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import type { ReactNode } from "react";
-import { EASE_OUT } from "../../../design";
+import { EASE_OUT, Wordmark } from "../../../design";
 
 /**
  * The frame every entry screen shares: the wordmark, one card, and the secondary actions
@@ -19,15 +19,13 @@ export function AuthShell({
   return (
     <main className="flex min-h-dvh items-center justify-center px-5 py-10">
       <div className="flex w-full max-w-[420px] flex-col items-center gap-7">
-        <motion.img
-          src="/brand/wordmark.png"
-          alt="Serenity"
+        <Wordmark
           className="h-[19px] w-auto"
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         />
-        <div className="w-full overflow-hidden rounded-card border-2 border-white/40 bg-surface shadow-[0_30px_80px_-30px_rgb(0_0_0/0.85)]">
+        <div className="w-full overflow-hidden rounded-card border-2 border-frame bg-surface shadow-[0_30px_80px_-30px_var(--color-shade-strong)]">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={step}

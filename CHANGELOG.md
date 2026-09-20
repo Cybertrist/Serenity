@@ -13,6 +13,11 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
   TOTP, puis un kit neuf pour le même coffre. Les entrées ne bougent pas, les appareils restent
   connectés, et l'ancien kit cesse de valoir dès l'affichage du nouveau — un avertissement le dit
   avant. `POST /api/auth/recovery-kit`, `docs/crypto.md` §7.11, ADR-013.
+- **Thème clair**, et un réglage **Apparence** (Système / Clair / Sombre) dans les réglages. Par
+  défaut l'appli suit le système et change avec lui, sans rechargement. La préférence reste sur
+  l'appareil, jamais sur le serveur. Le cadenas et le logotype passent à l'encre, la cascade de
+  déverrouillage tombe en encre sur le papier, et `make ui-smoke` capture désormais un troisième
+  passage entièrement en clair. ADR-014, `docs/design.md`.
 - Phase 7 : la barre d'onglets tombe à **trois entrées** (Coffre, Fuites, Agent) : le journal
   devient un volet des réglages, où l'écran Agent renvoie d'un bouton. « Verrouiller maintenant »
   quitte la barre de titre pour les réglages.

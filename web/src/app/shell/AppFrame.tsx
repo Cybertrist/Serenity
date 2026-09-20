@@ -1,7 +1,7 @@
 import { BellIcon, GearIcon, QuestionIcon } from "@phosphor-icons/react";
 import { motion } from "motion/react";
 import type { ReactNode } from "react";
-import { FRAME, FRAME_PART, IconButton, PERSPECTIVE } from "../../design";
+import { FRAME, FRAME_PART, IconButton, PERSPECTIVE, Wordmark } from "../../design";
 
 /**
  * The app lives in one square, centred on the page: side = min(92vw, 92vh, 980px).
@@ -35,13 +35,13 @@ export function AppFrame({
         variants={FRAME}
         initial="initial"
         animate="animate"
-        className="@container relative flex h-dvh w-full flex-col overflow-hidden border-white/45 bg-surface md:h-[min(92vh,92vw,980px)] md:w-[min(92vh,92vw,980px)] md:rounded-[32px] md:border-2 md:shadow-[0_40px_120px_-30px_rgb(242_113_28/0.18)]"
+        className="@container relative flex h-dvh w-full flex-col overflow-hidden border-frame bg-surface md:h-[min(92vh,92vw,980px)] md:w-[min(92vh,92vw,980px)] md:rounded-[32px] md:border-2 md:shadow-[0_40px_120px_-30px_rgb(242_113_28/0.18)]"
       >
         <motion.header
           variants={FRAME_PART}
           className="relative flex shrink-0 items-center gap-2 border-b border-line px-4 py-3 sm:px-5"
         >
-          <img src="/brand/wordmark.png" alt="Serenity" className="h-[13px] w-auto" />
+          <Wordmark className="h-[13px] w-auto" />
           <span className="flex-1" />
           <IconButton icon={QuestionIcon} label="Guide" onClick={onGuide} />
           <span className="relative">

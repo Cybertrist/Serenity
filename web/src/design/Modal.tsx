@@ -107,7 +107,7 @@ export function Modal({
           style={{ perspective: PERSPECTIVE }}
         >
           <motion.div
-            className="absolute inset-0 bg-black/55 backdrop-blur-[2px]"
+            className="absolute inset-0 bg-scrim backdrop-blur-[2px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -120,7 +120,7 @@ export function Modal({
             aria-modal="true"
             aria-label={title}
             tabIndex={-1}
-            className={`relative z-10 flex max-h-[min(88dvh,860px)] w-full flex-col overflow-hidden rounded-card border border-line bg-raised shadow-[0_24px_60px_-12px_rgb(0_0_0/0.6)] outline-none ${WIDTHS[size]}`}
+            className={`relative z-10 flex max-h-[min(88dvh,860px)] w-full flex-col overflow-hidden rounded-card border border-line bg-raised shadow-[0_24px_60px_-12px_var(--color-shade)] outline-none ${WIDTHS[size]}`}
             {...(reduce
               ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
               : { variants: DIALOG, initial: "initial", animate: "animate", exit: "exit" })}

@@ -1,6 +1,7 @@
 /**
  * UI smoke test (make ui-smoke, CI): the production web image (nginx + strict CSP) against a
- * throwaway test API. Walks every screen on a phone, then again on a desktop-sized viewport,
+ * throwaway test API. Walks every screen on a phone, then on a desktop viewport, then a
+ * light-theme pass,
  * saves screenshots, and fails on any page error, console error or CSP violation.
  */
 import { chromium } from "playwright";
@@ -43,10 +44,13 @@ async function tick() {
 
 await fetch(API + "/__test/reset", { method: "POST" });
 const browser = await chromium.launch();
+// The first two passes pin the dark theme: the app follows the system, and Playwright's
+// default system is light. The third pass is the one that asks for light.
 const context = await browser.newContext({
   viewport: { width: 390, height: 844 },
   deviceScaleFactor: 2,
   locale: "fr-FR",
+  colorScheme: "dark",
 });
 const page = await context.newPage();
 page.on("console", (m) => {
@@ -153,6 +157,7 @@ const wide = await browser.newContext({
   viewport: { width: 1440, height: 900 },
   deviceScaleFactor: 1,
   locale: "fr-FR",
+  colorScheme: "dark",
 });
 const big = await wide.newPage();
 big.on("console", (m) => {
@@ -211,6 +216,60 @@ await big.getByRole("dialog").waitFor();
 await big.getByRole("button", { name: "Corbeille" }).click();
 await wideShot("22-bureau-reglages");
 await big.keyboard.press("Escape");
+// Light theme: a third context whose system is set to light, so the app resolves to it.
+const day = await browser.newContext({
+  viewport: { width: 1440, height: 900 },
+  deviceScaleFactor: 1,
+  locale: "fr-FR",
+  colorScheme: "light",
+});
+const sun = await day.newPage();
+sun.on("console", (m) => {
+  const text = m.text();
+  if (
+    (m.type() === "error" || /Refused|Content Security/.test(text)) &&
+    !EXPECTED.some((r) => r.test(text))
+  ) {
+    problems.push(`console (clair): ${text}`);
+  }
+});
+sun.on("pageerror", (e) => problems.push(`pageerror (clair): ${e.message}`));
+const dayShot = async (name) => {
+  await sun.waitForTimeout(4000);
+  await sun.screenshot({ path: `${shots}/${name}.png` });
+};
+
+await sun.goto(BASE);
+await sun.getByRole("button", { name: "Continuer" }).waitFor({ timeout: 20000 });
+await sun.getByLabel("Identifiant").fill("tristan");
+await sun.getByLabel("Mot de passe maître").fill("une phrase de passe de test");
+await dayShot("23-clair-cadenas");
+await sun.getByRole("button", { name: "Continuer" }).click();
+await sun.getByLabel("Code à 6 chiffres").fill(totp(secret, await tick()));
+await report(sun, "connexion en thème clair", async () => {
+  await sun.getByRole("button", { name: "Déverrouiller" }).click();
+  // Caught mid-fall: the rain has to read as ink on paper, not as a white-out.
+  await sun.waitForTimeout(700);
+  await sun.screenshot({ path: `${shots}/24-clair-pluie.png` });
+  await sun.getByText("Protégé par toi").waitFor({ timeout: 20000 });
+});
+await dayShot("25-clair-coffre");
+await sun.getByRole("button", { name: /Banque/ }).click();
+await sun.getByRole("dialog").waitFor();
+await dayShot("26-clair-fiche");
+await sun.keyboard.press("Escape");
+await sun.getByRole("button", { name: "Réglages" }).click();
+await sun.getByRole("dialog").waitFor();
+await sun.getByRole("button", { name: "Apparence" }).click();
+await dayShot("27-clair-apparence");
+// The padlock cinema is the piece the light theme could ruin: lock, and look at it.
+await sun.getByRole("button", { name: "Verrouillage" }).click();
+await sun.getByRole("button", { name: "Verrouiller maintenant" }).click();
+await report(sun, "verrouillage en thème clair", async () => {
+  await sun.getByRole("button", { name: "Déverrouiller" }).waitFor({ timeout: 20000 });
+});
+await dayShot("28-clair-verrouille");
+
 await browser.close();
 if (problems.length) {
   console.error("UI smoke: problems found\n" + problems.join("\n"));

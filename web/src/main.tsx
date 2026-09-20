@@ -6,11 +6,15 @@ import { App } from "./App";
 import { SessionProvider } from "./app/session";
 import { ToastProvider } from "./app/toast";
 import { ready } from "./crypto/sodium";
+import { startTheme } from "./design/theme";
 import "./design/theme.css";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: true } },
 });
+
+// Before the first render: a dark app must not flash over a light desktop.
+startTheme();
 
 const root = document.getElementById("root");
 if (!root) throw new Error("#root missing");
