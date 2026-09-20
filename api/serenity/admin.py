@@ -146,7 +146,16 @@ def inspect(url: str) -> int:
         print("Champs" if kind == "fields" else "Boutons", f"({len(rows)})")
         for f in rows:
             hint = f["label"] or f["placeholder"] or f["name"] or ""
-            print(f"  {f['selector']:34} {(f['type'] or f['tag']):10} {hint[:40]}")
+            auto = f.get("autocomplete")
+            mark = f"  [{auto}]" if auto else ""
+            print(f"  {f['selector']:34} {(f['type'] or f['tag']):10} {hint[:40]}{mark}")
+        print()
+    links = page.get("links") or []
+    if links:
+        # Where to go next: a sign-in page, an account page, a "change my password" link.
+        print(f"Liens ({len(links)})")
+        for link in links[:25]:
+            print(f"  {link['text'][:34]:34} {link['href'][:70]}")
         print()
     if page.get("note"):
         print(f"Note : {page['note']}")

@@ -130,6 +130,12 @@ Le rotateur ouvre la page, liste ses champs visibles avec leur sélecteur, leur 
 libellé, ses boutons, et signale les `iframe` (un formulaire dedans a besoin d'un autre
 traitement). Il ne tape rien et ne soumet rien : aucun identifiant n'est nécessaire.
 
+Il attend que la page soit **vraiment dessinée** avant de la lire : une page construite dans le
+navigateur n'a rien dans son HTML de départ, et l'inspection d'avant ne trouvait que des boutons
+sans nom. Il rapporte aussi le texte des boutons, les liens de la page (pour trouver la page de
+connexion ou celle du compte) et l'attribut `autocomplete` des champs, qui est la façon standard
+pour un site de dire « ici, c'est le mot de passe actuel » et « ici, le nouveau ».
+
 La page « changer mon mot de passe » est derrière la connexion : lance l'inspection sur son URL
 avec une session ouverte dans ton navigateur ne suffit pas (le rotateur part d'un profil vierge).
 Pour celle-là, copie les sélecteurs depuis les outils de développement de ton navigateur
