@@ -101,6 +101,10 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Corrigé
 
+- Agent : une rotation approuvée dont le site n'a **aucune recette** restait silencieuse pour
+  toujours. Elle porte maintenant sa raison (« aucune recette pour ce site »), visible dans
+  l'écran Agent sous « Approuvées, en attente de l'exécuteur », et le journal ne répète plus
+  l'information à chaque passage.
 - Rotation : une entrée **modifiée pendant que sa rotation était en vol** devenait illisible
   (le bloc en attente était écrit sous une révision qui n'était pas la sienne). La validation
   finale re-chiffre désormais sur l'entrée à jour : ta modification est gardée, le mot de passe

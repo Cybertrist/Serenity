@@ -6,6 +6,7 @@ import {
   ProhibitIcon,
   ShieldCheckIcon,
   TerminalWindowIcon,
+  WarningIcon,
   XCircleIcon,
 } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -80,6 +81,10 @@ export function AgentScreen() {
   };
 
   const pending = (rotations.data ?? []).filter((r) => r.status === "scheduled");
+  // Said yes, not done yet: either the executor has not passed, or it cannot.
+  const running = (rotations.data ?? []).filter(
+    (r) => r.status === "approved" || r.status === "in_progress",
+  );
   const upcoming = (policies.data ?? [])
     .filter((p) => p.frequency_days && byId.get(p.item_id)?.item.zone === "agent")
     .sort((a, b) => (a.next_due_at ?? "").localeCompare(b.next_due_at ?? ""));
@@ -164,10 +169,40 @@ export function AgentScreen() {
           </section>
         ) : null}
 
+        {running.length ? (
+          <section className="flex flex-col gap-3">
+            <SectionTitle
+              title="Approuvées, en attente de l'exécuteur"
+              subtitle="L'agent les joue à son prochain passage, une par une."
+            />
+            {running.map((r) => {
+              const name = byId.get(r.item_id)?.entry.name ?? "Entrée";
+              return (
+                <Card key={r.id} className="flex items-center gap-3">
+                  <Chip
+                    icon={r.error ? WarningIcon : ArrowsClockwiseIcon}
+                    tone={r.error ? "warn" : "neutral"}
+                    duotone
+                  />
+                  <span className="flex flex-col">
+                    <span className="text-body font-semibold">{name}</span>
+                    <span className="text-caption text-muted">
+                      {r.error ??
+                        (r.status === "in_progress"
+                          ? "En cours sur le site."
+                          : "En attente du prochain passage de l'agent.")}
+                    </span>
+                  </span>
+                </Card>
+              );
+            })}
+          </section>
+        ) : null}
+
         <section className="flex flex-col gap-3">
           <SectionTitle
             title="Prochaines rotations"
-            subtitle="Des rappels en V1 : le changement automatique arrive en V3."
+            subtitle="Zone agent : l'agent change le mot de passe lui-même. Zone personnelle : il te le rappelle."
           />
           {upcoming.length === 0 ? (
             <EmptyState

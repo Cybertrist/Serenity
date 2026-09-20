@@ -107,7 +107,8 @@ montre la suite `vault.item.pending` → `agent.rotation.execute`.
 ## Limites connues
 
 - **Un seul site a une recette** : le site de démo. Écrire celle d'un vrai site est le travail
-  suivant, et il commence par regarder ses formulaires.
+  suivant, et il commence par regarder ses formulaires. Une rotation approuvée sur un site sans
+  recette **le dit** : l'écran Agent l'affiche sous « Approuvées, en attente de l'exécuteur ».
 - La reprise d'une entrée en zone personnelle est **refusée** pendant une rotation (§7.12).
 - Le plafond `SERENITY_MAX_ROTATIONS_PER_DAY` porte sur les approbations, pas sur les
   exécutions : une rotation approuvée hier peut s'exécuter aujourd'hui.
