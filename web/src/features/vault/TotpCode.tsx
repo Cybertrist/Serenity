@@ -37,7 +37,7 @@ export function TotpCode({ value }: { value: string }) {
   const tone = state.remaining <= 5 ? "var(--color-warn)" : "var(--color-ok)";
   return (
     <div className="flex items-center gap-2">
-      <span className="font-mono text-title tracking-widest" aria-live="polite">
+      <span className="whitespace-nowrap font-mono text-title tracking-widest" aria-live="polite">
         {state.code.slice(0, 3)} {state.code.slice(3)}
       </span>
       <svg
