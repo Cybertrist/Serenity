@@ -1,1 +1,12 @@
-# Daily restic backup timer (phase 8).
+[Unit]
+Description=Sauvegarde Serenity, toutes les nuits
+
+[Timer]
+# 03:12 rather than 03:00: nothing else on the machine starts at that minute.
+OnCalendar=*-*-* 03:12:00
+# The VM is not always up at night; catch up at the next boot instead of skipping a day.
+Persistent=true
+RandomizedDelaySec=5m
+
+[Install]
+WantedBy=timers.target
