@@ -10,7 +10,7 @@
  */
 import { chromium } from "playwright";
 import { createHmac } from "node:crypto";
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, symlinkSync } from "node:fs";
 
 const BASE = process.env.FILM_BASE ?? "http://127.0.0.1:8080";
 const SITE = process.env.FILM_SITE ?? "http://demo.serenity.test:8000";
@@ -141,49 +141,61 @@ await roll();
 
 await page.goto(BASE);
 await page.getByLabel("Identifiant").waitFor({ timeout: 20000 });
-await say(page, "Un coffre chiffré, chez toi.", "Serenity");
-await beat(page, 1200);
+// The rule for every cue below: the screen shows it first, the line comes after, and it
+// describes what is on screen now. Never an announcement of what is about to happen.
+await say(page, "Ton coffre est verrouillé.", "Serenity");
+await beat(page, 1500);
 
 await page.getByLabel("Identifiant").type(USER, { delay: 60 });
 await page.getByLabel("Mot de passe maître").type(MASTER, { delay: 22 });
-await say(page, "Le mot de passe maître ne quitte jamais l'appareil.", "Déverrouillage");
-await beat(page, 700);
+await say(page, "Ton mot de passe maître ne sort pas de l'appareil.", "Déverrouillage");
+await beat(page, 1400);
 await page.getByRole("button", { name: "Continuer" }).click();
 await page.getByLabel("Code à 6 chiffres").fill(totp(secret, await tick()));
-await beat(page, 400);
+await beat(page, 500);
 await page.getByRole("button", { name: "Déverrouiller" }).click();
 await say(page, "");
 await page.getByText("Protégé par toi").waitFor({ timeout: 20000 });
-await beat(page, 900);
+await beat(page, 700);
+await say(page, "Le coffre est ouvert. Tout est déchiffré ici.", "Coffre");
+await beat(page, 2000);
 
-await say(page, "Un compte confié à l'agent, et son mot de passe a fuité.", "Veille");
 await page.getByLabel("Navigation principale").getByRole("button", { name: "Fuites" }).click();
-await beat(page, 2300);
+await page.getByText(/mot de passe exposé/).first().waitFor({ timeout: 20000 });
+await beat(page, 500);
+await say(page, "La veille a trouvé ce mot de passe dans une fuite connue.", "Fuites");
+await beat(page, 2600);
 
-await say(page, "L'agent propose de le changer. Tu décides.", "Agent");
 await page.getByLabel("Navigation principale").getByRole("button", { name: "Agent" }).click();
-await beat(page, 1800);
-await page.getByRole("button", { name: "Approuver" }).first().click();
-await beat(page, 1000);
+await page.getByRole("button", { name: "Approuver" }).first().waitFor({ timeout: 20000 });
+await beat(page, 500);
+await say(page, "L'agent propose de le changer. Il attend ton accord.", "Agent");
+await beat(page, 2600);
 
-await say(page, "Nouveau mot de passe enregistré avant de toucher au site.", "Rotation");
+await page.getByRole("button", { name: "Approuver" }).first().click();
+await beat(page, 900);
+await say(page, "Tu approuves.", "Agent");
+await beat(page, 1400);
+
 const run = fetch(API + "/__test/rotate", { method: "POST" }).then((r) => r.json());
-await beat(page, 3500);
+await say(page, "L'agent ouvre le site dans un vrai navigateur et change le mot de passe.", "Rotation");
+await beat(page, 4200);
 const report = await run;
 console.log("rotation:", JSON.stringify(report));
-await say(page, "Le site a changé, le coffre a validé.", "Rotation");
-await beat(page, 1800);
+await say(page, "Il se reconnecte pour vérifier, puis valide le coffre.", "Rotation");
+await beat(page, 2600);
 
-await say(page, "Le coffre tient le nouveau mot de passe.", "Coffre");
 await page.getByLabel("Navigation principale").getByRole("button", { name: "Coffre" }).click();
-await beat(page, 600);
+await beat(page, 500);
 await page.getByRole("button", { name: /Démo/ }).click();
 await page.getByRole("dialog").waitFor();
 await page.getByRole("button", { name: "Afficher le mot de passe" }).click();
-await beat(page, 1800);
+await beat(page, 700);
+await say(page, "Le coffre a déjà le nouveau mot de passe.", "Coffre");
+await beat(page, 2400);
 // Read it off the screen, where the viewer reads it too.
 await page.getByRole("button", { name: "Copier le mot de passe" }).click();
-await beat(page, 700);
+await beat(page, 800);
 const shown = await page
   .locator('xpath=//span[text()="Mot de passe"]/following-sibling::span[1]')
   .first()
@@ -194,42 +206,58 @@ console.log("password on screen:", JSON.stringify(shown), "clipboard:", copied.l
 if (!fresh || fresh === WEAK || fresh.startsWith("•")) {
   throw new Error(`the vault still shows the old password: ${JSON.stringify(fresh)}`);
 }
-await say(page, "");
 
 // --- Last scene: ask the site itself --------------------------------------------------------
 await page.goto(`${SITE}/connexion`);
 await roll(); // a cross-origin navigation stops the screencast
-await say(page, "L'ancien mot de passe, sur le vrai site.", "Preuve");
+await say(page, "Le vrai site, maintenant. On essaie l'ancien mot de passe.", "Preuve");
 await page.locator("#username").type(SITE_USER, { delay: 40 });
 await page.locator("#password").type(WEAK, { delay: 40 });
-await beat(page, 400);
+await beat(page, 600);
 await page.locator("#login").click();
-await beat(page, 1500);
-await say(page, "Refusé. Celui que l'agent a posé :", "Preuve");
+await page.getByText(/incorrects/).first().waitFor({ timeout: 10000 });
+await beat(page, 400);
+await say(page, "Refusé : il ne marche plus.", "Preuve");
+await beat(page, 2000);
+
 await page.locator("#username").fill(SITE_USER);
 await page.locator("#password").type(fresh, { delay: 26 });
 await beat(page, 400);
 await page.locator("#login").click();
-await beat(page, 1800);
+await page.getByText(/Connecté en tant que/).first().waitFor({ timeout: 10000 });
+await beat(page, 400);
+await say(page, "Celui de l'agent ouvre le compte. Le site et le coffre sont d'accord.", "Preuve");
+await beat(page, 3000);
 await say(page, "Pas d'humain dans la boucle. Un humain informé.", "Serenity");
-await beat(page, 2200);
+await beat(page, 2400);
 await say(page, "");
 await beat(page, 300);
 
 await cdp.send("Page.stopScreencast").catch(() => {});
 await stage.close();
 
-// The cut list: every frame with the time it stayed on screen. ffmpeg needs the last twice.
-const lines = [];
-for (let i = 0; i < shots.length; i += 1) {
-  const next = shots[i + 1];
-  const held = next ? Math.max(0.02, next.at - shots[i].at) : 0.4;
-  lines.push(`file 'frames/${shots[i].name}'`, `duration ${held.toFixed(3)}`);
+/*
+ * A fixed cadence, built here rather than left to ffmpeg. The screencast only speaks when the
+ * page changes, and the concat demuxer rounds every short gap up to its own frame duration,
+ * which stretched the film by a sixth and slid the subtitles off what they describe. So each
+ * of the 25 slots per second points at the frame that was on screen at that instant.
+ */
+const FPS = 25;
+mkdirSync(`${OUT}/cfr`, { recursive: true });
+let cut = 0;
+let slots = 0;
+if (shots.length) {
+  const first = shots[0].at;
+  const last = shots[shots.length - 1].at;
+  for (let t = first; t <= last + 0.2; t += 1 / FPS) {
+    while (cut + 1 < shots.length && shots[cut + 1].at <= t) cut += 1;
+    symlinkSync(`../frames/${shots[cut].name}`, `${OUT}/cfr/c${String(slots).padStart(5, "0")}.png`);
+    slots += 1;
+  }
 }
-if (shots.length) lines.push(`file 'frames/${shots[shots.length - 1].name}'`);
-writeFileSync(`${OUT}/frames.txt`, lines.join("\n") + "\n");
+writeFileSync(`${OUT}/fps.txt`, String(FPS));
 const span = shots.length ? shots[shots.length - 1].at - shots[0].at : 0;
-console.log(`film: ${String(shots.length)} images, ${span.toFixed(1)} s`);
+console.log(`film: ${String(shots.length)} images, ${String(slots)} vues, ${span.toFixed(1)} s`);
 
 /*
  * The subtitle band, drawn once per cue, out of the picture. Same typefaces as the app, taken
@@ -273,7 +301,7 @@ await browser.close();
 
 // The filter graph: print the picture, add the band under it, then each subtitle in its turn.
 const parts = [
-  `[0:v]fps=25,scale=1280:720:flags=lanczos,pad=1280:${String(720 + BAND_H)}:0:0:color=#05070c[bg]`,
+  `[0:v]scale=1280:720:flags=lanczos,pad=1280:${String(720 + BAND_H)}:0:0:color=#05070c[bg]`,
 ];
 timed.forEach((cue, i) => {
   parts.push(`[${String(i + 1)}:v]scale=${String(BAND_W)}:${String(BAND_H)}[b${String(i)}]`);
