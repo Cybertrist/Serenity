@@ -20,7 +20,7 @@ jobs:
       run:
         working-directory: api
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # Skipped until the backend project exists (phase 3).
       - id: detect
         run: |
@@ -57,7 +57,7 @@ jobs:
       run:
         working-directory: web
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # Skipped while web/package.json is empty.
       - id: detect
         run: |
@@ -88,7 +88,7 @@ jobs:
     name: Crypto interop (Python <-> TypeScript)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -119,7 +119,7 @@ jobs:
     name: End-to-end (TypeScript client <-> Python API)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -148,7 +148,7 @@ jobs:
     name: UI smoke (Chromium, production image, strict CSP)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build the images
         run: |
           docker build -q --target dev -t serenity-api-dev api
@@ -166,7 +166,7 @@ jobs:
     name: Rotation (demo site, real browser)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build the images
         run: docker build -q --target dev -t serenity-api-dev api
       - name: Rotate a password end to end
@@ -176,7 +176,7 @@ jobs:
     name: Sauvegarde (exercice de restauration)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build the dev image
         run: docker build -q --target dev -t serenity-api-dev api
       - name: Back up, destroy, restore, verify
@@ -189,7 +189,7 @@ jobs:
       contents: read
       pull-requests: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: gitleaks/gitleaks-action@v2
