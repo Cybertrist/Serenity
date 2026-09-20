@@ -1,4 +1,4 @@
-# ADR-013 — Régénérer le kit de récupération depuis les réglages
+# ADR-013 : Régénérer le kit de récupération depuis les réglages
 
 - **Date** : 2026-09-20
 - **Statut** : accepté
@@ -8,8 +8,8 @@
 Le kit de récupération est affiché **une seule fois**, à la création du compte. Jusqu'ici, le
 seul moyen d'en obtenir un neuf était de faire une vraie récupération depuis l'écran de
 connexion : elle termine par un nouveau kit (`docs/crypto.md` §7.8), mais elle impose de changer
-de mot de passe maître et déconnecte tous les appareils. Pour les deux cas réels — la feuille a
-été perdue, ou quelqu'un a pu la voir — c'est une procédure disproportionnée, et les réglages se
+de mot de passe maître et déconnecte tous les appareils. Pour les deux cas réels (la feuille a
+été perdue, ou quelqu'un a pu la voir), c'est une procédure disproportionnée, et les réglages se
 contentaient d'un encart qui renvoyait à cette gymnastique.
 
 Ce qu'il fallait décider : la preuve demandée, ce que l'opération a le droit de toucher, et ce
@@ -37,7 +37,7 @@ nouveau.
 
 - **Un « kit en attente » côté serveur**, l'ancien restant valable jusqu'à confirmation : deux
   enveloppes de UK valides en même temps, donc deux clés d'entrée au coffre, un état transitoire
-  à faire expirer et une migration de schéma — beaucoup de surface pour une fenêtre de quelques
+  à faire expirer et une migration de schéma : beaucoup de surface pour une fenêtre de quelques
   secondes.
 - **Faire retaper deux groupes du nouveau kit avant de basculer** : impossible de perdre les deux
   kits, mais le client garde RK' en mémoire pendant la saisie, et c'est une étape de plus pour

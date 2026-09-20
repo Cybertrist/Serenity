@@ -1,4 +1,4 @@
-# 01 — Cryptographie
+# 01 : Cryptographie
 
 ## Quoi
 

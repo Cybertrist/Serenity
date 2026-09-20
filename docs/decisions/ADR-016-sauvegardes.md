@@ -1,4 +1,4 @@
-# ADR-016 — Sauvegardes : restic, snapshot SQLite, clés incluses, exercice obligatoire
+# ADR-016 : Sauvegardes : restic, snapshot SQLite, clés incluses, exercice obligatoire
 
 - **Date** : 2026-09-20
 - **Statut** : accepté
@@ -21,7 +21,7 @@ mettre dans la sauvegarde, et comment savoir qu'elle vaut quelque chose.
 2. **Les clés sont dans la sauvegarde.** Sans `server.key`, la zone agent d'un coffre restauré
    est définitivement close : les clés d'agent sont scellées pour elle. Conséquence assumée : le
    dépôt est aussi sensible que la VM, son mot de passe vit hors du dépôt et **hors de
-   Serenity** — sur papier, avec le kit de récupération.
+   Serenity** : sur papier, avec le kit de récupération.
 3. **restic dans Docker**, version épinglée, comme le reste de l'outillage (ADR-003). Rétention
    par défaut 7 jours / 4 semaines / 6 mois, réglable dans `.env`.
 4. **Un exercice qui détruit** (`make backup-check`) : coffre jetable, sauvegarde, effacement de
@@ -37,7 +37,7 @@ mettre dans la sauvegarde, et comment savoir qu'elle vaut quelque chose.
 
 - **`sqlite3 .backup` via un conteneur** : équivalent, mais `VACUUM INTO` produit en plus une
   base compacte et ne dépend pas du binaire `sqlite3` dans l'image.
-- **Sauvegarder le dossier `data/` tel quel** : simple, et faux — fichier WAL et fichier
+- **Sauvegarder le dossier `data/` tel quel** : simple, et faux, car fichier WAL et fichier
   principal pris à deux instants différents.
 - **Exclure les clés** pour que le dépôt soit moins sensible : la restauration ne rendrait alors
   qu'un demi-coffre, et personne ne s'en apercevrait avant le jour où ça compte.

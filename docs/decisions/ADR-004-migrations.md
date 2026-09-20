@@ -1,4 +1,4 @@
-# ADR-004 — Migrations SQLite maison au démarrage
+# ADR-004 : Migrations SQLite maison au démarrage
 
 - **Date** : 2026-09-18
 - **Statut** : accepté

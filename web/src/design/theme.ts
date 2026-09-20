@@ -1,6 +1,6 @@
 /**
  * Light or dark, as a per-device preference (docs/design.md). The choice is kept in
- * localStorage — it is a taste, never a secret — and applied to `<html data-theme>`, which
+ * localStorage (it is a taste, never a secret) and applied to `<html data-theme>`, which
  * is what `theme.css` reacts to. "system" follows the operating system, live.
  */
 import { useSyncExternalStore } from "react";

@@ -1,4 +1,4 @@
-# 08 — Rotation : l'agent change vraiment les mots de passe
+# 08 : Rotation, l'agent change vraiment les mots de passe
 
 ## Quoi
 
@@ -18,7 +18,7 @@ n'ouvrait jamais un site. C'est fait.
 
 Conforme à [`crypto.md`](crypto.md) §7.12 et à la règle 6 : **le coffre est servi avant le site**.
 
-1. Kill switch, zone agent, allowlist, plafond quotidien — vérifiés **par le code**, avant tout.
+1. Kill switch, zone agent, allowlist, plafond quotidien, tous vérifiés **par le code**, avant tout.
 2. L'agent déchiffre l'entrée avec la clé d'agent et tire un mot de passe de 24 caractères.
 3. Il chiffre la révision `r+1` et l'enregistre **en attente**. L'entrée active ne bouge pas :
    un appareil qui synchronise à cet instant voit encore le mot de passe qui ouvre le site.
@@ -46,8 +46,8 @@ Conforme à [`crypto.md`](crypto.md) §7.12 et à la règle 6 : **le coffre est 
   [ADR-015](decisions/ADR-015-executeur-rotation.md).
 - **Des recettes, pas du code par site** : un site qui change sa page devient une ligne à
   corriger, pas un correctif à déployer.
-- **Un site de démo dans le dépôt** : la rotation se regarde en vrai, et la CI la rejoue —
-  succès, retour arrière, refus hors allowlist — à chaque commit. Un exécuteur non testé est un
+- **Un site de démo dans le dépôt** : la rotation se regarde en vrai, et la CI la rejoue à
+  chaque commit (succès, retour arrière, refus hors allowlist). Un exécuteur non testé est un
   exécuteur qui perdra un compte un jour.
 - **Le bloc en attente** : sans lui, une coupure entre « le site a changé » et « le coffre a
   enregistré » perd le compte. C'est la règle 6, appliquée.
@@ -149,7 +149,7 @@ refusera d'y toucher.
 
 Décidé le 2026-09-20, et ce n'est pas une limite temporaire :
 
-- **Pas de code reçu par mail.** Il faudrait donner à Serenity l'accès à une boîte mail — donc
+- **Pas de code reçu par mail.** Il faudrait donner à Serenity l'accès à une boîte mail, donc
   au serveur, donc à qui prend la VM. Une boîte mail est la clé de tous les autres comptes :
   c'est exactement pourquoi ton adresse principale vit en zone personnelle, que le serveur ne
   sait pas lire. Le sujet pourra être rouvert avec une adresse dédiée aux comptes confiés à
@@ -164,8 +164,8 @@ Décidé le 2026-09-20, et ce n'est pas une limite temporaire :
   a le droit, et le contourner nous mettrait du mauvais côté.
 
 Pour ces comptes-là, l'agent fait ce qu'il fait en zone personnelle : il surveille et il te
-prévient. Le périmètre réaliste, c'est **mot de passe seul ou TOTP** — le code TOTP, lui, se
-calcule hors ligne à partir du secret déjà présent dans l'entrée.
+prévient. Le périmètre réaliste, c'est **mot de passe seul ou TOTP** : le code TOTP se calcule
+hors ligne à partir du secret déjà présent dans l'entrée.
 
 ## Limites connues
 
@@ -174,5 +174,5 @@ calcule hors ligne à partir du secret déjà présent dans l'entrée.
 - La reprise d'une entrée en zone personnelle est **refusée** pendant une rotation (§7.12).
 - Le plafond `SERENITY_MAX_ROTATIONS_PER_DAY` porte sur les approbations, pas sur les
   exécutions : une rotation approuvée hier peut s'exécuter aujourd'hui.
-- Les sauvegardes restic sont en place ([09 — Sauvegardes](09-sauvegardes.md)) ; la revue de
+- Les sauvegardes restic sont en place ([09 : Sauvegardes](09-sauvegardes.md)) ; la revue de
   sécurité finale et la `v0.1.0` restent à faire (issue #27).

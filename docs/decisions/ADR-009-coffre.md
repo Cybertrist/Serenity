@@ -1,4 +1,4 @@
-# ADR-009 — Coffre : curseur de synchronisation, corbeille, historique, import dans le navigateur
+# ADR-009 : Coffre, curseur de synchronisation, corbeille, historique, import dans le navigateur
 
 - **Date** : 2026-09-18
 - **Statut** : accepté

@@ -5,7 +5,7 @@ import { FRAME, FRAME_PART, IconButton, PERSPECTIVE, Wordmark } from "../../desi
 
 /**
  * The app lives in one square, centred on the page: side = min(92vw, 92vh, 980px).
- * Under 768 px the square gives way to the full screen — a 390 px square is unusable.
+ * Under 768 px the square gives way to the full screen: a 390 px square is unusable.
  * Everything inside is laid out against this box, not the window (container queries).
  */
 export function AppFrame({

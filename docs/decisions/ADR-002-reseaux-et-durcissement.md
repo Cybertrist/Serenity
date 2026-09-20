@@ -1,4 +1,4 @@
-# ADR-002 — Réseaux Docker, durcissement et dossiers de données
+# ADR-002 : Réseaux Docker, durcissement et dossiers de données
 
 - **Date** : 2026-09-18
 - **Statut** : accepté

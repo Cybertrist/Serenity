@@ -1,4 +1,4 @@
-# ADR-010 — Veille : double scan, alertes sans secret, notifications sans texte
+# ADR-010 : Veille, double scan, alertes sans secret, notifications sans texte
 
 - **Date** : 2026-09-18
 - **Statut** : accepté

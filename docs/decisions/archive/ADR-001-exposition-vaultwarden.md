@@ -1,7 +1,7 @@
-# ADR-001 — Exposer Vaultwarden sur le tailnet
+# ADR-001 : Exposer Vaultwarden sur le tailnet
 
 - **Date** : 2026-09-18
-- **Statut** : remplacé par ADR-001 (coffre maison) — Vaultwarden retiré
+- **Statut** : remplacé par ADR-001 (coffre maison), Vaultwarden retiré
 
 ## Contexte
 

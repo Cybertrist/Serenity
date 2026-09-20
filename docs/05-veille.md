@@ -1,4 +1,4 @@
-# 05 — Veille des fuites
+# 05 : Veille des fuites
 
 ## Quoi
 
@@ -7,10 +7,10 @@ Serenity vérifie tes mots de passe et te prévient.
 | Contrôle | Règle | Dans le navigateur | Sur le serveur (agent) |
 |---|---|---|---|
 | **Mot de passe exposé** | Présent dans Pwned Passwords | Les deux zones | Zone agent, toutes les 6 h |
-| **Réutilisé** | Même mot de passe sur plusieurs entrées | Les deux zones | — (voir plus bas) |
+| **Réutilisé** | Même mot de passe sur plusieurs entrées | Les deux zones | aucun (voir plus bas) |
 | **Faible** | < 12 caractères, < 60 bits, ou < 5 caractères différents | Les deux zones | Zone agent |
 | **Ancien** | Pas changé depuis plus d'un an | Les deux zones | Zone agent |
-| **Adresse e-mail dans une fuite** | Have I Been Pwned (clé payante) | — | Adresses déclarées, si `HIBP_API_KEY` |
+| **Adresse e-mail dans une fuite** | Have I Been Pwned (clé payante) | aucun | Adresses déclarées, si `HIBP_API_KEY` |
 
 - **Dans le navigateur** (`web/src/features/breaches/`), quand ton coffre est déverrouillé :
   les deux zones sont vérifiées, puis seul le **résultat** part vers le serveur : l'identifiant

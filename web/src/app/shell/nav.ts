@@ -3,7 +3,7 @@ import type { Tab } from "./context";
 
 /**
  * The three screens of the app. The journal is deliberately not here: it is a record you
- * consult, not a place you work in — it lives in the settings, and the agent screen links to it.
+ * consult, not a place you work in: it lives in the settings, and the agent screen links to it.
  */
 export const TABS: { id: Tab; label: string; hint: string; icon: Icon }[] = [
   { id: "vault", label: "Coffre", hint: "Tes comptes, dans leurs deux zones.", icon: VaultIcon },

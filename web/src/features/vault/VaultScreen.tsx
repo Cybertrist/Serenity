@@ -55,7 +55,7 @@ function EntryList({
 }
 
 /**
- * A zone and, in one sentence, who can read it. Both are always shown: it is the model — and
+ * A zone and, in one sentence, who can read it. Both are always shown: it is the model, and
  * the header carries the same mark as its entries, so the glyph is its own legend.
  */
 function Zone({

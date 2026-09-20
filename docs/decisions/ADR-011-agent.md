@@ -1,4 +1,4 @@
-# ADR-011 — Agent : politiques, garde-fous par le code, rotation sans exécuteur
+# ADR-011 : Agent, politiques, garde-fous par le code, rotation sans exécuteur
 
 - **Date** : 2026-09-19
 - **Statut** : accepté

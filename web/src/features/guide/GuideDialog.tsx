@@ -57,7 +57,7 @@ const PAGES: Page[] = [
             <p className="m-0 text-caption text-muted">
               Lisible uniquement sur tes appareils déverrouillés. Ni le serveur, ni l'agent, ni
               personne d'autre.{" "}
-              <strong className="text-text">Banque, e-mail principal, impôts</strong> — tout ce dont
+              <strong className="text-text">Banque, e-mail principal, impôts</strong> : tout ce dont
               la perte serait grave.
             </p>
           </Card>
@@ -65,14 +65,14 @@ const PAGES: Page[] = [
             <p className="m-0 text-body font-semibold">Confié à l'agent</p>
             <p className="m-0 text-caption text-muted">
               Le serveur peut les déchiffrer pour les surveiller et changer leur mot de passe.
-              <strong className="text-text"> Streaming, forums, boutiques</strong> — les comptes
+              <strong className="text-text"> Streaming, forums, boutiques</strong> : les comptes
               nombreux, dont la rotation est fastidieuse à la main.
             </p>
           </Card>
         </div>
         <Note>
           Toute nouvelle entrée arrive dans « Protégé par toi ». La confier est un geste volontaire,
-          entrée par entrée, avec confirmation — et réversible.
+          entrée par entrée, avec confirmation, et réversible.
         </Note>
       </>
     ),

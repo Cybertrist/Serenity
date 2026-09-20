@@ -1,4 +1,4 @@
-# 03 — Comptes et authentification
+# 03 : Comptes et authentification
 
 ## Quoi
 
@@ -26,7 +26,7 @@ Côté serveur (`api/serenity/auth/`) :
 | `validation.py` | Format des blocs reçus (le serveur ne peut pas les lire, il vérifie leur forme) |
 
 Côté navigateur (`web/src/features/account/`) : les mêmes parcours en TypeScript, avec leurs
-écrans ([07 — Interface](07-interface.md)). Les clés déverrouillées vivent dans un `Keyring` en
+écrans ([07 : Interface](07-interface.md)). Les clés déverrouillées vivent dans un `Keyring` en
 mémoire, effacé au verrouillage (`web/src/vault/keyring.ts`).
 
 ### Routes
@@ -58,7 +58,7 @@ mémoire, effacé au verrouillage (`web/src/vault/keyring.ts`).
   quand même un Argon2id, pour que le temps de réponse ne trahisse rien.
 - **Un kit se refait, il ne se réaffiche pas.** Le serveur n'en garde que le hachage de la clé
   d'auth de récupération : réafficher est impossible, régénérer demande le mot de passe maître
-  **et** un code TOTP — une session ouverte ne suffit pas. L'ancien kit meurt à l'instant où le
+  **et** un code TOTP, car une session ouverte ne suffit pas. L'ancien kit meurt à l'instant où le
   nouveau s'affiche, avertissement à l'appui. Voir [ADR-013](decisions/ADR-013-regeneration-kit.md).
 - **Mono-utilisateur en V1** : les inscriptions se ferment dès qu'un compte est actif. Le modèle
   de données, lui, est multi-utilisateur. Voir [ADR-008](decisions/ADR-008-comptes.md).
@@ -79,7 +79,7 @@ de test) : il ne touche pas à ta stack.
 
 ### En vrai, avec le client en ligne de commande
 
-Tout cela se fait dans l'appli ([07 — Interface](07-interface.md)). `make client` reste le même
+Tout cela se fait dans l'appli ([07 : Interface](07-interface.md)). `make client` reste le même
 parcours depuis le conteneur `api` : pratique pour l'administration de la VM, et c'est lui que
 les tests rejouent. Crée ton compte :
 

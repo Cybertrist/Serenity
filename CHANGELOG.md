@@ -21,13 +21,13 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
   navigateur, le seul à atteindre un site) exécute les rotations que l'agent décide, pilote les
   formulaires d'après une **recette JSON par site**, et vérifie par une reconnexion complète. Le
   coffre est servi avant le site : nouveau mot de passe enregistré « en attente », validé si le
-  site a suivi, jeté sinon — le tout avec retour arrière (`docs/crypto.md` §7.12, ADR-015).
+  site a suivi, jeté sinon, le tout avec retour arrière (`docs/crypto.md` §7.12, ADR-015).
 - **Site de démo** (`demo/`, profil compose `demo`) : le jouet sur lequel l'agent s'entraîne, et
-  que la CI rejoue à chaque commit — réussite, refus du site, site hors allowlist
+  que la CI rejoue à chaque commit : réussite, refus du site, site hors allowlist
   (`make rotation-demo`, `docs/08-rotation.md`).
 - **Régénérer le kit de récupération** depuis les réglages (compte) : mot de passe maître et code
   TOTP, puis un kit neuf pour le même coffre. Les entrées ne bougent pas, les appareils restent
-  connectés, et l'ancien kit cesse de valoir dès l'affichage du nouveau — un avertissement le dit
+  connectés, et l'ancien kit cesse de valoir dès l'affichage du nouveau. Un avertissement le dit
   avant. `POST /api/auth/recovery-kit`, `docs/crypto.md` §7.11, ADR-013.
 - **Thème clair**, et un réglage **Apparence** (Système / Clair / Sombre) dans les réglages. Par
   défaut l'appli suit le système et change avec lui, sans rechargement. La préférence reste sur
@@ -44,7 +44,7 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
   vide.
 - Phase 7 : fond **noir pur**, sans aucun décor ; contour blanc franc de 2 px autour du carré et
   bordures à 28 % pour délimiter le reste ; titres
-  d'écran en capitales espacées comme le logotype, et un seul orange partout — celui du logo
+  d'écran en capitales espacées comme le logotype, et un seul orange partout, celui du logo
   (`#F2711C`).
 - Phase 7 : l'appli tient dans **un carré centré** (côté = min(92vw, 92vh, 980px)), plein écran
   sous 768 px : barre de titre (marque, notifications, verrouiller, réglages), écran au milieu,
@@ -112,8 +112,8 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
   (`#0055A4`, ouvert sur fond sombre) pour tout ce qui agit, au **rouge Marianne** pour tout ce
   qui alerte, et au blanc pour la marque. Le drapeau entier ne sort que trois fois, là où il dit
   quelque chose : le filet sous la barre de titre, les trois étapes de la création de compte, et
-  les têtes de la cascade de déverrouillage. La marque devient le drapeau en un objet — pavé
-  bleu, cadenas blanc, serrure rouge — et les icônes de l'appli se regénèrent depuis les SVG
+  les têtes de la cascade de déverrouillage. La marque devient le drapeau en un objet (pavé
+  bleu, cadenas blanc, serrure rouge), et les icônes de l'appli se regénèrent depuis les SVG
   (`scripts/brand-icons.sh`). Les deux thèmes, les jetons et la charte suivent
   (ADR-017, `docs/design.md`).
 - Phase 7 : les panneaux glissants venus du bas (fiche, éditeur, réglages) deviennent des
@@ -131,16 +131,16 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
   (le bloc en attente était écrit sous une révision qui n'était pas la sienne). La validation
   finale re-chiffre désormais sur l'entrée à jour : ta modification est gardée, le mot de passe
   vient de la rotation. Deux autres verrous : un second bloc en attente est refusé, et si le
-  coffre échoue **après** que le site a changé, le bloc en attente est conservé — c'est la seule
+  coffre échoue **après** que le site a changé, le bloc en attente est conservé : c'est la seule
   copie du nouveau mot de passe.
 - Phase 7 : le coffre apparaissait **avant la fin** de la cascade, sous une pluie encore en
   cours : le rideau se levait au bout de 950 ms au lieu d'attendre que les traînées soient
   sorties et que le coffre soit monté. Le coffre arrive maintenant de loin, rideau levé sur lui.
-- Phase 7 : le rideau de la cascade ne masquait en réalité rien — un ancien `clip-path` le
+- Phase 7 : le rideau de la cascade ne masquait en réalité rien, un ancien `clip-path` le
   réduisait à une hauteur nulle, et l'écran de déverrouillage restait visible sous la pluie.
 - Phase 7 : le champ de recherche était noir sur fond noir ; il prend la surface surélevée,
   comme les cases du code à six chiffres.
-- Phase 7 : les marques des deux zones disaient le contraire du modèle — la zone personnelle
+- Phase 7 : les marques des deux zones disaient le contraire du modèle : la zone personnelle
   portait un bouclier gris et la zone agent un bouclier vert. C'est désormais un **bouclier vert**
   pour « seuls tes appareils peuvent lire » et un **robot orange** pour « confié à l'agent », sur
   l'entrée comme sur le titre de sa zone.
@@ -149,9 +149,9 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
   `overflow-x: auto`).
 - Phase 7 : régler un rappel ou une rotation n'affichait **aucune erreur** quand le serveur
   refusait ; le message est maintenant montré dans le panneau.
-- Phase 7 : ouvrir les réglages depuis la roue dentée affichait un volet vide — l'événement de
+- Phase 7 : ouvrir les réglages depuis la roue dentée affichait un volet vide, car l'événement de
   clic arrivait à la place du nom de section.
-- Phase 7 : l'animation de déverrouillage se jouait **deux fois** — React démontait la pluie avec
+- Phase 7 : l'animation de déverrouillage se jouait **deux fois** : React démontait la pluie avec
   l'écran de déverrouillage puis la remontait au-dessus du coffre ; `App` garde maintenant trois
   emplacements fixes.
 - Phase 7 : un bouton principal désactivé s'affichait en orange délavé ; il prend désormais une

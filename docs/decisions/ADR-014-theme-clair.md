@@ -1,4 +1,4 @@
-# ADR-014 — Thème clair, réglé par appareil, « Système » par défaut
+# ADR-014 : Thème clair, réglé par appareil, « Système » par défaut
 
 - **Date** : 2026-09-20
 - **Statut** : accepté
@@ -6,7 +6,7 @@
 ## Contexte
 
 Serenity n'existait qu'en sombre : fond noir pur, carré blanc cerclé, cadenas crème. C'est
-l'identité voulue, mais elle s'impose — sur un bureau clair en plein jour, l'appli est un trou
+l'identité voulue, mais elle s'impose. Sur un bureau clair en plein jour, l'appli est un trou
 noir au milieu de l'écran, et des utilisateurs l'ont dit sans détour. Une palette claire était
 déjà écrite dans `theme.css`, marquée « préparée, pas activée en V1 » ; elle n'avait jamais été
 branchée ni vérifiée.
@@ -19,11 +19,11 @@ branchée ni vérifiée.
    dialogues, cascade) passent par des jetons, dont quatre nouveaux : `frame`, `scrim`, `knob`,
    `shade`.
 2. **Par défaut : Système**, avec bascule *Clair* / *Sombre* dans **Réglages → Apparence**. La
-   préférence est propre à l'appareil, gardée dans `localStorage` — un goût, pas un secret — et
+   préférence est propre à l'appareil, gardée dans `localStorage` (un goût, pas un secret) et
    jamais envoyée au serveur. En mode Système, l'appli suit le basculement du soir en direct.
 3. **Appliqué avant le premier rendu** (`web/src/design/theme.ts` dans `main.tsx`), et une
    requête média dans la feuille de style habille la toute première peinture : pas d'éclair
-   sombre sur un écran clair, sans script en ligne — la CSP stricte reste intacte.
+   sombre sur un écran clair, sans script en ligne : la CSP stricte reste intacte.
 4. **La marque suit.** `--color-mark` passe à l'encre en clair, et le logotype a sa découpe
    sombre (`wordmark-clair.png`, déjà fournie) choisie par un composant `<Wordmark>`.
 5. **La cascade de déverrouillage aussi** : traînées en encre sur le papier, tête orange

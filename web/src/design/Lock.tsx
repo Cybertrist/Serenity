@@ -4,7 +4,7 @@ import { EASE_OUT, PART_SPRING } from "./motion";
 
 /**
  * The padlock of the logo, redrawn as SVG so its parts can move: filled body, thick shackle
- * held a little above it (the stencil gap), red keyhole — the mark carries the flag:
+ * held a little above it (the stencil gap), red keyhole. The mark carries the flag:
  * a blue tile in the app icon, a white padlock, a Marianne red keyhole. Geometry measured on the original
  * artwork in `web/public/brand/`.
  */
@@ -35,7 +35,7 @@ export function Shackle({ open, className = "" }: { open: boolean; className?: s
 
 /**
  * The whole padlock: the brand mark, and the piece that opens when the vault does.
- * Opening also sends a light across the body — the only specular highlight in the app.
+ * Opening also sends a light across the body, the only specular highlight in the app.
  */
 export function LockMark({
   open = false,

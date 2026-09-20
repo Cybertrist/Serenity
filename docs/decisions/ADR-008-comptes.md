@@ -1,4 +1,4 @@
-# ADR-008 — Comptes : inscription unique, verrouillage progressif, client de test
+# ADR-008 : Comptes, inscription unique, verrouillage progressif, client de test
 
 - **Date** : 2026-09-18
 - **Statut** : accepté

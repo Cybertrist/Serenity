@@ -32,7 +32,7 @@ const FOCUSABLE =
 
 /**
  * Centred dialog: dimmed backdrop, focus kept inside, Escape and the backdrop close it.
- * Same behaviour on every screen size — the phone gets the full width, not a bottom sheet.
+ * Same behaviour on every screen size: the phone gets the full width, not a bottom sheet.
  */
 export function Modal({
   open,

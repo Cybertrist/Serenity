@@ -67,7 +67,7 @@
 
 /*
  * The flag, drawn once: three equal bands, hard stops, in the reading direction. It dresses
- * the rule under the title bar and the steps of the account creation — nothing else.
+ * the rule under the title bar and the steps of the account creation, nothing else.
  */
 @utility tricolore {
   background-image: linear-gradient(

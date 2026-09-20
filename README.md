@@ -35,8 +35,8 @@ Par défaut, tout va dans la zone personnelle.
 - Sauvegarde restic chaque nuit (base chiffrée + clés), avec un exercice de restauration rejoué
   en CI.
 
-Ensuite : l'appli Android native avec notifications (V2), puis la rotation sur tes vrais sites
-— des recettes site par site et une extension navigateur (V3).
+Ensuite : l'appli Android native avec notifications (V2), puis la rotation sur tes vrais sites,
+avec une recette par site et une extension navigateur (V3).
 
 ## Démarrage rapide
 

@@ -1,4 +1,4 @@
-# 07 — Interface
+# 07 : Interface
 
 ## Quoi
 
@@ -14,7 +14,7 @@ min(92vw, 92vh, 980px)), qui devient le plein écran sous 768 px, et s'ouvre par
 | **Déverrouillage** | Au quotidien : mot de passe maître seul (fonctionne hors ligne) |
 | **Récupération** | Kit + code, nouveau mot de passe maître, **nouveau kit** |
 | **Coffre** | Les deux zones, chacune avec une phrase qui dit qui peut la lire (côte à côte dès que le carré dépasse 620 px), recherche, ajout avec générateur |
-| **Fiche** (dialogue centré) | Copier l'identifiant, afficher / copier le mot de passe (effacé du presse-papiers après 30 s), code TOTP en direct, rotation ou rappel, historique, **Confier à l'agent / Reprendre**, modifier, supprimer — les trois derniers avec confirmation |
+| **Fiche** (dialogue centré) | Copier l'identifiant, afficher / copier le mot de passe (effacé du presse-papiers après 30 s), code TOTP en direct, rotation ou rappel, historique, **Confier à l'agent / Reprendre**, modifier, supprimer (les trois derniers avec confirmation) |
 | **Fuites** | Veille lancée à l'ouverture de l'onglet, une alerte par carte, « Ouvrir l'entrée » et « Mettre de côté » |
 | **Journal** (dans les réglages) | Filtres Tout / Agent / Toi / Système, regroupé par jour ; l'écran Agent y renvoie |
 | **Agent** | Kill switch (avec confirmation), rotations à approuver ou refuser, prochaines rotations, garde-fous |
@@ -65,7 +65,7 @@ min(92vw, 92vh, 980px)), qui devient le plein écran sous 768 px, et s'ouvre par
 - **Rien d'irréversible sans un mot d'explication** : supprimer, confier, reprendre, déconnecter
   un appareil ou couper l'agent passent par un dialogue qui dit ce qui va se passer (ADR-012).
 - **Bleu blanc rouge** : le bleu de France porte les actions, le rouge Marianne les alertes, et
-  le drapeau entier ne sort qu'à trois endroits qui disent quelque chose — le filet sous la barre
+  le drapeau entier ne sort qu'à trois endroits qui disent quelque chose : le filet sous la barre
   de titre, les trois étapes de la création de compte, la cascade de déverrouillage
   ([ADR-017](decisions/ADR-017-identite-francaise.md)).
 - **Charte** respectée : voir [`design.md`](design.md).
