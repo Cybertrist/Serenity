@@ -157,7 +157,10 @@ export function Modal({
               className={
                 flush
                   ? "flex min-h-0 flex-1 flex-col"
-                  : "flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 py-5"
+                  : // Children keep their natural height: a flex child shrinks by default, and
+                    // a card that shrinks with `overflow-hidden` cuts its own rows in silence
+                    // instead of letting this container scroll.
+                    "flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 py-5 [&>*]:shrink-0"
               }
             >
               {children}
