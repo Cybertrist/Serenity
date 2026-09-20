@@ -69,9 +69,9 @@ mkdir -p "$OUT"
 # downscale is what makes the text sharp, and nothing of the interface is ever covered.
 # shellcheck disable=SC2046
 docker run --rm --user "$(id -u):$(id -g)" -v "$WORK:/w" -w /w "$FFMPEG_IMAGE" -y -hide_banner -loglevel error \
-  -f concat -safe 0 -i frames.txt $(cat "$WORK/bands.txt") \
+  -framerate 25 -i cfr/c%05d.png $(cat "$WORK/bands.txt") \
   -filter_complex_script /w/filter.txt -map "[out]" \
-  -vsync vfr -pix_fmt yuv420p -c:v libx264 -crf 16 -preset slow -movflags +faststart /w/agent.mp4
+  -pix_fmt yuv420p -c:v libx264 -crf 16 -preset slow -movflags +faststart /w/agent.mp4
 # The GIF comes from that print, with one palette for the whole film and no dithering: an
 # interface is made of flat surfaces, and dithering turns them into sand.
 docker run --rm --user "$(id -u):$(id -g)" -v "$WORK:/w" -w /w "$FFMPEG_IMAGE" -y -hide_banner -loglevel error \
