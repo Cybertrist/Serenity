@@ -9,6 +9,11 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- **Sauvegardes** : instantané nocturne restic de la base chiffrée (par `VACUUM INTO`, jamais
+  une copie de fichier vivant) et des deux fichiers de clés, avec rétention 7 jours / 4 semaines
+  / 6 mois. `make backup-now`, `make restore-check`, et surtout **`make backup-check`** : un
+  exercice qui détruit vraiment le coffre jetable avant de le restaurer, rejoué en CI. La
+  restauration n'écrase jamais une stack qui tourne. ADR-016, `docs/09-sauvegardes.md`.
 - **L'agent change vraiment les mots de passe.** Un conteneur `rotator` isolé (le seul avec un
   navigateur, le seul à atteindre un site) exécute les rotations que l'agent décide, pilote les
   formulaires d'après une **recette JSON par site**, et vérifie par une reconnexion complète. Le

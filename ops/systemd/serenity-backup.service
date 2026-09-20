@@ -1,1 +1,19 @@
-# Daily restic backup service (phase 8).
+[Unit]
+Description=Sauvegarde Serenity (restic)
+Documentation=file:///opt/serenity/docs/09-sauvegardes.md
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/serenity
+ExecStart=/opt/serenity/ops/backup.sh
+# The script reads the key files and the restic password file, both root-only.
+User=root
+# A backup that hangs must not block the next one for ever.
+TimeoutStartSec=3600
+Nice=10
+IOSchedulingClass=idle
+
+[Install]
+WantedBy=multi-user.target

@@ -172,6 +172,16 @@ jobs:
       - name: Rotate a password end to end
         run: scripts/rotation-demo.sh
 
+  backup:
+    name: Sauvegarde (exercice de restauration)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the dev image
+        run: docker build -q --target dev -t serenity-api-dev api
+      - name: Back up, destroy, restore, verify
+        run: scripts/backup-drill.sh
+
   secrets:
     name: Secret scan (gitleaks)
     runs-on: ubuntu-latest
