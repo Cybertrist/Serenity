@@ -10,7 +10,7 @@
  */
 import { chromium } from "playwright";
 import { createHmac } from "node:crypto";
-import { readFileSync, renameSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 
 const BASE = process.env.FILM_BASE ?? "http://127.0.0.1:8080";
 const SITE = process.env.FILM_SITE ?? "http://demo.serenity.test:8000";
@@ -147,9 +147,35 @@ const stage = await browser.newContext({
   // The subtitles are injected into the page; the app's own CSP forbids an inline stylesheet,
   // which is exactly what it should do. Only this recording browser looks the other way.
   bypassCSP: true,
-  recordVideo: { dir: OUT, size: { width: 1280, height: 720 } },
 });
 const page = await stage.newPage();
+
+/*
+ * Frames, not a video file. Playwright records a low-bitrate VP8 that turns crisp text into
+ * mush; the screencast hands over the real pixels, and ffmpeg builds the film from them with
+ * each frame's own timestamp.
+ */
+mkdirSync(`${OUT}/frames`, { recursive: true });
+const shots = [];
+const cdp = await stage.newCDPSession(page);
+cdp.on("Page.screencastFrame", async ({ data, sessionId, metadata }) => {
+  const name = `f${String(shots.length).padStart(5, "0")}.png`;
+  writeFileSync(`${OUT}/frames/${name}`, Buffer.from(data, "base64"));
+  shots.push({ name, at: metadata.timestamp });
+  try {
+    await cdp.send("Page.screencastFrameAck", { sessionId });
+  } catch {
+    // The page navigated while a frame was in flight: the next one will come.
+  }
+});
+const roll = () =>
+  cdp.send("Page.startScreencast", {
+    format: "png",
+    maxWidth: 1280,
+    maxHeight: 720,
+    everyNthFrame: 1,
+  });
+await roll();
 
 await page.goto(BASE);
 await page.getByLabel("Identifiant").waitFor({ timeout: 20000 });
@@ -210,6 +236,7 @@ await say(page, "");
 
 // --- Last scene: ask the site itself --------------------------------------------------------
 await page.goto(`${SITE}/connexion`);
+await roll(); // a cross-origin navigation stops the screencast
 await say(page, "L'ancien mot de passe, sur le vrai site.", "Preuve");
 await page.locator("#username").type(SITE_USER, { delay: 40 });
 await page.locator("#password").type(WEAK, { delay: 40 });
@@ -227,11 +254,18 @@ await beat(page, 2200);
 await say(page, "");
 await beat(page, 300);
 
+await cdp.send("Page.stopScreencast").catch(() => {});
 await stage.close();
 await browser.close();
 
-// Playwright names the file after the page: give the film its own name.
-const { readdirSync } = await import("node:fs");
-const webm = readdirSync(OUT).find((f) => f.endsWith(".webm"));
-if (webm) renameSync(`${OUT}/${webm}`, `${OUT}/film.webm`);
-console.log("film:", `${OUT}/film.webm`);
+// The cut list: every frame with the time it stayed on screen. ffmpeg needs the last twice.
+const lines = [];
+for (let i = 0; i < shots.length; i += 1) {
+  const next = shots[i + 1];
+  const held = next ? Math.max(0.02, next.at - shots[i].at) : 0.4;
+  lines.push(`file 'frames/${shots[i].name}'`, `duration ${held.toFixed(3)}`);
+}
+if (shots.length) lines.push(`file 'frames/${shots[shots.length - 1].name}'`);
+writeFileSync(`${OUT}/frames.txt`, lines.join("\n") + "\n");
+const span = shots.length ? shots[shots.length - 1].at - shots[0].at : 0;
+console.log(`film: ${String(shots.length)} images, ${span.toFixed(1)} s`);

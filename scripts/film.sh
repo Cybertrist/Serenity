@@ -65,13 +65,19 @@ echo "film: encoding"
 mkdir -p "$OUT"
 # H.264 for the release page, and a palette-built GIF for the README: one palette for the whole
 # film keeps the flat surfaces flat instead of dithering them into noise.
-docker run --rm --user "$(id -u):$(id -g)" -v "$WORK:/w" "$FFMPEG_IMAGE" -y -hide_banner -loglevel error \
-  -i /w/film.webm -c:v libx264 -crf 20 -preset slow -pix_fmt yuv420p -movflags +faststart /w/agent.mp4
-docker run --rm --user "$(id -u):$(id -g)" -v "$WORK:/w" "$FFMPEG_IMAGE" -y -hide_banner -loglevel error \
-  -i /w/film.webm -vf "fps=11,scale=900:-2:flags=lanczos,palettegen=max_colors=160:stats_mode=diff" /w/palette.png
-docker run --rm --user "$(id -u):$(id -g)" -v "$WORK:/w" "$FFMPEG_IMAGE" -y -hide_banner -loglevel error \
-  -i /w/film.webm -i /w/palette.png \
-  -lavfi "fps=11,scale=900:-2:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3:diff_mode=rectangle" \
+# The source is a pile of PNG frames with their own timings, so the text stays as sharp as it
+# was on screen. CRF 17 on flat interface colours is visually lossless and still small.
+docker run --rm --user "$(id -u):$(id -g)" -v "$WORK:/w" -w /w "$FFMPEG_IMAGE" -y -hide_banner -loglevel error \
+  -f concat -safe 0 -i frames.txt -vsync vfr -vf "fps=25,format=yuv420p" \
+  -c:v libx264 -crf 17 -preset slow -movflags +faststart /w/agent.mp4
+# The GIF keeps one palette for the whole film and no dithering: an interface is made of flat
+# surfaces, and dithering turns them into sand.
+docker run --rm --user "$(id -u):$(id -g)" -v "$WORK:/w" -w /w "$FFMPEG_IMAGE" -y -hide_banner -loglevel error \
+  -f concat -safe 0 -i frames.txt -vsync vfr \
+  -vf "fps=12,scale=960:-2:flags=lanczos,palettegen=max_colors=256:stats_mode=diff" /w/palette.png
+docker run --rm --user "$(id -u):$(id -g)" -v "$WORK:/w" -w /w "$FFMPEG_IMAGE" -y -hide_banner -loglevel error \
+  -f concat -safe 0 -i frames.txt -i /w/palette.png \
+  -lavfi "fps=12,scale=960:-2:flags=lanczos[x];[x][1:v]paletteuse=dither=none:diff_mode=rectangle" \
   -loop 0 /w/agent.gif
 
 cp "$WORK/agent.mp4" "$OUT/agent.mp4"
