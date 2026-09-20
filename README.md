@@ -1,4 +1,15 @@
+<p>
+  <img src="docs/img/banniere.png" alt="Serenity" width="820">
+</p>
+
 # Serenity
+
+[![CI](https://github.com/Cybertrist/Serenity/actions/workflows/ci.yml/badge.svg)](https://github.com/Cybertrist/Serenity/actions/workflows/ci.yml)
+[![Licence AGPL v3](https://img.shields.io/badge/licence-AGPL%20v3-0055A4)](LICENSE)
+[![Chiffrement libsodium](https://img.shields.io/badge/chiffrement-libsodium-0055A4)](docs/crypto.md)
+[![Zéro connaissance](https://img.shields.io/badge/zone%20personnelle-z%C3%A9ro%20connaissance-0055A4)](docs/crypto.md)
+[![Auto-hébergé](https://img.shields.io/badge/h%C3%A9bergement-chez%20toi-0055A4)](docs/02-infrastructure.md)
+[![Audit : pas encore](https://img.shields.io/badge/audit-pas%20encore-E1000F)](SECURITY.md)
 
 Gestionnaire de mots de passe **complet et auto-hébergé**, avec son propre coffre chiffré.
 
@@ -11,6 +22,18 @@ que tu lui confies. Pas d'humain dans la boucle, mais un humain toujours inform�
   <img src="docs/img/fuites.png" alt="Fuites" width="200">
   <img src="docs/img/agent.png" alt="Agent" width="200">
 </p>
+
+## Le projet en chiffres
+
+Au 20 septembre 2026, avant la `v0.1.0` :
+
+| | |
+|---|---|
+| **Tests** | 163 côté Python, 43 côté TypeScript, 14 parcours bout en bout contre le vrai serveur |
+| **Intégration continue** | 8 jobs sur chaque pull request, dont un vrai navigateur qui parcourt tous les écrans, une rotation de mot de passe jouée en entier, et un exercice de restauration qui détruit vraiment un coffre jetable |
+| **Code** | environ 9 900 lignes de Python, 9 600 de TypeScript |
+| **Crypto** | une seule bibliothèque, libsodium, et des vecteurs de test partagés que Python **et** TypeScript doivent tous les deux valider |
+| **Documentation** | 11 pages de phase, 17 décisions d'architecture, une spécification cryptographique de 600 lignes, un changelog |
 
 ## Le coffre à double zone
 
@@ -48,8 +71,10 @@ make init
 make up
 ```
 
-L'accès se fait uniquement via ton tailnet Tailscale (`tailscale serve`).
-Aucun port n'est exposé hors de `127.0.0.1`.
+**Rien n'est exposé en dehors de `127.0.0.1`.** Serenity ne se met jamais sur Internet : tu
+l'atteins depuis tes appareils par l'accès privé de ton choix, réseau maillé, VPN, tunnel SSH ou
+reverse proxy sur ton réseau local. La [page infrastructure](docs/02-infrastructure.md) compare
+les quatre.
 
 ## Documentation
 

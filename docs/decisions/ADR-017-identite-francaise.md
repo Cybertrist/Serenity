@@ -37,7 +37,7 @@ produit ressemble à un stand de foire. La contrainte était donc double : que c
 - Rien dans les composants ne changeait de couleur en dur : l'échange se fait dans
   `web/src/design/theme.css`, plus trois endroits qui dessinent le drapeau. Deux ombres qui
   codaient l'orange en dur deviennent les jetons `glow` / `glow-strong`.
-- Les PNG d'icônes sont désormais **dérivés** des SVG par `scripts/brand-icons.sh` : la marque
+- Les PNG d'icônes sont désormais **dérivés** des SVG par `make brand` : la marque
   a une seule source. Les deux découpes du logotype (`wordmark*.png`) ont été reteintées une
   fois pour toutes (blanc/encre, « I » rouge).
 - Le rouge sert à la fois d'alerte et de serrure dans le logo. C'est assumé : la serrure est un

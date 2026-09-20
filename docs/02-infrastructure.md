@@ -13,9 +13,9 @@ démo derrière son profil :
 | `rotator` | Playwright | Seul conteneur avec un navigateur : exécute les rotations (ADR-015) | `rotation`, `egress` | aucun |
 | `demo` | Python 3.12 | Site jouet pour l'agent, profil compose `demo` | `edge`, `rotation` | `127.0.0.1:8090` |
 
-L'accès depuis tes appareils passe uniquement par `tailscale serve` :
-`https://<vm>` → `127.0.0.1:8080`. `<vm>` est le nom MagicDNS de la VM
-(`serenity.tail18532b.ts.net`), dans `.env` sous `TAILNET_HOST`.
+**Rien n'écoute en dehors de `127.0.0.1`.** Pour atteindre Serenity depuis tes autres
+appareils, tu ajoutes devant l'accès privé de ton choix (voir plus bas). Le nom d'hôte par
+lequel tu y arrives se met dans `.env`, sous `TAILNET_HOST`.
 
 Le site de démo ne démarre qu'avec son profil (`docker compose --profile demo up -d`) : c'est
 un jouet pour la rotation, pas un service de la stack ([08 : Rotation](08-rotation.md)).
@@ -93,7 +93,7 @@ make ps                        # les 4 services doivent être "healthy"
 | `make e2e`, `make ui-smoke` | Parcours bout en bout, puis tous les écrans dans Chromium |
 | `make rotation-demo`, `make recipe-inspect URL=…` | Rotation sur le site de démo ; inspecter une page pour écrire sa recette |
 | `make backup-now`, `make backup-check`, `make restore-check` | Sauvegardes et exercice de restauration ([09](09-sauvegardes.md)) |
-| `make brand-icons`, `make api-doc` | Regénère les icônes depuis les SVG ; regénère `docs/api.md` |
+| `make brand`, `make api-doc` | Regénère les icônes et la bannière depuis la marque ; regénère `docs/api.md` |
 
 `make help` liste tout, à jour.
 
@@ -128,14 +128,28 @@ make keys                                      # doit afficher "kept" pour les d
 Perdre la clé serveur n'efface pas la zone agent : tes appareils la lisent toujours (voir
 `crypto.md` §8.6). Perdre la clé TOTP oblige à reconfigurer le TOTP de connexion.
 
-## Exposer Serenity avec `tailscale serve`
+## Atteindre Serenity depuis tes appareils
 
-### 1. Activer les certificats HTTPS (navigateur, une seule fois)
+Une seule règle, et elle ne dépend d'aucun outil : **Serenity ne s'expose jamais sur Internet**.
+Les conteneurs ne publient rien en dehors de `127.0.0.1:8080`, et ce qui met le service à portée
+de ton téléphone doit rester privé, avec du HTTPS de bout en bout.
 
-Console d'administration Tailscale (https://login.tailscale.com/admin/dns) : **MagicDNS**
-activé, **HTTPS Certificates** → **Enable HTTPS**.
+Le reste est un choix d'hébergement, pas une exigence du produit :
 
-### 2. Publier Serenity (sur la VM)
+| Comment | Ce que ça demande |
+|---|---|
+| **Un réseau privé maillé** (Tailscale, Netbird, ZeroTier) | Un compte chez eux, rien à ouvrir sur ta box. C'est ce que j'utilise, la recette est ci-dessous |
+| **Un VPN à toi** (WireGuard, OpenVPN) | Un port UDP ouvert et un certificat à gérer, aucun tiers dans la boucle |
+| **Un tunnel SSH** (`ssh -L 8080:127.0.0.1:8080`) | Rien à installer, mais à relancer à chaque fois. Parfait pour essayer |
+| **Un reverse proxy sur ton réseau local** | Caddy ou nginx avec un certificat, et Serenity ne sort pas de chez toi |
+
+Dans tous les cas, mets dans `.env` le nom d'hôte par lequel tu arrives (`TAILNET_HOST`), parce
+que l'appli en a besoin pour son manifeste et ses en-têtes.
+
+### La recette que j'utilise, avec Tailscale
+
+Une fois dans la console Tailscale : **MagicDNS** activé, puis **HTTPS Certificates** →
+**Enable HTTPS**. Ensuite, sur la VM :
 
 ```bash
 sudo tailscale serve --bg --https=443 http://127.0.0.1:8080
@@ -155,7 +169,7 @@ make ps                                            # api, agent, rotator, web "h
 curl -s http://127.0.0.1:8080/api/health           # {"status":"ok"}
 curl -s http://127.0.0.1:8080/api/crypto/server-key   # {"public_key":"…","key_id":"…"}
 sudo ss -tlnp | grep docker-proxy                  # uniquement 127.0.0.1:8080
-sudo tailscale serve status                        # seulement https://<vm> -> 127.0.0.1:8080
+sudo tailscale serve status                        # si tu passes par Tailscale : un seul service
 ```
 
 Les clés et les privilèges :
@@ -175,7 +189,7 @@ docker compose up -d --force-recreate --no-deps api
 sleep 5; curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/api/health
 ```
 
-Depuis un appareil du tailnet (navigateur) : `https://<vm>` → page « Serenity ».
+Depuis un de tes appareils (navigateur) : `https://<ton-hôte>` → page « Serenity ».
 
 ## Données
 

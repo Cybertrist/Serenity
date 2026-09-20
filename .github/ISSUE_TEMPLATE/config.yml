@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Signaler une faille de sécurité
+    url: https://github.com/Cybertrist/Serenity/security/advisories/new
+    about: Jamais par une issue publique. Passe par le signalement privé, voir SECURITY.md.
+  - name: Poser une question
+    url: https://github.com/Cybertrist/Serenity/discussions
+    about: Pour un usage, une installation ou un choix de conception, ouvre une discussion.
