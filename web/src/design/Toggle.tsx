@@ -22,12 +22,12 @@ export function Toggle({
       onClick={() => {
         onChange(!checked);
       }}
-      className={`relative h-[34px] w-14 shrink-0 rounded-full transition-colors duration-200 disabled:opacity-50 ${checked ? "bg-accent" : "bg-raised border border-line"}`}
+      className={`relative h-[34px] w-14 shrink-0 rounded-full transition-colors duration-200 disabled:opacity-50 ${checked ? "bg-accent" : "bg-neutral-soft border border-line"}`}
     >
       <motion.span
         layout
         transition={SPRING}
-        className="absolute top-1 h-[26px] w-[26px] rounded-full bg-[#fff4ec]"
+        className="absolute top-1 h-[26px] w-[26px] rounded-full bg-knob shadow-[0_1px_3px_var(--color-shade)]"
         style={{ left: checked ? 26 : 4 }}
       />
     </button>

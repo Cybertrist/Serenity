@@ -20,7 +20,7 @@ min(92vw, 92vh, 980px)), qui devient le plein écran sous 768 px, et s'ouvre par
 | **Agent** | Kill switch (avec confirmation), rotations à approuver ou refuser, prochaines rotations, garde-fous |
 | **Guide** (dialogue) | Cinq écrans : le coffre, les deux zones, les fuites, l'agent, et un parcours d'essai en cinq étapes |
 | **Notifications** (dialogue) | Ce que l'agent et la veille ont signalé, non lues en tête, « Tout marquer comme lu » ; une notification ouvre l'entrée ou l'onglet Fuites |
-| **Réglages** (dialogue en volets) | Verrouillage, **journal**, appareils connectés, adresses surveillées, import et export, **corbeille** (restaurer une entrée supprimée), compte (mot de passe maître, **régénération du kit de récupération**, déconnexion) |
+| **Réglages** (dialogue en volets) | Verrouillage, **apparence** (thème clair ou sombre), **journal**, appareils connectés, adresses surveillées, import et export, **corbeille** (restaurer une entrée supprimée), compte (mot de passe maître, **régénération du kit de récupération**, déconnexion) |
 
 <p>
   <img src="img/coffre.png" alt="Coffre" width="210">
@@ -37,6 +37,11 @@ min(92vw, 92vh, 980px)), qui devient le plein écran sous 768 px, et s'ouvre par
 
 <p>
   <img src="img/bureau-reglages.png" alt="Réglages sur ordinateur" width="430">
+</p>
+
+<p>
+  <img src="img/clair-coffre.png" alt="Le coffre en thème clair" width="430">
+  <img src="img/clair-apparence.png" alt="Le réglage d'apparence" width="430">
 </p>
 
 ## Pourquoi

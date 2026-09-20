@@ -34,7 +34,7 @@ export function TotpCode({ value }: { value: string }) {
   if (!state) return <span className="font-mono text-title text-muted">··· ···</span>;
   const circumference = 2 * Math.PI * 15;
   const progress = state.remaining / state.period;
-  const tone = state.remaining <= 5 ? "#f5c26b" : "#6bd49a";
+  const tone = state.remaining <= 5 ? "var(--color-warn)" : "var(--color-ok)";
   return (
     <div className="flex items-center gap-2">
       <span className="font-mono text-title tracking-widest" aria-live="polite">
@@ -52,7 +52,7 @@ export function TotpCode({ value }: { value: string }) {
           cy="18"
           r="15"
           fill="none"
-          stroke="rgba(255,255,255,0.06)"
+          stroke="var(--color-neutral-soft)"
           strokeWidth="3"
         />
         <circle
@@ -73,7 +73,7 @@ export function TotpCode({ value }: { value: string }) {
           y="22"
           textAnchor="middle"
           fontSize="11"
-          fill="#9a9ca3"
+          fill="var(--color-muted)"
           fontFamily="JetBrains Mono, monospace"
         >
           {state.remaining}

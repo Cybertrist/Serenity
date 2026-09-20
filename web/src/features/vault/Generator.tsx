@@ -111,7 +111,7 @@ export function Generator({ onUse }: { onUse: (value: string) => void }) {
                 setLength(Number(e.target.value));
                 regenerate({ length: Number(e.target.value) });
               }}
-              className="w-40 accent-[#f2711c]"
+              className="w-40 accent-accent"
             />
           </label>
           <div className="flex items-center justify-between text-caption text-muted">
@@ -138,7 +138,7 @@ export function Generator({ onUse }: { onUse: (value: string) => void }) {
               setWords(Number(e.target.value));
               regenerate({ words: Number(e.target.value) });
             }}
-            className="w-40 accent-[#f2711c]"
+            className="w-40 accent-accent"
           />
         </label>
       )}

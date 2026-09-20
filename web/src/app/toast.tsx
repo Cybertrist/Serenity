@@ -92,7 +92,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               onClick={() => {
                 setToasts((all) => all.filter((x) => x.id !== t.id));
               }}
-              className="pointer-events-auto flex max-w-[440px] items-start gap-2.5 rounded-control border border-line bg-raised px-4 py-3 text-left text-caption shadow-[0_12px_32px_-8px_rgb(0_0_0/0.6)]"
+              className="pointer-events-auto flex max-w-[440px] items-start gap-2.5 rounded-control border border-line bg-raised px-4 py-3 text-left text-caption shadow-[0_12px_32px_-8px_var(--color-shade)]"
             >
               <IconComponent
                 size={18}
