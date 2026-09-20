@@ -104,10 +104,72 @@ make rotate-now
 Le compteur `changes` du site a bougé, l'entrée porte un nouveau mot de passe, et le journal
 montre la suite `vault.item.pending` → `agent.rotation.execute`.
 
+## Écrire la recette d'un vrai site
+
+L'agent n'est pas intelligent : il remplit les champs qu'une recette lui désigne. Écrire une
+recette, c'est donc regarder la page, pas deviner.
+
+```bash
+make recipe-inspect URL=https://exemple.fr/connexion
+```
+
+Le rotateur ouvre la page, liste ses champs visibles avec leur sélecteur, leur type et leur
+libellé, ses boutons, et signale les `iframe` (un formulaire dedans a besoin d'un autre
+traitement). Il ne tape rien et ne soumet rien : aucun identifiant n'est nécessaire.
+
+La page « changer mon mot de passe » est derrière la connexion : lance l'inspection sur son URL
+avec une session ouverte dans ton navigateur ne suffit pas (le rotateur part d'un profil vierge).
+Pour celle-là, copie les sélecteurs depuis les outils de développement de ton navigateur
+(clic droit sur le champ → Inspecter), ou fais l'essai sur un compte jetable.
+
+Ensuite, un fichier dans `rotator/recipes/` :
+
+```json
+{
+  "name": "exemple",
+  "domains": ["exemple.fr"],
+  "login_path": "/connexion",
+  "account_path": "/mon-compte/securite",
+  "selectors": {
+    "username": "#email", "password": "#password", "submit": "button[type=submit]",
+    "current": "#current-password", "new": "#new-password", "confirm": "#confirm-password",
+    "change_submit": "#save"
+  },
+  "signed_in": "[data-testid=account-menu]",
+  "changed": "text=Votre mot de passe a été modifié"
+}
+```
+
+`signed_in` et `changed` sont les deux preuves : un élément qui n'apparaît **que** connecté, et
+un qui n'apparaît **que** après un changement réussi. Sans eux, l'agent croirait avoir réussi
+parce que la page n'a pas planté. Ajoute enfin le domaine à `api/allowlist.yaml`, sinon le code
+refusera d'y toucher.
+
+## Ce que l'agent ne fera pas
+
+Décidé le 2026-09-20, et ce n'est pas une limite temporaire :
+
+- **Pas de code reçu par mail.** Il faudrait donner à Serenity l'accès à une boîte mail — donc
+  au serveur, donc à qui prend la VM. Une boîte mail est la clé de tous les autres comptes :
+  c'est exactement pourquoi ton adresse principale vit en zone personnelle, que le serveur ne
+  sait pas lire. Le sujet pourra être rouvert avec une adresse dédiée aux comptes confiés à
+  l'agent, mais ça demandera son propre ADR.
+- **Pas de code par SMS** : il faudrait une carte SIM ou un service tiers, et les sites
+  refusent souvent les numéros virtuels.
+- **Pas de réinitialisation par « mot de passe oublié »**, même si on pouvait lire le mail.
+  Lien de réinitialisation + accès à la boîte = prise de contrôle d'un compte : c'est le mode
+  opératoire d'un attaquant, pas une fonctionnalité. L'agent change un mot de passe **en étant
+  connecté**, ou il ne fait rien.
+- **Pas de CAPTCHA, pas de contournement d'anti-robot.** Un site qui ne veut pas d'automatisation
+  a le droit, et le contourner nous mettrait du mauvais côté.
+
+Pour ces comptes-là, l'agent fait ce qu'il fait en zone personnelle : il surveille et il te
+prévient. Le périmètre réaliste, c'est **mot de passe seul ou TOTP** — le code TOTP, lui, se
+calcule hors ligne à partir du secret déjà présent dans l'entrée.
+
 ## Limites connues
 
-- **Un seul site a une recette** : le site de démo. Écrire celle d'un vrai site est le travail
-  suivant, et il commence par regarder ses formulaires. Une rotation approuvée sur un site sans
+- **Un seul site a une recette** : le site de démo. Une rotation approuvée sur un site sans
   recette **le dit** : l'écran Agent l'affiche sous « Approuvées, en attente de l'exécuteur ».
 - La reprise d'une entrée en zone personnelle est **refusée** pendant une rotation (§7.12).
 - Le plafond `SERENITY_MAX_ROTATIONS_PER_DAY` porte sur les approbations, pas sur les

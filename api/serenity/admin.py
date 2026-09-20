@@ -119,6 +119,40 @@ def rotate_now() -> int:
     return 0
 
 
+def inspect(url: str) -> int:
+    """Print what a page asks for, so a recipe is written from the page, not from memory."""
+    settings = get_settings()
+    if not settings.rotator_url or settings.rotator_token is None:
+        print("Aucun exécuteur configuré : renseigne SERENITY_ROTATOR_TOKEN dans .env.")
+        return 1
+    token = settings.rotator_token.get_secret_value()
+    try:
+        response = httpx.post(
+            f"{settings.rotator_url.rstrip('/')}/inspecter",
+            json={"url": url},
+            headers={"authorization": f"Bearer {token}"},
+            timeout=60,
+        )
+    except httpx.HTTPError as exc:
+        print(f"Rotateur injoignable ({type(exc).__name__}).", file=sys.stderr)
+        return 1
+    if response.status_code != 200:
+        print(f"Rotateur : {response.status_code} {response.text[:200]}", file=sys.stderr)
+        return 1
+    page = response.json()
+    print(f"\n{page['title']}\n{page['url']}\n")
+    for kind in ("fields", "buttons"):
+        rows = [f for f in page[kind] if f["visible"]]
+        print("Champs" if kind == "fields" else "Boutons", f"({len(rows)})")
+        for f in rows:
+            hint = f["label"] or f["placeholder"] or f["name"] or ""
+            print(f"  {f['selector']:34} {(f['type'] or f['tag']):10} {hint[:40]}")
+        print()
+    if page.get("note"):
+        print(f"Note : {page['note']}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m serenity.admin")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -127,6 +161,8 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("watch-now", help="run the agent-zone watch now (agent container)")
     sub.add_parser("schedule-now", help="run the rotation due-date check now")
     sub.add_parser("rotate-now", help="execute the rotations that are waiting")
+    look = sub.add_parser("inspect", help="list the form fields of a page (writing a recipe)")
+    look.add_argument("url")
     args = parser.parse_args(argv)
     if args.command == "watch-now":
         return watch_now()
@@ -134,6 +170,8 @@ def main(argv: list[str] | None = None) -> int:
         return schedule_now()
     if args.command == "rotate-now":
         return rotate_now()
+    if args.command == "inspect":
+        return inspect(args.url)
     try:
         username = normalize_username(args.username)
     except InvalidInputError as exc:

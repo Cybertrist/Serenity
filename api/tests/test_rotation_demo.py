@@ -90,6 +90,28 @@ def approved_rotation(session: Session, user_id: str, item_id: str) -> Rotation:
     return rotation
 
 
+def test_inspecting_a_page_lists_its_fields() -> None:
+    """The tool that makes a recipe writable: it must see what the page really asks for."""
+    response = httpx.post(
+        f"{ROTATOR_URL}/inspecter",
+        json={"url": f"{DEMO_URL}/connexion"},
+        headers={"authorization": f"Bearer {TOKEN}"},
+        timeout=60,
+    )
+    assert response.status_code == 200
+    page = response.json()
+    selectors = {f["selector"] for f in page["fields"]}
+    assert {"#username", "#password"} <= selectors
+    assert "#login" in {b["selector"] for b in page["buttons"]}
+
+
+def test_inspecting_needs_the_token() -> None:
+    response = httpx.post(
+        f"{ROTATOR_URL}/inspecter", json={"url": DEMO_URL}, timeout=30
+    )
+    assert response.status_code == 401
+
+
 def test_the_agent_really_changes_the_password(
     account: Account, engine: Engine, settings: Settings, agent_ready: bytes, tmp_path: Path
 ) -> None:
