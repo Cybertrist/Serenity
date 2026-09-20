@@ -4,7 +4,10 @@
 
 # Serenity
 
-[![CI](https://github.com/Cybertrist/Serenity/actions/workflows/ci.yml/badge.svg)](https://github.com/Cybertrist/Serenity/actions/workflows/ci.yml)
+<!-- Dépôt privé : le badge d'état de la CI renvoie 404 sans authentification, donc GitHub ne
+     peut pas l'afficher. Au passage en public, remplacer la ligne ci-dessous par :
+     [![CI](https://github.com/Cybertrist/Serenity/actions/workflows/ci.yml/badge.svg)](https://github.com/Cybertrist/Serenity/actions/workflows/ci.yml) -->
+[![Intégration continue : 8 jobs](https://img.shields.io/badge/int%C3%A9gration%20continue-8%20jobs-0055A4)](.github/workflows/ci.yml)
 [![Licence AGPL v3](https://img.shields.io/badge/licence-AGPL%20v3-0055A4)](LICENSE)
 [![Chiffrement libsodium](https://img.shields.io/badge/chiffrement-libsodium-0055A4)](docs/crypto.md)
 [![Zéro connaissance](https://img.shields.io/badge/zone%20personnelle-z%C3%A9ro%20connaissance-0055A4)](docs/crypto.md)
