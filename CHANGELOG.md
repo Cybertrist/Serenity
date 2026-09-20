@@ -120,6 +120,11 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
   objet. Ils atterrissent maintenant dans un emplacement à l'intérieur du carré, comme les
   messages éphémères le faisaient déjà : le voile s'arrête au bord, la barre de titre et les
   onglets restent visibles autour.
+- **Un film de trente secondes** (`make film`) : l'agent change un vrai mot de passe sur le site
+  de démo, enregistré en une prise contre une pile jetable, avec des sous-titres et sans voix
+  off. La preuve est demandée au site lui-même à la fin : l'ancien mot de passe est refusé, le
+  nouveau ouvre la porte. Sortie en GIF pour le README et en MP4. Le serveur de test sait
+  maintenant jouer les rotations approuvées (`POST /__test/rotate`).
 - **Un onglet Codes.** Tous les codes à deux facteurs du coffre sur un écran : code en direct,
   anneau des secondes restantes, copie en un geste, recherche. Le calcul était déjà là
   (RFC 6238 dans le navigateur, avec Web Crypto) mais il fallait ouvrir une entrée pour voir un

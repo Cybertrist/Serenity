@@ -38,6 +38,16 @@ Au 20 septembre 2026, avant la `v0.1.0` :
 | **Crypto** | une seule bibliothèque, libsodium, et des vecteurs de test partagés que Python **et** TypeScript doivent tous les deux valider |
 | **Documentation** | 11 pages de phase, 17 décisions d'architecture, une spécification cryptographique de 600 lignes, un changelog |
 
+## L'agent, en trente secondes
+
+Un mot de passe qui a fuité, l'agent qui propose, toi qui approuves, le site qui change, et la
+preuve demandée au site lui-même : l'ancien mot de passe est refusé, le nouveau ouvre la porte.
+Rien n'est rejoué ni mis en scène, c'est `make film` qui l'enregistre contre le site de démo.
+
+<p>
+  <img src="docs/img/agent-demo.gif" alt="L'agent change un mot de passe sur le site de démo" width="820">
+</p>
+
 ## Le coffre à double zone
 
 | Zone | Pour quoi | Qui peut lire |

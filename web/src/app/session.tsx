@@ -202,14 +202,17 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     })();
   }, [api]);
 
-  // Real-time notifications while unlocked (ADR-005).
+  // Real-time notifications while unlocked (ADR-005). The vault is pulled too: when the agent
+  // rotates a password, the entry changes on the server, and an open client showed the old one
+  // until something else happened to sync.
   useEffect(() => {
     if (phase !== "unlocked" || offline) return;
     return subscribe((event) => {
       setNotifications((all) => [event, ...all].slice(0, 50));
       void queryClient.invalidateQueries();
+      void refresh();
     });
-  }, [phase, offline, queryClient]);
+  }, [phase, offline, queryClient, refresh]);
 
   // Activity pushes the automatic lock back.
   useEffect(() => {

@@ -3,7 +3,8 @@
 Only in the dev image (tests/ is not shipped). Temporary database, random keys, and a
 test-only clock for TOTP: POST /__test/tick moves it 30 s forward and returns it, so the
 client can compute a fresh code for each step without waiting. POST /__test/schedule runs the
-agent's due-date check. POST /__test/reset empties
+agent's due-date check, POST /__test/rotate runs the approved rotations for real (used by the
+film that records the agent at work). POST /__test/reset empties
 every table except the settings (server key), so each test file starts from scratch.
 """
 
@@ -16,6 +17,7 @@ import uvicorn
 from sqlmodel import Session, SQLModel
 
 import serenity.auth.totp
+from serenity.agent.executor import run_rotations
 from serenity.agent.rotations import run_schedule
 from serenity.agent.service import publish_server_key
 from serenity.config import Settings
@@ -24,6 +26,8 @@ from serenity.main import create_app
 from serenity.models import utcnow
 
 CLOCK = {"now": 1_900_000_000.0}
+# Kept, unlike a throwaway: the executor needs the seed to open the agent zone.
+SERVER_KEY = nacl.utils.random(32)
 
 
 def build(tmp: Path) -> object:
@@ -36,7 +40,7 @@ def build(tmp: Path) -> object:
     engine = create_db_engine(settings.db_path)
     init_db(engine)
     with Session(engine) as session:
-        publish_server_key(session, nacl.utils.random(32), utcnow())
+        publish_server_key(session, SERVER_KEY, utcnow())
     engine.dispose()
     serenity.auth.totp.now = lambda: CLOCK["now"]
     app = create_app(settings, totp_key=nacl.utils.random(32))
@@ -52,6 +56,18 @@ def build(tmp: Path) -> object:
         with Session(app.state.engine) as session:
             report = run_schedule(session, utcnow())
         return {"scheduled": report.scheduled, "reminders": report.reminders}
+
+    @app.post("/__test/rotate")
+    def rotate() -> dict[str, int | bool]:
+        """Run the approved rotations now, for real, against whatever executor is configured."""
+        report = run_rotations(app.state.engine, SERVER_KEY, settings, utcnow())
+        return {
+            "run": report.run,
+            "succeeded": report.succeeded,
+            "rolled_back": report.rolled_back,
+            "failed": report.failed,
+            "skipped": report.skipped,
+        }
 
     @app.post("/__test/reset", status_code=204)
     def reset() -> None:

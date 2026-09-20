@@ -70,7 +70,7 @@ export function AgentScreen() {
       await queryClient.invalidateQueries({ queryKey: ["rotations"] });
       toast(
         yes
-          ? "Approuvée. Le changement se fera quand l'exécuteur sera prêt (V3)."
+          ? "Approuvée. L'agent la joue à son prochain passage."
           : "Refusée. Prochaine échéance repoussée.",
       );
     } catch (e) {
