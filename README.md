@@ -58,7 +58,22 @@ La spécification cryptographique est dans `docs/crypto.md` (phase 1).
 
 ## Sécurité
 
-Les règles non négociables sont dans [`CLAUDE.md`](CLAUDE.md).
+Les règles non négociables sont dans [`CLAUDE.md`](CLAUDE.md). Pour signaler une faille, passe
+par [`SECURITY.md`](SECURITY.md), jamais par une issue publique.
 
 > Serenity n'a pas encore été audité. N'y mets pas de comptes réels avant la version 0.1.0
 > et un audit externe.
+
+## Contribuer
+
+Le périmètre est tenu court, donc ouvre une issue avant d'écrire du code.
+Tout est expliqué dans [`CONTRIBUTING.md`](CONTRIBUTING.md) : comment lancer le projet, quoi
+vérifier avant une pull request, et les règles qui ne se discutent pas.
+
+## Licence
+
+[GNU AGPL v3](LICENSE) ou version ultérieure. Copyright (C) 2026 Tristan.
+
+L'AGPL est le choix habituel pour un serveur auto-hébergé, celui du serveur Bitwarden entre
+autres : qui fait tourner une version modifiée de Serenity pour d'autres personnes doit en
+publier le code. Serenity est distribué sans aucune garantie.
