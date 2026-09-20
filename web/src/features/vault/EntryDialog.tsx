@@ -231,7 +231,9 @@ export function EntryDialog({ entry, onClose }: { entry: VaultEntry | null; onCl
           {data.password ? (
             <FieldRow
               label="Mot de passe"
-              value={revealed ? data.password : "•••• •••• •••• ••••"}
+              // Masked: one plain run of dots, never grouped. A bank-card rhythm on a
+              // password suggests a length and a shape it does not have.
+              value={revealed ? data.password : "••••••••••••••••"}
               actions={
                 <>
                   <IconButton
