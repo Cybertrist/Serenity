@@ -15,6 +15,9 @@ data/
 *.db-wal
 *.db-shm
 
+# Working directory of scripts/film.sh (the recording, before encoding).
+.film/
+
 # --- Python ---
 .interop-*.json
 __pycache__/

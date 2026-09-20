@@ -52,6 +52,19 @@ Conforme à [`crypto.md`](crypto.md) §7.12 et à la règle 6 : **le coffre est 
 - **Le bloc en attente** : sans lui, une coupure entre « le site a changé » et « le coffre a
   enregistré » perd le compte. C'est la règle 6, appliquée.
 
+## Le regarder faire
+
+```bash
+make film
+```
+
+Trente secondes enregistrées en une prise contre une pile jetable : le coffre se déverrouille,
+la veille trouve le mot de passe dans une fuite connue, l'agent propose, on approuve, l'exécuteur
+change le mot de passe sur le site, le coffre affiche le nouveau, et le site lui-même tranche
+(ancien refusé, nouveau accepté). Sortie : `docs/img/agent-demo.gif` et `docs/img/agent.mp4`.
+
+Rien n'y est simulé sauf le rythme. Si la rotation échoue, le film s'arrête avec l'erreur.
+
 ## Comment tester
 
 ### Tout, d'un coup (sur la VM)
