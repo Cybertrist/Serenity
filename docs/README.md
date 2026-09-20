@@ -16,7 +16,7 @@ Une page par phase, dans l'ordre de construction.
 | [07 — Interface](07-interface.md) | PWA React, écrans, hors ligne, CSP stricte |
 | [08 — Rotation](08-rotation.md) | L'exécuteur : navigateur isolé, recettes de sites, site de démo |
 | [09 — Sauvegardes](09-sauvegardes.md) | restic, snapshot SQLite, clés, exercice de restauration |
-| 09 — Sécurité | Sauvegardes, modèle de menace final, risques restants *(à venir)* |
+| 10 — Sécurité | Modèle de menace final, risques restants, audit externe *(à venir)* |
 
 Références :
 

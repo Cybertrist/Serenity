@@ -102,6 +102,12 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Modifié
 
+- **Revue de toute la documentation** : captures d'écran refaites aux nouvelles couleurs
+  (README et `07-interface.md`), architecture à jour (4 services + le rotateur + les
+  sauvegardes), CI décrite avec ses huit jobs et les trois qui bloquent vraiment une fusion,
+  milestones corrigés, et toutes les phrases du type « ça arrive en phase 7 » remplacées par ce
+  qui existe. Les comptes de tests figés dans les pages (« 139 tests ») laissent la place à une
+  description : un nombre qui vieillit mal n'apprend rien.
 - **L'interface passe au bleu blanc rouge.** L'orange du logo cède la place au **bleu de France**
   (`#0055A4`, ouvert sur fond sombre) pour tout ce qui agit, au **rouge Marianne** pour tout ce
   qui alerte, et au blanc pour la marque. Le drapeau entier ne sort que trois fois, là où il dit

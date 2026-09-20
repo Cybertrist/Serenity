@@ -57,7 +57,7 @@ Conforme à [`crypto.md`](crypto.md) §7.12 et à la règle 6 : **le coffre est 
 ### Tout, d'un coup (sur la VM)
 
 ```bash
-make test             # 159 tests, dont la transaction et le client de l'exécuteur
+make test             # toute la suite, dont la transaction et le client de l'exécuteur
 make rotation-demo    # l'agent change un mot de passe sur le site de démo, vrai navigateur
 ```
 
@@ -174,4 +174,5 @@ calcule hors ligne à partir du secret déjà présent dans l'entrée.
 - La reprise d'une entrée en zone personnelle est **refusée** pendant une rotation (§7.12).
 - Le plafond `SERENITY_MAX_ROTATIONS_PER_DAY` porte sur les approbations, pas sur les
   exécutions : une rotation approuvée hier peut s'exécuter aujourd'hui.
-- Les sauvegardes restic et la revue de sécurité restent à faire (phase suivante, issue #27).
+- Les sauvegardes restic sont en place ([09 — Sauvegardes](09-sauvegardes.md)) ; la revue de
+  sécurité finale et la `v0.1.0` restent à faire (issue #27).

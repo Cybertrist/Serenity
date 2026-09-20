@@ -2,7 +2,8 @@
 
 ## Quoi
 
-La stack Serenity tourne en **Docker Compose** sur la VM, avec 3 services :
+La stack Serenity tourne en **Docker Compose** sur la VM, avec **4 services**, plus le site de
+démo derrière son profil :
 
 | Service | Image | Rôle | Réseau | Port sur la VM |
 |---|---|---|---|---|
@@ -16,8 +17,8 @@ L'accès depuis tes appareils passe uniquement par `tailscale serve` :
 `https://<vm>` → `127.0.0.1:8080`. `<vm>` est le nom MagicDNS de la VM
 (`serenity.tail18532b.ts.net`), dans `.env` sous `TAILNET_HOST`.
 
-En phase 2, `api` répond à `/api/health` et `/api/crypto/server-key`, `agent` démarre et publie
-sa clé publique, `web` affiche une page d'attente. Le reste arrive en phases 3 à 7.
+Le site de démo ne démarre qu'avec son profil (`docker compose --profile demo up -d`) : c'est
+un jouet pour la rotation, pas un service de la stack ([08 — Rotation](08-rotation.md)).
 
 ## Pourquoi
 
@@ -70,7 +71,7 @@ chmod 600 .env
 nano .env                      # TAILNET_HOST et SERENITY_SECRET_KEY au minimum
 make init                      # crée data/api (demande sudo)
 make up                        # crée les clés si besoin, construit et démarre
-make ps                        # les 3 services doivent être "healthy"
+make ps                        # les 4 services doivent être "healthy"
 ```
 
 `make up` appelle `make keys`, qui crée `data/keys/server.key` et `data/keys/totp.key`
@@ -89,13 +90,23 @@ make ps                        # les 3 services doivent être "healthy"
 | `make test`, `make lint` | Tests et qualité backend (Docker, Python 3.12) |
 | `make web-test` | Tests et qualité frontend (Docker, Node 22) |
 | `make crypto-interop` | Vérification croisée crypto Python ↔ TypeScript |
+| `make e2e`, `make ui-smoke` | Parcours bout en bout, puis tous les écrans dans Chromium |
+| `make rotation-demo`, `make recipe-inspect URL=…` | Rotation sur le site de démo ; inspecter une page pour écrire sa recette |
+| `make backup-now`, `make backup-check`, `make restore-check` | Sauvegardes et exercice de restauration ([09](09-sauvegardes.md)) |
+| `make brand-icons`, `make api-doc` | Regénère les icônes depuis les SVG ; regénère `docs/api.md` |
+
+`make help` liste tout, à jour.
 
 ## Sauvegarder les clés (séparément)
 
-La sauvegarde automatique (restic, phase 8) couvrira `data/api`, **pas** `data/keys`. Sinon,
-une sauvegarde volée contiendrait à la fois la base et la clé qui ouvre la zone agent.
+La sauvegarde automatique restic couvre la base **et** les deux clés : sans la clé serveur, la
+zone agent d'un coffre restauré ne se rouvrirait jamais ([09 — Sauvegardes](09-sauvegardes.md)).
+Le dépôt restic est donc aussi sensible que la VM elle-même, et son mot de passe vit **hors**
+de Serenity.
 
-Sauvegarde **une fois**, hors ligne, après le premier `make up` :
+Garde malgré tout une copie **hors ligne** des deux clés : une sauvegarde qu'on ne peut pas
+ouvrir sans la machine qu'on vient de perdre n'en est pas une. Une fois, après le premier
+`make up` :
 
 ```bash
 sudo base64 -w0 data/keys/server.key; echo    # 44 caractères
@@ -140,7 +151,7 @@ sudo tailscale serve status
 Sur la VM :
 
 ```bash
-make ps                                            # api, agent, web "healthy"
+make ps                                            # api, agent, rotator, web "healthy"
 curl -s http://127.0.0.1:8080/api/health           # {"status":"ok"}
 curl -s http://127.0.0.1:8080/api/crypto/server-key   # {"public_key":"…","key_id":"…"}
 sudo ss -tlnp | grep docker-proxy                  # uniquement 127.0.0.1:8080
@@ -170,5 +181,5 @@ Depuis un appareil du tailnet (navigateur) : `https://<vm>` → page « Serenity
 
 | Dossier | Contenu | Propriétaire | Sauvegarde |
 |---|---|---|---|
-| `data/api/` | SQLite : blocs chiffrés, métadonnées, journal | UID 10001, `0700` | restic (phase 8) |
-| `data/keys/` | `server.key`, `totp.key` | `root:root`, `0700` / `0400` | **à part**, hors ligne |
+| `data/api/` | SQLite : blocs chiffrés, métadonnées, journal | UID 10001, `0700` | restic, chaque nuit |
+| `data/keys/` | `server.key`, `totp.key` | `root:root`, `0700` / `0400` | restic, **et** une copie hors ligne |

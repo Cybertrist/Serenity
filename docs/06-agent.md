@@ -11,7 +11,7 @@ L'agent (conteneur `agent`) a maintenant ses règles, ses garde-fous et son éch
 | Kill switch | `agent/killswitch.py` | Arrête l'agent ; vérifié avant **chaque** action |
 | Allowlist | `api/allowlist.yaml`, `agent/allowlist.py` | Les seuls sites que l'agent peut modifier |
 | Limite quotidienne | `SERENITY_MAX_ROTATIONS_PER_DAY` (3) | Nombre de rotations approuvées par 24 h |
-| Rotation transactionnelle | `rotator/base.py` | Interface `SiteRotator` et machine d'état ; l'exécuteur est en phase 8 ([08 — Rotation](08-rotation.md)) |
+| Rotation transactionnelle | `rotator/base.py`, `agent/executor.py` | Interface `SiteRotator`, machine d'état, et l'exécuteur qui la joue pour de vrai ([08 — Rotation](08-rotation.md)) |
 | Flux temps réel | `routes/events.py` | Notifications poussées à l'appli ouverte (Server-Sent Events) |
 | Référence de l'API | [`api.md`](api.md) | Générée depuis le schéma OpenAPI (`make api-doc`) |
 
@@ -24,7 +24,8 @@ L'agent (conteneur `agent`) a maintenant ses règles, ses garde-fous et son éch
 | **Zone personnelle** | Rappel seulement | Notification « pense à changer ce mot de passe » |
 
 - **Approuver** : la rotation passe `approved`, et l'exécuteur la joue au passage suivant de
-  l'agent ([08 — Rotation](08-rotation.md)). Sans jeton d'exécuteur configuré, elle attend.
+  l'agent ([08 — Rotation](08-rotation.md)). Sans jeton d'exécuteur configuré, ou sans recette
+  pour ce site, elle attend — et l'écran Agent dit laquelle des deux raisons.
 - **Refuser** : pas de rotation maintenant, la prochaine échéance est repoussée d'une période.
 
 ## Pourquoi
@@ -45,9 +46,12 @@ L'agent (conteneur `agent`) a maintenant ses règles, ses garde-fous et son éch
     - netflix.com
     - spotify.com
   ```
-  Vide en V1. Le fichier est monté en lecture seule : modifie-le sur la VM puis `make restart`.
-- **Rotation transactionnelle** (règle 6), prête pour la V3 : nouveau mot de passe enregistré
-  « en attente » **avant** de toucher au site, ancien conservé, vérification par reconnexion,
+  Il ne contient que le site de démo (`demo.serenity.test`) : l'agent ne peut toucher à rien
+  d'autre tant que tu n'as pas ajouté un domaine toi-même. Le fichier est monté en lecture
+  seule : modifie-le sur la VM puis `make restart`.
+- **Rotation transactionnelle** (règle 6), exécutée pour de vrai depuis la phase 8 : nouveau
+  mot de passe enregistré « en attente » **avant** de toucher au site, ancien conservé,
+  vérification par reconnexion,
   retour arrière si échec ; si même le retour arrière échoue, les **deux** mots de passe sont
   gardés et tu es prévenu. Chaque transition est contrôlée.
 - **Temps réel sans service tiers** (ADR-005) : `/api/events` pousse les notifications à
@@ -59,8 +63,8 @@ L'agent (conteneur `agent`) a maintenant ses règles, ses garde-fous et son éch
 ### Tests automatiques (sur la VM)
 
 ```bash
-make test        # Python : 139 tests, dont allowlist, rotation, kill switch, zone personnelle
-make e2e         # 13 parcours, dont politique -> échéance -> refus -> kill switch -> approbation
+make test        # Python : toute la suite, dont allowlist, rotation, kill switch, zone personnelle
+make e2e         # dont politique -> échéance -> refus -> kill switch -> approbation
 make api-doc     # régénère docs/api.md (la CI vérifie qu'il est à jour)
 ```
 
@@ -69,7 +73,7 @@ make api-doc     # régénère docs/api.md (la CI vérifie qu'il est à jour)
 ```bash
 make client c=login
 make client c=rotations                   # une rotation « breach » pour « Test fuite »
-make client c="approve Test fuite"        # -> approved (rien n'est exécuté en V1)
+make client c="approve Test fuite"        # -> approved, puis joué par l'exécuteur s'il y a une recette
 make client c="policy Netflix"            # fréquence 30, rappel (zone personnelle)
 make client c=stop                        # kill switch
 make schedule-now                         # « Kill switch actif : aucune échéance traitée. »

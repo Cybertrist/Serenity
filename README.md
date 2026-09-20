@@ -24,20 +24,25 @@ Par défaut, tout va dans la zone personnelle.
 ## Ce que fait la V1
 
 - Coffre chiffré dans le navigateur (libsodium : Argon2id, XChaCha20-Poly1305), kit de récupération.
-- Appli web installable (PWA), pensée d'abord pour le mobile.
+- Appli web installable (PWA), en thème clair ou sombre, pensée d'abord pour le mobile.
 - Import depuis un export Bitwarden, chiffré sur place, dans le navigateur.
 - Veille des fuites : Pwned Passwords (k-anonymat), mots de passe réutilisés, faibles ou anciens.
 - Délégation d'entrées à l'agent, planification des rotations avec rappels.
+- **L'agent change vraiment les mots de passe** : un conteneur isolé avec navigateur, une
+  recette par site, une transaction qui sert le coffre avant le site et sait revenir en arrière.
 - Notifications maison, sans service tiers : centre de notifications en temps réel dans l'appli.
 - Un kill switch arrête l'agent immédiatement.
+- Sauvegarde restic chaque nuit (base chiffrée + clés), avec un exercice de restauration rejoué
+  en CI.
 
-Ensuite : l'appli Android native avec notifications (V2), puis la rotation automatique sur les sites (V3).
+Ensuite : l'appli Android native avec notifications (V2), puis la rotation sur tes vrais sites
+— des recettes site par site et une extension navigateur (V3).
 
 ## Démarrage rapide
 
 ```bash
 git clone git@github.com:Cybertrist/Serenity.git
-cd serenity
+cd Serenity
 cp .env.example .env   # puis remplis les valeurs
 make init
 make up

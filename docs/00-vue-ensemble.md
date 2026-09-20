@@ -29,12 +29,16 @@ Téléphone / PC (tailnet)
   └─ appli web PWA : toute la crypto de la zone personnelle ici
         │  HTTPS via tailscale serve (seuls des blocs chiffrés transitent)
         ▼
-┌──────────── VM serenity (Docker Compose) ────────────┐
-│  web (nginx : SPA + proxy /api)                        │
-│  api (FastAPI) ── SQLite (blocs chiffrés + métadonnées)│
-│     ├─ agent : clé serveur → clé d'agent → zone agent  │
-│     └─ notifications : flux temps réel vers les clients│
-└────────────────────────────────────────────────────────┘
+┌──────────────── VM serenity (Docker Compose) ────────────────┐
+│  web (nginx : SPA + proxy /api)                              │
+│  api (FastAPI) ── SQLite (blocs chiffrés + métadonnées)      │
+│     ├─ agent : clé serveur → clé d'agent → zone agent        │
+│     │     └─ rotator : le seul navigateur, atteint les sites │
+│     └─ notifications : flux temps réel vers les clients      │
+└──────────────────────────────────────────────────────────────┘
+        │  chaque nuit : restic (base chiffrée + clés)
+        ▼
+   dépôt de sauvegarde
 ```
 
 | Brique | Rôle |
@@ -43,16 +47,17 @@ Téléphone / PC (tailnet)
 | **api** | Stocke les blocs chiffrés, authentifie, fait tourner l'agent et la veille. |
 | **SQLite** | Blocs chiffrés et métadonnées. Aucun secret en clair. |
 | **Clé serveur** | Fichier hors de la base. Déchiffre la clé d'agent, donc la zone agent uniquement. |
+| **rotator** | Le seul conteneur avec un navigateur : il exécute les rotations que l'agent décide, d'après une recette par site. Il ne détient aucune clé. |
 | **Notifications** | Maison : stockées par l'api, affichées dans l'appli, récupérées périodiquement par l'appli Android. Aucun service tiers. |
 | **Tailscale** | Le seul accès depuis l'extérieur, en HTTPS, réservé à ton tailnet. |
 
-## Les trois versions
+## Les quatre versions
 
 | Version | Contenu |
 |---|---|
-| **V1 — Coffre maison** | Coffre chiffré, API, PWA, import Bitwarden, veille, délégation, rappels, notifications dans l'appli. |
+| **V1 — Coffre maison** | Coffre chiffré, API, PWA, import Bitwarden, veille, délégation, rappels, notifications dans l'appli, **exécuteur de rotation** (site de démo) et sauvegardes restic. |
 | **V2 — Appli Android** | Appli native Kotlin, notifications Android avec Approuver / Refuser, sans icône permanente ni service tiers. |
-| **V3 — Rotation** | Changement automatique des mots de passe sur les sites (Playwright), extension navigateur. |
+| **V3 — Rotation sur tes vrais sites** | Une recette par site réel, l'inspection de page qui aide à l'écrire, et une extension navigateur. L'exécuteur, lui, existe depuis la V1 ([08 — Rotation](08-rotation.md)). |
 | **V4 — Agent LLM** | Un agent plus autonome, toujours encadré par des règles vérifiées par le code. |
 
 ## Règles de sécurité
