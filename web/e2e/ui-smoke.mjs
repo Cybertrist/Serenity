@@ -234,6 +234,9 @@ await big.getByRole("button", { name: "Réglages" }).click();
 await big.getByRole("dialog").waitFor();
 await big.getByRole("button", { name: "Corbeille" }).click();
 await wideShot("22-bureau-reglages");
+await big.getByRole("button", { name: "Import et export" }).click();
+await big.getByText("Importer mes mots de passe").waitFor();
+await wideShot("22b-bureau-import");
 // The AGPL asks a web app to offer its source: the link has to be there, and to work offline.
 await big.getByRole("button", { name: "À propos" }).click();
 await big.getByRole("link", { name: "Code source" }).waitFor();

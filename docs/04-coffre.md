@@ -17,7 +17,7 @@ sous forme de blocs illisibles pour lui (sauf la zone agent, pour le seul proces
 | Générateur | Mots de passe et phrases de passe (liste EFF, 7 776 mots) | rien |
 | Codes TOTP des entrées | Calculés dans le navigateur (Web Crypto) | rien |
 | Verrouillage automatique | 15 min d'inactivité, fermeture de la page | Le niveau « déverrouillé » expire aussi |
-| **Import Bitwarden** | Export JSON **lu et chiffré dans le navigateur** | Reçoit des blocs chiffrés, par lots |
+| **Import** | Fichier **lu et chiffré dans le navigateur** : CSV Google, JSON Bitwarden, lien de migration Authenticator | Reçoit des blocs chiffrés, par lots |
 | Export chiffré | Fichier protégé par une phrase de passe, produit dans le navigateur | rien |
 
 ### Routes
@@ -42,10 +42,18 @@ sous forme de blocs illisibles pour lui (sauf la zone agent, pour le seul proces
   L'appareil retient aussi la plus haute révision vue par entrée et signale un retour en arrière.
 - **Reprendre une entrée efface son historique « agent »** : le serveur pouvait le lire. L'appli
   conseille ensuite de changer ce mot de passe.
-- **L'import Bitwarden ne quitte jamais ton navigateur en clair** : le fichier est lu et chiffré
+- **L'import ne quitte jamais ton navigateur en clair** : le fichier est lu et chiffré
   sur place, seuls des blocs partent vers le serveur. Les cartes et identités deviennent des notes
   sécurisées avec leurs champs (rien n'est perdu). Les exports Bitwarden **chiffrés** sont refusés :
   exporte au format `.json` simple.
+- **Trois sources, un seul bouton.** Le format est reconnu au contenu du fichier, pas à son nom :
+  un JSON est un export Bitwarden, le reste est le CSV que Google écrit (colonnes `name`, `url`,
+  `username`, `password`, `note`, lues d'après l'en-tête et non d'après leur position).
+- **Les codes à deux facteurs de Google Authenticator** arrivent par le lien
+  `otpauth-migration://` que son QR code contient : c'est un protobuf, lu à la main dans le
+  navigateur pour ne pas ajouter de bibliothèque à un coffre. Chaque compte redevient un
+  `otpauth://` normal. Un code **rejoint l'entrée du même nom** si elle n'en a pas encore, sinon
+  il devient sa propre entrée. Rien n'est jamais écrasé.
 - **Une entrée supprimée reste 30 jours** dans la corbeille ; ensuite le bloc est effacé et seule
   une trace vide reste, pour que tes autres appareils le sachent.
 - Voir [ADR-009](decisions/ADR-009-coffre.md) pour les choix d'implémentation.
@@ -56,7 +64,7 @@ sous forme de blocs illisibles pour lui (sauf la zone agent, pour le seul proces
 
 ```bash
 make test        # Python : toute la suite, dont le coffre et ses révisions
-make web-test    # TypeScript : générateur, import Bitwarden, export chiffré, verrouillage auto…
+make web-test    # TypeScript : générateur, imports Google et Bitwarden, export chiffré, verrouillage auto…
 make e2e         # TypeScript contre le vrai serveur : comptes + coffre
 ```
 
@@ -78,5 +86,5 @@ make client c="delete Netflix"          # corbeille
 make client c="restore Netflix"
 ```
 
-L'import Bitwarden et l'export chiffré se font depuis l'appli (**Réglages → Import et export**) :
+Les imports et l'export chiffré se font depuis l'appli (**Réglages → Import et export**) :
 ils tournent dans le navigateur, là où sont les clés. `make web-test` et `make e2e` les couvrent.

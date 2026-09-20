@@ -127,6 +127,12 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
   images réelles de la page (screencast CDP), pas de l'enregistrement vidéo de Playwright, qui
   compresse tellement que le texte devient de la bouillie. Le serveur de test sait maintenant
   jouer les rotations approuvées (`POST /__test/rotate`).
+- **Import depuis Google.** Le CSV du gestionnaire de mots de passe de Google, et les codes à
+  deux facteurs de Google Authenticator par le lien `otpauth-migration://` de son QR code, dont
+  le protobuf est lu à la main pour ne pas ajouter de bibliothèque à un coffre. Un code rejoint
+  l'entrée du même nom si elle n'en a pas encore, sinon il devient sa propre entrée : rien n'est
+  écrasé. L'import Bitwarden reste là, et le format est maintenant reconnu au contenu du
+  fichier plutôt qu'à son nom.
 - **Un onglet Codes.** Tous les codes à deux facteurs du coffre sur un écran : code en direct,
   anneau des secondes restantes, copie en un geste, recherche. Le calcul était déjà là
   (RFC 6238 dans le navigateur, avec Web Crypto) mais il fallait ouvrir une entrée pour voir un
