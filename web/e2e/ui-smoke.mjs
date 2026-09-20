@@ -215,6 +215,10 @@ await big.getByRole("button", { name: "Réglages" }).click();
 await big.getByRole("dialog").waitFor();
 await big.getByRole("button", { name: "Corbeille" }).click();
 await wideShot("22-bureau-reglages");
+// The AGPL asks a web app to offer its source: the link has to be there, and to work offline.
+await big.getByRole("button", { name: "À propos" }).click();
+await big.getByRole("link", { name: "Code source" }).waitFor();
+await wideShot("23-bureau-a-propos");
 await big.keyboard.press("Escape");
 // Light theme: a third context whose system is set to light, so the app resolves to it.
 const day = await browser.newContext({
@@ -243,32 +247,32 @@ await sun.goto(BASE);
 await sun.getByRole("button", { name: "Continuer" }).waitFor({ timeout: 20000 });
 await sun.getByLabel("Identifiant").fill("tristan");
 await sun.getByLabel("Mot de passe maître").fill("une phrase de passe de test");
-await dayShot("23-clair-cadenas");
+await dayShot("24-clair-cadenas");
 await sun.getByRole("button", { name: "Continuer" }).click();
 await sun.getByLabel("Code à 6 chiffres").fill(totp(secret, await tick()));
 await report(sun, "connexion en thème clair", async () => {
   await sun.getByRole("button", { name: "Déverrouiller" }).click();
   // Caught mid-fall: the rain has to read as ink on paper, not as a white-out.
   await sun.waitForTimeout(700);
-  await sun.screenshot({ path: `${shots}/24-clair-pluie.png` });
+  await sun.screenshot({ path: `${shots}/25-clair-pluie.png` });
   await sun.getByText("Protégé par toi").waitFor({ timeout: 20000 });
 });
-await dayShot("25-clair-coffre");
+await dayShot("26-clair-coffre");
 await sun.getByRole("button", { name: /Banque/ }).click();
 await sun.getByRole("dialog").waitFor();
-await dayShot("26-clair-fiche");
+await dayShot("27-clair-fiche");
 await sun.keyboard.press("Escape");
 await sun.getByRole("button", { name: "Réglages" }).click();
 await sun.getByRole("dialog").waitFor();
 await sun.getByRole("button", { name: "Apparence" }).click();
-await dayShot("27-clair-apparence");
+await dayShot("28-clair-apparence");
 // The padlock cinema is the piece the light theme could ruin: lock, and look at it.
 await sun.getByRole("button", { name: "Verrouillage" }).click();
 await sun.getByRole("button", { name: "Verrouiller maintenant" }).click();
 await report(sun, "verrouillage en thème clair", async () => {
   await sun.getByRole("button", { name: "Déverrouiller" }).waitFor({ timeout: 20000 });
 });
-await dayShot("28-clair-verrouille");
+await dayShot("29-clair-verrouille");
 
 await browser.close();
 if (problems.length) {

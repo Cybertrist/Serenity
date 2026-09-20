@@ -3,7 +3,15 @@ import { createContext, useContext } from "react";
 export type Tab = "vault" | "breaches" | "agent";
 /** Sections of the settings dialog, so other screens can open it where they need to. */
 export type SettingsSection =
-  "lock" | "appearance" | "journal" | "devices" | "watch" | "transfer" | "trash" | "account";
+  | "lock"
+  | "appearance"
+  | "journal"
+  | "devices"
+  | "watch"
+  | "transfer"
+  | "trash"
+  | "account"
+  | "about";
 
 export interface ShellApi {
   tab: Tab;

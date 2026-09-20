@@ -102,6 +102,17 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- **La revue de sécurité** (`docs/10-securite.md`) : ce qui a été vérifié avec la commande pour
+  le rejouer (surface réseau, privilèges des conteneurs, secrets dans l'historique, dépendances
+  Python et npm, en-têtes HTTP), le modèle de menace résumé en un tableau de ce que gagne un
+  attaquant selon ce qu'il obtient, et dix risques restants assumés.
+- **La matrice des contrôles d'accès est figée par un test** (`tests/test_route_guards.py`) :
+  les 9 routes publiques sont écrites une par une avec leur raison, les 16 routes qui écrivent
+  exigent le mot de passe maître, et les 6 exceptions sont nommées. Une route ajoutée sans garde
+  fait échouer la CI.
+- **Une section « À propos » dans les réglages** : le lien vers le code source, la licence et le
+  rappel que rien n'est audité. C'est ce que l'AGPL section 13 demande à une application web,
+  et ça marche hors ligne.
 - **Le nécessaire pour ouvrir le code** : `LICENSE` (GNU AGPL v3, le choix habituel d'un serveur
   auto-hébergé), `SECURITY.md` (signalement privé par GitHub, délais visés, ce qui est dans le
   périmètre et ce qui n'y est pas) et `CONTRIBUTING.md` (règles qui ne se discutent pas, commandes
