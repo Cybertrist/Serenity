@@ -101,6 +101,12 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Corrigé
 
+- Rotation : une entrée **modifiée pendant que sa rotation était en vol** devenait illisible
+  (le bloc en attente était écrit sous une révision qui n'était pas la sienne). La validation
+  finale re-chiffre désormais sur l'entrée à jour : ta modification est gardée, le mot de passe
+  vient de la rotation. Deux autres verrous : un second bloc en attente est refusé, et si le
+  coffre échoue **après** que le site a changé, le bloc en attente est conservé — c'est la seule
+  copie du nouveau mot de passe.
 - Phase 7 : le coffre apparaissait **avant la fin** de la cascade, sous une pluie encore en
   cours : le rideau se levait au bout de 950 ms au lieu d'attendre que les traînées soient
   sorties et que le coffre soit monté. Le coffre arrive maintenant de loin, rideau levé sur lui.

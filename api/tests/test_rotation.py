@@ -14,7 +14,7 @@ from serenity.rotator.passwords import CLASSES, new_password
 from serenity.rotator.remote import RemoteSiteRotator, totp_code
 from serenity.rotator.vault import AgentVault
 from serenity.vault import service
-from serenity.vault.errors import InvalidRequestError
+from serenity.vault.errors import ConflictError, InvalidRequestError
 from tests.conftest import Account
 
 DEMO_DOMAINS = {"demo": frozenset({"demo.serenity.test"})}
@@ -197,6 +197,54 @@ def test_a_discarded_pending_block_leaves_no_trace(
     assert account.api.decrypt(keys, fresh)["password"] == DEMO_SECRET
 
 
+def test_an_edit_during_a_rotation_keeps_both(
+    account: Account, engine: Engine, agent_ready: bytes
+) -> None:
+    """The user renames the entry while the site is being changed: the entry must stay
+    readable, keep the rename, and take the new password."""
+    item_id, ak = agent_item(account, engine)
+    keys = account.keys()
+    with Session(engine) as session:
+        item = session.get(Item, item_id)
+        assert item is not None
+        vault = AgentVault(session=session, item=item, ak=ak, now=utcnow())
+        entry = dict(vault.open())
+        vault.save_pending("le-mot-de-passe-de-la-rotation")
+
+    # Meanwhile, from the app.
+    fresh = next(i for i in account.api.sync()["items"] if i["id"] == item_id)
+    account.api.edit(keys, fresh, {**entry, "name": "Démo renommée"})
+
+    with Session(engine) as session:
+        item = session.get(Item, item_id)
+        assert item is not None
+        vault = AgentVault(session=session, item=item, ak=ak, now=utcnow())
+        vault._rotated = "le-mot-de-passe-de-la-rotation"
+        vault.commit_pending()
+
+    after = account.api.decrypt(
+        keys, next(i for i in account.api.sync()["items"] if i["id"] == item_id)
+    )
+    assert after["name"] == "Démo renommée"  # the user's edit survived
+    assert after["password"] == "le-mot-de-passe-de-la-rotation"  # so did the rotation
+
+
+def test_a_second_rotation_cannot_overwrite_a_pending_block(
+    account: Account, engine: Engine, agent_ready: bytes
+) -> None:
+    item_id, ak = agent_item(account, engine)
+    with Session(engine) as session:
+        item = session.get(Item, item_id)
+        assert item is not None
+        vault = AgentVault(session=session, item=item, ak=ak, now=utcnow())
+        vault.open()
+        vault.save_pending("le-premier")
+        other = AgentVault(session=session, item=item, ak=ak, now=utcnow())
+        other.open()
+        with pytest.raises(ConflictError, match="déjà en cours"):
+            other.save_pending("le-second")
+
+
 def test_an_entry_in_rotation_cannot_change_zone(
     account: Account, engine: Engine, agent_ready: bytes
 ) -> None:
@@ -232,6 +280,40 @@ def test_the_agent_key_opens_what_the_agent_wrote(
         assert item is not None
         vault = AgentVault(session=session, item=item, ak=ak, now=utcnow())
         assert vault.open()["username"] == "tristan"
+
+
+def test_a_vault_failure_after_the_site_changed_keeps_the_new_password() -> None:
+    """Worst case: the site has the new password and the vault refuses it. Losing the
+    pending block here would lose the account."""
+    calls: list[str] = []
+
+    class Vault:
+        def save_pending(self, new_password: str) -> None:
+            calls.append("save_pending")
+
+        def commit_pending(self) -> None:
+            raise RuntimeError("base indisponible")
+
+        def discard_pending(self) -> None:
+            calls.append("discard_pending")
+
+    class Site:
+        domains = frozenset({"demo.serenity.test"})
+
+        def login(self, credentials: Credentials) -> None: ...
+
+        def change_password(self, current: Credentials, new_password: str) -> None: ...
+
+        def verify(self, credentials: Credentials) -> bool:
+            return True
+
+    run = RotationRun(
+        urls=["https://demo.serenity.test/connexion"], allowlist=frozenset({"demo.serenity.test"})
+    )
+    step = run.execute(Site(), Vault(), Credentials("tristan", "avant"), "apres-la-rotation")
+    assert step == Step.FAILED
+    assert "discard_pending" not in calls  # the only copy of the new password survives
+    assert run.error and "enregistrement final" in run.error
 
 
 def test_the_transaction_never_touches_a_site_before_the_vault() -> None:

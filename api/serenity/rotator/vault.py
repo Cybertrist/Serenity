@@ -24,6 +24,8 @@ class AgentVault:
     ak: bytes
     now: datetime
     entry: dict[str, Any] | None = None
+    # The password the site was given. Kept to re-encrypt if the entry moves under us.
+    _rotated: str = ""
 
     def __repr__(self) -> str:
         return f"AgentVault(item_id={self.item.id!r}, revision={self.item.revision})"
@@ -40,18 +42,31 @@ class AgentVault:
 
     # --- VaultPort ---------------------------------------------------------------------
 
-    def save_pending(self, new_password: str) -> None:
-        entry = dict(self.entry or self.open())
-        entry["password"] = new_password
-        entry["passwordChangedAt"] = self.now.isoformat(timespec="milliseconds").replace(
+    def _wrap(self, entry: dict[str, Any], revision: int) -> bytes:
+        rotated = dict(entry)
+        rotated["password"] = self._rotated
+        rotated["passwordChangedAt"] = self.now.isoformat(timespec="milliseconds").replace(
             "+00:00", "Z"
         )
-        revision = self.item.revision + 1
         context = contexts.item(self.item.user_id, self.item.id, Zone.AGENT.value, revision)
-        block = items.encrypt_item(self.ak, entry, context)
+        return items.encrypt_item(self.ak, rotated, context)
+
+    def save_pending(self, new_password: str) -> None:
+        self._rotated = new_password
+        entry = self.entry or self.open()
+        block = self._wrap(entry, self.item.revision + 1)
         self.item = service.save_pending(self.session, self.item, block, self.now)
 
     def commit_pending(self) -> None:
+        """If the entry moved while the site was being changed, keep both: the user's edit
+        wins for every field, the rotation wins for the password (docs/crypto.md §7.12)."""
+        self.session.refresh(self.item)
+        if self.item.pending_revision != self.item.revision + 1:
+            current = self.open()  # the edit the user made in the meantime
+            self.item.pending_block = self._wrap(current, self.item.revision + 1)
+            self.item.pending_revision = self.item.revision + 1
+            self.session.add(self.item)
+            self.session.commit()
         self.item = service.commit_pending(self.session, self.item, self.now)
 
     def discard_pending(self) -> None:
