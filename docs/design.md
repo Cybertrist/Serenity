@@ -32,12 +32,17 @@ tout l'écran (`AppFrame`, `web/src/app/shell/`).
 │  une phrase qui explique │  contenu, seul à défiler
 │  …                    (+)│  l'ajout flotte en bas à droite
 ├──────────────────────────┤
-│  Coffre   Fuites   Agent │  trois onglets, pas plus
+│ Coffre Codes Fuites Agent│  quatre onglets, pas plus
 └──────────────────────────┘
 ```
 
-**Trois onglets seulement.** Le journal n'en fait pas partie : c'est un registre qu'on consulte,
-pas un endroit où l'on travaille. Il vit dans les réglages, et l'écran Agent y renvoie.
+**Quatre onglets, et pas un de plus.** La règle disait trois ; **Codes** l'a fait changer, et
+seulement parce qu'il fait un travail que les autres ne font pas : attraper un chiffre en deux
+secondes. Le coffre sert à gérer un compte, Codes à lire un code. Même données, deux gestes.
+Toute proposition d'un cinquième onglet devra démontrer la même chose.
+
+Le journal n'en fait pas partie : c'est un registre qu'on consulte, pas un endroit où l'on
+travaille. Il vit dans les réglages, et l'écran Agent y renvoie.
 « Verrouiller maintenant » n'est pas non plus dans la barre de titre : c'est une action de
 réglage, pas une action de tous les jours (le verrouillage automatique s'en charge).
 
@@ -53,6 +58,7 @@ réagissent à la place réellement disponible.
 |---|---|---|
 | Titre d'écran | 20 px | 26 px |
 | Onglets | icône au-dessus du mot | icône à côté du mot |
+| Code à deux facteurs | code, anneau, copie | idem, avec plus d'air autour du nom |
 | Zones du coffre | l'une sous l'autre | côte à côte |
 | Bouton d'ajout | icône seule | bouton « Ajouter » |
 

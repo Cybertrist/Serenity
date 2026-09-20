@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 
-export type Tab = "vault" | "breaches" | "agent";
+export type Tab = "vault" | "codes" | "breaches" | "agent";
 /** Sections of the settings dialog, so other screens can open it where they need to. */
 export type SettingsSection =
   | "lock"

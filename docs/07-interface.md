@@ -15,6 +15,7 @@ min(92vw, 92vh, 980px)), qui devient le plein écran sous 768 px, et s'ouvre par
 | **Récupération** | Kit + code, nouveau mot de passe maître, **nouveau kit** |
 | **Coffre** | Les deux zones, chacune avec une phrase qui dit qui peut la lire (côte à côte dès que le carré dépasse 620 px), recherche, ajout avec générateur |
 | **Fiche** (dialogue centré) | Copier l'identifiant, afficher / copier le mot de passe (effacé du presse-papiers après 30 s), code TOTP en direct, rotation ou rappel, historique, **Confier à l'agent / Reprendre**, modifier, supprimer (les trois derniers avec confirmation) |
+| **Codes** | Tous les codes à deux facteurs du coffre sur un écran : code en direct, anneau des secondes restantes, copie en un geste, recherche. Chaque ligne porte la marque de sa zone, et un mot dit lesquels le serveur peut calculer aussi |
 | **Fuites** | Veille lancée à l'ouverture de l'onglet, une alerte par carte, « Ouvrir l'entrée » et « Mettre de côté » |
 | **Journal** (dans les réglages) | Filtres Tout / Agent / Toi / Système, regroupé par jour ; l'écran Agent y renvoie |
 | **Agent** | Kill switch (avec confirmation), rotations à approuver ou refuser, prochaines rotations, garde-fous |
@@ -24,6 +25,7 @@ min(92vw, 92vh, 980px)), qui devient le plein écran sous 768 px, et s'ouvre par
 
 <p>
   <img src="img/coffre.png" alt="Coffre" width="210">
+  <img src="img/codes.png" alt="Codes à deux facteurs" width="210">
   <img src="img/fiche.png" alt="Fiche d'une entrée" width="210">
   <img src="img/fuites.png" alt="Fuites" width="210">
   <img src="img/agent.png" alt="Agent" width="210">
@@ -60,6 +62,11 @@ min(92vw, 92vh, 980px)), qui devient le plein écran sous 768 px, et s'ouvre par
   seulement pour libsodium, sorties réseau limitées à Serenity et à Pwned Passwords, polices
   servies localement, pas d'intégration dans une autre page. En-têtes : HSTS, COOP, CORP,
   `no-referrer`, `nosniff`, `Permissions-Policy`.
+- **Les codes à deux facteurs sont calculés ici** (`web/src/lib/totp.ts`, RFC 6238 avec Web
+  Crypto), à partir du secret rangé dans l'entrée. Rien n'est demandé au serveur, et l'onglet
+  Codes marche hors ligne. Un secret rangé dans la **zone agent** est en revanche lisible par le
+  serveur, qui peut donc produire le même code : c'est ce qui permet à l'agent de se reconnecter
+  pendant une rotation, et l'écran le dit.
 - **Temps réel** : tant que l'appli est ouverte, les nouvelles alertes et rotations arrivent par
   `/api/events`, mettent l'écran à jour et s'empilent dans le centre de notifications (la cloche).
 - **Rien d'irréversible sans un mot d'explication** : supprimer, confier, reprendre, déconnecter
