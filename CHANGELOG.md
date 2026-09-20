@@ -9,6 +9,19 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- **La veille arrête de tout redemander.** L'onglet Fuites relançait un scan complet à chaque
+  ouverture : une requête à Pwned Passwords par entrée, environ 100 ko de réponse chacune. Sur
+  500 comptes, cela faisait 500 requêtes et 50 Mo par visite. Les contrôles qui ne coûtent rien
+  (réutilisé, faible, ancien) continuent de porter sur tout le coffre à chaque fois ; la question
+  posée au réseau ne se repose qu'une fois par jour et par entrée. Un compte que tu viens
+  d'ajouter, ou dont le mot de passe vient de changer, est vérifié tout de suite : c'est le
+  serveur qui tient ce calendrier (`GET /api/watch/plan`), donc il vaut pour tous tes appareils.
+  Le bouton « Vérifier maintenant » repose la question pour tout. ADR-018, `docs/05-veille.md`.
+- **Une fuite ne patiente plus une heure.** Quand ton navigateur trouve un mot de passe exposé
+  sur une entrée confiée à l'agent, la rotation est programmée dans la foulée, au lieu d'attendre
+  le passage horaire. Le kill switch est vérifié avant, et une entrée personnelle reste
+  simplement signalée : l'agent ne peut pas la lire.
+
 - **`make recipe-inspect URL=…`** : le rotateur ouvre une page et liste ses champs (sélecteur,
   type, libellé), ses boutons et ses `iframe`. Écrire la recette d'un site devient mécanique au
   lieu d'être deviné ; rien n'est tapé ni soumis, aucun identifiant n'est nécessaire.

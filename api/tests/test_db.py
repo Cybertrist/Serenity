@@ -93,3 +93,12 @@ def test_v4_keeps_the_new_rotation_table(engine: Engine) -> None:
         MIGRATIONS[3](session)
         session.commit()
     assert "rotation" in _names(engine, "table")
+
+
+def test_v7_creates_the_scan_table_and_repeats(engine: Engine) -> None:
+    # item_scan is a plain new table: create_all makes it, the migration only bumps the version.
+    with Session(engine) as session:
+        MIGRATIONS[6](session)
+        MIGRATIONS[6](session)
+        session.commit()
+    assert "item_scan" in _names(engine, "table")
