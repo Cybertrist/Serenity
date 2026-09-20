@@ -120,8 +120,9 @@ export function Shell() {
             </motion.div>
           </AnimatePresence>
         </main>
-        {/* Where the toasts land: inside the square, never over the window. */}
+        {/* Where the toasts and the dialogs land: inside the square, never over the window. */}
         <div id="toast-slot" className="pointer-events-none absolute inset-0 z-30" />
+        <div id="dialog-slot" className="absolute inset-0 z-40 empty:pointer-events-none" />
       </AppFrame>
       <EntryDialog
         entry={openedEntry ? (byId.get(openedEntry) ?? null) : null}

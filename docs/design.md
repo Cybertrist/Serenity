@@ -46,6 +46,13 @@ travaille. Il vit dans les réglages, et l'écran Agent y renvoie.
 « Verrouiller maintenant » n'est pas non plus dans la barre de titre : c'est une action de
 réglage, pas une action de tous les jours (le verrouillage automatique s'en charge).
 
+**Rien ne sort du carré.** Les dialogues (fiche, éditeur, réglages, guide, notifications,
+confirmations) et les messages éphémères se posent **dans** le carré, jamais par-dessus la
+fenêtre : ils atterrissent dans deux emplacements dédiés (`toast-slot`, `dialog-slot`), et le
+voile assombri s'arrête au bord de l'objet. Sur un téléphone, le carré est l'écran, donc ça
+revient au même ; sur un ordinateur, l'appli reste un objet posé, même quand elle pose une
+question. Sans carré (les écrans d'entrée), un dialogue retombe sur la fenêtre.
+
 **L'ajout d'une entrée flotte** en bas à droite du carré, au-dessus du contenu qui défile et à
 l'écart des messages éphémères : c'est la seule action qu'on lance depuis n'importe où dans le
 coffre, elle ne dispute donc pas sa place au titre.

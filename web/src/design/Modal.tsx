@@ -1,6 +1,7 @@
 import { XIcon, type Icon } from "@phosphor-icons/react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { IconButton } from "./Button";
 import { Chip } from "./Chip";
 import { DIALOG, PERSPECTIVE } from "./motion";
@@ -13,6 +14,13 @@ const WIDTHS: Record<Size, string> = {
   md: "max-w-[560px]",
   lg: "max-w-[920px]",
 };
+
+/**
+ * Where a dialog lands: a slot inside the square, like the toasts. Nothing of the app ever
+ * paints over the window; the square is the whole object. Without the slot (the entry screens,
+ * before the frame exists) the dialog falls back to the viewport.
+ */
+const SLOT = "dialog-slot";
 
 /** Dialogs stack (an editor over a record): only the last one locks the page scroll. */
 let openCount = 0;
@@ -99,11 +107,17 @@ export function Modal({
     };
   }, [open, onClose]);
 
-  return (
+  // The frame mounts after the dialogs in the tree, so the slot is looked up on every opening.
+  const [slot, setSlot] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setSlot(document.getElementById(SLOT));
+  }, [open]);
+
+  const dialog = (
     <AnimatePresence>
       {open ? (
         <div
-          className="fixed inset-0 z-40 flex items-center justify-center p-4 sm:p-6"
+          className={`${slot ? "absolute" : "fixed"} inset-0 z-40 flex items-center justify-center p-4 sm:p-6`}
           style={{ perspective: PERSPECTIVE }}
         >
           <motion.div
@@ -120,7 +134,7 @@ export function Modal({
             aria-modal="true"
             aria-label={title}
             tabIndex={-1}
-            className={`relative z-10 flex max-h-[min(88dvh,860px)] w-full flex-col overflow-hidden rounded-card border border-line bg-raised shadow-[0_24px_60px_-12px_var(--color-shade)] outline-none ${WIDTHS[size]}`}
+            className={`relative z-10 flex max-h-full w-full flex-col overflow-hidden rounded-card border border-line bg-raised shadow-[0_24px_60px_-12px_var(--color-shade)] outline-none ${WIDTHS[size]}`}
             {...(reduce
               ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
               : { variants: DIALOG, initial: "initial", animate: "animate", exit: "exit" })}
@@ -156,4 +170,6 @@ export function Modal({
       ) : null}
     </AnimatePresence>
   );
+
+  return slot ? createPortal(dialog, slot) : dialog;
 }

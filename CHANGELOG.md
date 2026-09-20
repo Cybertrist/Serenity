@@ -115,6 +115,11 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
   sont maintenant dessinés dans les mêmes lettres que « SERENITY », avec Black Ops One servie
   localement comme les deux autres polices. Elle ne sert qu'aux titres : trois mots par écran,
   jamais une phrase.
+- **Les dialogues restent dans le carré.** Fiche, éditeur, réglages, guide, notifications et
+  confirmations se posaient par-dessus la fenêtre entière, ce qui faisait sortir l'appli de son
+  objet. Ils atterrissent maintenant dans un emplacement à l'intérieur du carré, comme les
+  messages éphémères le faisaient déjà : le voile s'arrête au bord, la barre de titre et les
+  onglets restent visibles autour.
 - **Un onglet Codes.** Tous les codes à deux facteurs du coffre sur un écran : code en direct,
   anneau des secondes restantes, copie en un geste, recherche. Le calcul était déjà là
   (RFC 6238 dans le navigateur, avec Web Crypto) mais il fallait ouvrir une entrée pour voir un
