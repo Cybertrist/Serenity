@@ -21,7 +21,7 @@ que tu lui confies. Pas d'humain dans la boucle, mais un humain toujours inform�
 
 <p>
   <img src="docs/img/coffre.png" alt="Le coffre" width="200">
-  <img src="docs/img/fiche.png" alt="Fiche d'une entrée" width="200">
+  <img src="docs/img/codes.png" alt="Les codes à deux facteurs" width="200">
   <img src="docs/img/fuites.png" alt="Fuites" width="200">
   <img src="docs/img/agent.png" alt="Agent" width="200">
 </p>
@@ -53,6 +53,7 @@ Par défaut, tout va dans la zone personnelle.
 - Appli web installable (PWA), en thème clair ou sombre, pensée d'abord pour le mobile.
 - Import depuis un export Bitwarden, chiffré sur place, dans le navigateur.
 - Veille des fuites : Pwned Passwords (k-anonymat), mots de passe réutilisés, faibles ou anciens.
+- **Codes à deux facteurs** : tous tes codes sur un écran, calculés dans le navigateur, hors ligne compris.
 - Délégation d'entrées à l'agent, planification des rotations avec rappels.
 - **L'agent change vraiment les mots de passe** : un conteneur isolé avec navigateur, une
   recette par site, une transaction qui sert le coffre avant le site et sait revenir en arrière.

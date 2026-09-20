@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 import { AgentScreen } from "../../features/agent/AgentScreen";
 import { SettingsDialog } from "../../features/account/SettingsDialog";
 import { BreachesScreen } from "../../features/breaches/BreachesScreen";
+import { CodesScreen } from "../../features/codes/CodesScreen";
 import { EntryDialog } from "../../features/vault/EntryDialog";
 import { EntryEditor } from "../../features/vault/EntryEditor";
 import { GuideDialog } from "../../features/guide/GuideDialog";
@@ -20,6 +21,7 @@ import { TabBar } from "./TabBar";
 
 const SCREENS: Record<Tab, () => React.ReactElement> = {
   vault: VaultScreen,
+  codes: CodesScreen,
   breaches: BreachesScreen,
   agent: AgentScreen,
 };

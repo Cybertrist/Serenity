@@ -344,7 +344,13 @@ export function EntryDialog({ entry, onClose }: { entry: VaultEntry | null; onCl
         explanation={
           agentZone
             ? "Elle repassera dans ta zone personnelle et l'agent ne pourra plus la lire. Change ensuite ce mot de passe : le serveur l'a connu."
-            : "Le serveur pourra la déchiffrer pour surveiller les fuites et changer son mot de passe. Tu peux la reprendre à tout moment."
+            : // A second factor stored here is a second factor the server can produce: it has to
+              // be said before the move, not discovered after.
+              `Le serveur pourra la déchiffrer pour surveiller les fuites et changer son mot de passe.${
+                data.totp
+                  ? " Il pourra aussi calculer son code à deux facteurs, ce dont l'agent a besoin pour se reconnecter."
+                  : ""
+              } Tu peux la reprendre à tout moment.`
         }
         confirmLabel={agentZone ? "Reprendre" : "Confier"}
         onCancel={() => {

@@ -88,17 +88,25 @@ await page.getByRole("button", { name: "Ouvrir mon coffre" }).click();
 await page.getByText("Ton coffre est vide.").waitFor({ timeout: 20000 });
 await shot("04-coffre-vide");
 
-const add = async (name, user, pwd, url) => {
+const add = async (name, user, pwd, url, totp) => {
   await page.getByRole("button", { name: "Ajouter une entrée" }).first().click();
   await page.getByLabel("Nom").fill(name);
   await page.getByLabel("Identifiant sur le site").fill(user);
   await page.getByLabel("Mot de passe", { exact: true }).fill(pwd);
   await page.getByLabel("Adresse du site").fill(url);
+  // A throwaway RFC 6238 test secret: it gives the Codes screen a real code to draw.
+  if (totp) await page.getByLabel("Clé TOTP (facultatif)").fill(totp);
   await page.getByRole("button", { name: "Enregistrer" }).click();
   await page.getByRole("dialog").waitFor({ state: "detached" });
 };
 await add("Banque", "tristan.j", "k9#Lm2$pQ7!xZ4&wY8", "https://www.banque.fr");
-await add("Netflix", "tristan@exemple.fr", "password123", "https://www.netflix.com");
+await add(
+  "Netflix",
+  "tristan@exemple.fr",
+  "password123",
+  "https://www.netflix.com",
+  "JBSWY3DPEHPK3PXP",
+);
 await add("Spotify", "tristanj", "x7Kq-m2Pz-9Lw4-rT8v", "https://open.spotify.com");
 await shot("05-coffre");
 await page.getByRole("button", { name: /Netflix/ }).click();
@@ -109,6 +117,13 @@ await shot("07-confier");
 await page.getByRole("button", { name: "Confier", exact: true }).click();
 await page.getByRole("dialog").waitFor({ state: "detached" });
 await shot("08-coffre-delegue");
+await page.getByLabel("Navigation principale").getByRole("button", { name: "Codes" }).click();
+// The row is named after its entry; the code itself changes every 30 s.
+await page
+  .getByRole("button", { name: /Netflix/ })
+  .first()
+  .waitFor();
+await shot("08b-codes");
 await page.getByLabel("Navigation principale").getByRole("button", { name: "Fuites" }).click();
 await page
   .getByText(/à surveiller|Tout va bien/)
