@@ -44,10 +44,10 @@
   --rain-trail: 226 232 240;
   --rain-alpha: 0.34;
 
-  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
   /* The logotype's manner, in a real typeface: screen titles, and nothing else. */
-  --font-stencil: "Black Ops One", "Geist", ui-sans-serif, sans-serif;
+  --font-stencil: "Black Ops One", "Chakra Petch", ui-sans-serif, sans-serif;
 
   /* Four sizes: display is reserved for page titles on a wide screen. */
   --text-display: 26px;
@@ -131,10 +131,25 @@
   }
 }
 
+/* One file per weight: Chakra Petch is not a variable font. */
 @font-face {
-  font-family: "Geist";
-  src: url("/fonts/geist-latin.woff2") format("woff2");
-  font-weight: 400 600;
+  font-family: "Chakra Petch";
+  src: url("/fonts/chakra-petch-400-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Chakra Petch";
+  src: url("/fonts/chakra-petch-500-latin.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Chakra Petch";
+  src: url("/fonts/chakra-petch-600-latin.woff2") format("woff2");
+  font-weight: 600;
   font-display: swap;
 }
 
