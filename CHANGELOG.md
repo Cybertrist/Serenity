@@ -102,6 +102,11 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- **Toute l'interface passe en Chakra Petch.** Geist sort du projet : ses lettres étaient
+  neutres, celles-ci sont droites et coupées, et prolongent le pochoir du titre sans crier.
+  Choisie après comparaison sur un vrai écran, contre Geist, Black Ops One et Saira. Trois
+  graisses servies localement (400, 500, 600), moins de 30 Ko à elles toutes, licence OFL.
+  La bannière du dépôt suit.
 - **Les titres d'écran passent au pochoir du logotype.** « COFFRE », « FUITES » et « AGENT »
   sont maintenant dessinés dans les mêmes lettres que « SERENITY », avec Black Ops One servie
   localement comme les deux autres polices. Elle ne sert qu'aux titres : trois mots par écran,

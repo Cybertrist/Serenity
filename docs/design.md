@@ -219,8 +219,13 @@ et il suit en direct : le basculement automatique du soir change l'appli sans la
 **Les titres d'écran sont dans le pochoir du logotype** : capitales, interlettrage large,
 centrées sous la marque, et dessinées dans la même famille de lettres que « SEREN**I**TY ».
 C'est Black Ops One, la seule police à fentes de l'appli, et elle ne sert **qu'à ça** : trois
-mots par écran, jamais une phrase. Le reste est en Geist (interface) et JetBrains Mono (codes,
-clés, heures du journal). Les trois sont servies localement (`web/public/fonts/`, licence OFL). **Quatre tailles** : `text-display` 26 px (titre d'écran sur
+mots par écran, jamais une phrase. Le reste est en **Chakra Petch** (toute l'interface) et
+JetBrains Mono (codes, clés, heures du journal). Les trois sont servies localement
+(`web/public/fonts/`, licence OFL).
+
+Chakra Petch a été choisie contre Geist, qui tenait ce rôle avant : ses lettres droites et ses
+angles coupés prolongent le pochoir du titre sans crier, là où Geist était neutre. Elle n'est
+pas variable, donc l'appli n'embarque que les trois graisses dont elle se sert (400, 500, 600). **Quatre tailles** : `text-display` 26 px (titre d'écran sur
 ordinateur seulement), `text-title` 20 px semi-gras, `text-body` 15 px, `text-caption` 13 px.
 
 ## Formes
