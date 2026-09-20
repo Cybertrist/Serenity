@@ -63,6 +63,12 @@ def _v4_watch(session: Session) -> None:
     conn.execute(text("DROP TABLE IF EXISTS entry"))
 
 
+def _v6_pending_rotation(session: Session) -> None:
+    # The block a rotation holds aside before it touches the site (docs/crypto.md §7.12).
+    add_column(session, "item", "pending_block", "BLOB")
+    add_column(session, "item", "pending_revision", "INTEGER")
+
+
 MIGRATIONS: list[Migration] = [
     lambda session: None,
     _v2_accounts,
@@ -70,6 +76,7 @@ MIGRATIONS: list[Migration] = [
     _v4_watch,
     # rotation_policy and rotation are new tables, created by create_all.
     lambda session: None,
+    _v6_pending_rotation,
 ]
 
 

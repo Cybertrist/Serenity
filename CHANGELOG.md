@@ -9,6 +9,14 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- **L'agent change vraiment les mots de passe.** Un conteneur `rotator` isolé (le seul avec un
+  navigateur, le seul à atteindre un site) exécute les rotations que l'agent décide, pilote les
+  formulaires d'après une **recette JSON par site**, et vérifie par une reconnexion complète. Le
+  coffre est servi avant le site : nouveau mot de passe enregistré « en attente », validé si le
+  site a suivi, jeté sinon — le tout avec retour arrière (`docs/crypto.md` §7.12, ADR-015).
+- **Site de démo** (`demo/`, profil compose `demo`) : le jouet sur lequel l'agent s'entraîne, et
+  que la CI rejoue à chaque commit — réussite, refus du site, site hors allowlist
+  (`make rotation-demo`, `docs/08-rotation.md`).
 - **Régénérer le kit de récupération** depuis les réglages (compte) : mot de passe maître et code
   TOTP, puis un kit neuf pour le même coffre. Les entrées ne bougent pas, les appareils restent
   connectés, et l'ancien kit cesse de valoir dès l'affichage du nouveau — un avertissement le dit

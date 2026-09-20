@@ -14,6 +14,7 @@ Une page par phase, dans l'ordre de construction.
 | [05 — Veille](05-veille.md) | Fuites (k-anonymat), réutilisés, faibles, anciens, e-mails, notifications |
 | [06 — Agent](06-agent.md) | Politiques, kill switch, allowlist, échéances, rotation transactionnelle |
 | [07 — Interface](07-interface.md) | PWA React, écrans, hors ligne, CSP stricte |
+| [08 — Rotation](08-rotation.md) | L'exécuteur : navigateur isolé, recettes de sites, site de démo |
 | 09 — Sécurité | Sauvegardes, modèle de menace final, risques restants *(à venir)* |
 
 Références :

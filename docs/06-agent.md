@@ -9,9 +9,9 @@ L'agent (conteneur `agent`) a maintenant ses règles, ses garde-fous et son éch
 | Politiques | `agent/rotations.py` | Par entrée : fréquence (7, 30, 90, 180 jours, jamais) et mode (**autonome** ou **avec validation**) |
 | Échéancier | `agent/rotations.py`, `agent/service.py` | Toutes les heures : rotations dues (zone agent), rappels (zone personnelle), rotations après fuite |
 | Kill switch | `agent/killswitch.py` | Arrête l'agent ; vérifié avant **chaque** action |
-| Allowlist | `api/allowlist.yaml`, `agent/allowlist.py` | Les seuls sites que l'agent pourra modifier (V3) |
+| Allowlist | `api/allowlist.yaml`, `agent/allowlist.py` | Les seuls sites que l'agent peut modifier |
 | Limite quotidienne | `SERENITY_MAX_ROTATIONS_PER_DAY` (3) | Nombre de rotations approuvées par 24 h |
-| Rotation transactionnelle | `rotator/base.py` | Interface `SiteRotator` et machine d'état, **sans aucun site** |
+| Rotation transactionnelle | `rotator/base.py` | Interface `SiteRotator` et machine d'état ; l'exécuteur est en phase 8 ([08 — Rotation](08-rotation.md)) |
 | Flux temps réel | `routes/events.py` | Notifications poussées à l'appli ouverte (Server-Sent Events) |
 | Référence de l'API | [`api.md`](api.md) | Générée depuis le schéma OpenAPI (`make api-doc`) |
 
@@ -23,8 +23,8 @@ L'agent (conteneur `agent`) a maintenant ses règles, ses garde-fous et son éch
 | **Zone agent**, mot de passe exposé | Rotation `scheduled` (déclencheur « fuite ») | Idem |
 | **Zone personnelle** | Rappel seulement | Notification « pense à changer ce mot de passe » |
 
-- **Approuver** : la rotation passe `approved`. En V1, rien ne change sur le site ; l'exécuteur
-  arrive en V3.
+- **Approuver** : la rotation passe `approved`, et l'exécuteur la joue au passage suivant de
+  l'agent ([08 — Rotation](08-rotation.md)). Sans jeton d'exécuteur configuré, elle attend.
 - **Refuser** : pas de rotation maintenant, la prochaine échéance est repoussée d'une période.
 
 ## Pourquoi

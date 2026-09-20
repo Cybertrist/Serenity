@@ -63,6 +63,9 @@ services:
       SERENITY_SCHEDULE_INTERVAL_MINUTES: ${SERENITY_SCHEDULE_INTERVAL_MINUTES:-60}
       # Paid HIBP key (optional): the agent alone calls HIBP.
       HIBP_API_KEY: ${HIBP_API_KEY:-}
+      # The executor (ADR-015). Without a token, approved rotations simply wait.
+      SERENITY_ROTATOR_URL: ${SERENITY_ROTATOR_URL-http://rotator:8000}
+      SERENITY_ROTATOR_TOKEN: ${SERENITY_ROTATOR_TOKEN:-}
     volumes:
       - ./data/api:/data
       # Sites the agent may rotate: edited on the host, read by code only.
@@ -73,8 +76,9 @@ services:
         target: /run/serenity/server.key
         read_only: true
         bind: { create_host_path: false }
-    # No port at all. Outbound Internet for Pwned Passwords (phase 5).
-    networks: [egress]
+    # No port at all. Outbound Internet for Pwned Passwords (phase 5), plus the private
+    # network it shares with the executor.
+    networks: [egress, rotation]
     healthcheck:
       test: ["CMD", "python", "-c", "import os, sys, time; sys.exit(time.time() - os.path.getmtime('/tmp/agent-heartbeat') > 90)"]
       interval: 30s
@@ -85,6 +89,52 @@ services:
       # The api owns database migrations.
       api:
         condition: service_healthy
+
+  # The only service with a browser, and the only one that opens a site (ADR-015).
+  # It holds no key, no database, and nothing on disk.
+  rotator:
+    <<: *hardening
+    build:
+      context: ./rotator
+    image: serenity-rotator:local
+    cap_drop: [ALL]
+    read_only: true
+    tmpfs: [/tmp, /dev/shm]
+    environment:
+      TZ: ${TZ:-Europe/Paris}
+      SERENITY_ROTATOR_TOKEN: ${SERENITY_ROTATOR_TOKEN:-}
+      SERENITY_ROTATOR_STEP_TIMEOUT_MS: ${SERENITY_ROTATOR_STEP_TIMEOUT_MS:-15000}
+    volumes:
+      # Recipes are edited on the host and read by code only.
+      - ./rotator/recipes:/app/recipes:ro
+    # No published port: only the agent can reach it. Egress to reach the sites themselves.
+    networks: [rotation, egress]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/sante', timeout=3).status == 200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  # The site the agent practises on: `docker compose --profile demo up -d`.
+  demo:
+    <<: *hardening
+    profiles: [demo]
+    build:
+      context: ./demo
+    image: serenity-demo:local
+    cap_drop: [ALL]
+    read_only: true
+    environment:
+      DEMO_USERNAME: ${DEMO_USERNAME:-tristan@exemple.fr}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-mot-de-passe-de-depart}
+      DEMO_TOTP_SECRET: ${DEMO_TOTP_SECRET:-}
+    ports:
+      - "127.0.0.1:8090:8000"
+    networks:
+      edge: {}
+      rotation:
+        aliases: [demo.serenity.test]
 
   web:
     <<: *hardening
@@ -109,5 +159,8 @@ networks:
     internal: true
   # Network for services published on 127.0.0.1.
   edge: {}
-  # Outbound Internet for the agent (Pwned Passwords, phase 5).
+  # Outbound Internet for the agent (Pwned Passwords, phase 5) and the executor (the sites).
   egress: {}
+  # Agent <-> executor, and the demo site when its profile is up. No Internet.
+  rotation:
+    internal: true

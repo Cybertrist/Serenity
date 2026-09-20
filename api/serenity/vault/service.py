@@ -154,6 +154,8 @@ def change_zone(
         raise InvalidRequestError("Entrée dans la corbeille : restaure-la d'abord.")
     if item.zone == target:
         raise InvalidRequestError("L'entrée est déjà dans cette zone.")
+    if item.pending_block is not None:
+        raise InvalidRequestError("Rotation en cours sur cette entrée : réessaie après.")
     _check_revision(item, base_revision)
     action = "vault.item.delegate" if target == Zone.AGENT else "vault.item.reclaim"
     item = _replace(session, item, target, block, now, Actor.USER, action)
@@ -186,6 +188,61 @@ def _replace(
         target_type="item",
         target_id=item.id,
         details={"revision": item.revision, "zone": item.zone.value},
+    )
+    session.refresh(item)
+    return item
+
+
+# --- rotation, in three steps (docs/crypto.md §7.12) -----------------------------------------
+
+
+def save_pending(session: Session, item: Item, block: bytes, now: datetime) -> Item:
+    """Hold the next revision aside. The active entry does not move: the site still has it."""
+    if item.deleted_at is not None:
+        raise InvalidRequestError("Entrée dans la corbeille.")
+    if item.zone != Zone.AGENT:
+        raise InvalidRequestError("Zone personnelle : l'agent n'y touche pas.")
+    item.pending_block = block
+    item.pending_revision = item.revision + 1
+    session.add(item)
+    session.commit()
+    audit.record(
+        session,
+        Actor.AGENT,
+        "vault.item.pending",
+        user_id=item.user_id,
+        target_type="item",
+        target_id=item.id,
+        details={"revision": item.pending_revision},
+    )
+    session.refresh(item)
+    return item
+
+
+def commit_pending(session: Session, item: Item, now: datetime) -> Item:
+    """The site took the new password: the pending block becomes the entry."""
+    if item.pending_block is None:
+        raise InvalidRequestError("Aucun bloc en attente.")
+    block = item.pending_block
+    item.pending_block = None
+    item.pending_revision = None
+    return _replace(session, item, item.zone, block, now, Actor.AGENT, "vault.item.rotated")
+
+
+def discard_pending(session: Session, item: Item, now: datetime) -> Item:
+    """The rotation failed and the site was put back: forget the block, keep the entry."""
+    item.pending_block = None
+    item.pending_revision = None
+    item.updated_at = now
+    session.add(item)
+    session.commit()
+    audit.record(
+        session,
+        Actor.AGENT,
+        "vault.item.pending.discarded",
+        user_id=item.user_id,
+        target_type="item",
+        target_id=item.id,
     )
     session.refresh(item)
     return item

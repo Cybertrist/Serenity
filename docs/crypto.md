@@ -266,6 +266,7 @@ le serveur ne connaît même pas le nom des sites.
 | Secret TOTP de connexion | bloc `0x01` (clé TOTP serveur) | oui, api seulement |
 | Entrées zone personnelle | blocs `0x01` (UK) | **non** |
 | Entrées zone agent | blocs `0x01` (AK) | oui, processus agent seulement |
+| Bloc **en attente** d'une rotation | bloc `0x01` (AK), révision `r+1` | oui, processus agent seulement |
 | Zone, révision, dates, corbeille, politiques de rotation | clair | oui |
 
 Métadonnées visibles : nombre d'entrées, taille approximative (au multiple de 256 o près),
@@ -430,6 +431,42 @@ Entre 6 et 7, fermer l'onglet sans noter RK' laisse le compte **sans kit utilisa
 passe maître continue de fonctionner, mais la voie de secours est perdue jusqu'à la prochaine
 régénération. C'est assumé (ADR-013) : l'avertissement de l'étape 1 vient avant, et le kit affiché
 s'imprime ou se copie d'un bouton. Le §7.8 se termine déjà par un kit neuf, avec la même fenêtre.
+
+### 7.12 Rotation d'un mot de passe par l'agent
+
+Ne concerne que la **zone agent**. Une entrée personnelle n'est jamais touchée : le serveur ne
+sait pas la lire, et l'agent ne fait que prévenir.
+
+Le principe : **le coffre est servi avant le site, et le site n'est validé que par une vraie
+reconnexion** (règle 6 de `CLAUDE.md`).
+
+1. ◆ (Processus agent. Kill switch, zone, allowlist et plafond quotidien vérifiés **par le
+   code**, avant tout.) Déchiffre l'entrée avec AK, contexte `item/<id>/agent/<r>`.
+2. ◆ Tire un nouveau mot de passe (`randombytes_uniform`, alphabet de la politique de l'entrée).
+3. ◆ Chiffre l'entrée modifiée en **révision `r+1`** avec AK, contexte `item/<id>/agent/<r+1>` :
+   un bloc ordinaire (§5.2). Il est enregistré comme **bloc en attente**. L'entrée active reste
+   la révision `r` : un client qui synchronise à cet instant voit encore l'ancien mot de passe,
+   celui qui ouvre encore le site.
+4. ◆ → site : connexion, changement du mot de passe, puis **vérification par une reconnexion
+   complète** avec le nouveau.
+5. **Succès** : le bloc en attente devient la révision courante `r+1`, l'ancien bloc rejoint
+   l'historique. Le mot de passe en clair n'aura existé que dans la mémoire du processus, effacé
+   à la fin.
+6. **Échec** : le site est remis à l'ancien mot de passe, vérifié lui aussi par reconnexion, et
+   le bloc en attente est **supprimé**. Le coffre n'a pas bougé.
+7. **Échec du retour arrière** (le site peut accepter l'un ou l'autre, ou ne répond plus) : le
+   bloc en attente est **conservé**, l'entrée est signalée, et l'appli te montre les deux
+   révisions. C'est le seul cas où deux mots de passe coexistent, et il demande ton œil.
+8. Chaque étape écrit une ligne dans le journal d'audit ; aucun mot de passe, ancien ou nouveau,
+   n'y figure jamais.
+
+Ce que ça change dans ce qui est stocké : **un bloc chiffré de plus** pour une entrée en cours de
+rotation, du même format, de la même clé et du même contexte qu'une révision ordinaire (§6).
+Aucun nouveau format, aucune nouvelle clé, aucun nouveau contexte.
+
+Une entrée dont le bloc en attente existe ne peut pas être **reprise** en zone personnelle
+(§7.6) ni **déléguée** ailleurs tant que la rotation n'est pas finie : la reprise refuse, pour ne
+pas laisser un bloc agent orphelin derrière elle.
 
 ## 8. Modèle de menace
 

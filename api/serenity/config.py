@@ -41,6 +41,11 @@ class Settings(BaseSettings):
     allowlist_file: Path = Path("/app/allowlist.yaml")
     max_rotations_per_day: int = Field(default=3, ge=0, le=100)
     schedule_interval_minutes: int = Field(default=60, ge=1, le=1440)
+    # The rotation executor (ADR-015): the only service with a browser. Empty URL = no
+    # executor, and an approved rotation simply waits, as it did before V3.
+    rotator_url: str = ""
+    rotator_token: SecretStr | None = None
+    rotator_timeout_seconds: int = Field(default=120, ge=10, le=600)
     # Paid Have I Been Pwned key for watched e-mails; empty = disabled. Given to the agent only.
     hibp_api_key: SecretStr | None = Field(
         default=None, validation_alias=AliasChoices("HIBP_API_KEY", "SERENITY_HIBP_API_KEY")
