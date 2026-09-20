@@ -115,6 +115,12 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
   sont maintenant dessinés dans les mêmes lettres que « SERENITY », avec Black Ops One servie
   localement comme les deux autres polices. Elle ne sert qu'aux titres : trois mots par écran,
   jamais une phrase.
+- **Un onglet Codes.** Tous les codes à deux facteurs du coffre sur un écran : code en direct,
+  anneau des secondes restantes, copie en un geste, recherche. Le calcul était déjà là
+  (RFC 6238 dans le navigateur, avec Web Crypto) mais il fallait ouvrir une entrée pour voir un
+  code. Chaque ligne porte la marque de sa zone, et une note dit combien de codes le serveur
+  peut calculer aussi. Le dialogue « Confier à l'agent » prévient maintenant quand l'entrée
+  porte une clé à deux facteurs. La charte passe de trois onglets à quatre, et dit pourquoi.
 - **La revue de sécurité** (`docs/10-securite.md`) : ce qui a été vérifié avec la commande pour
   le rejouer (surface réseau, privilèges des conteneurs, secrets dans l'historique, dépendances
   Python et npm, en-têtes HTTP), le modèle de menace résumé en un tableau de ce que gagne un
