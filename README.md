@@ -36,7 +36,7 @@ Ensuite : l'appli Android native avec notifications (V2), puis la rotation autom
 ## Démarrage rapide
 
 ```bash
-git clone git@github.com:Cybertrist/serenity.git
+git clone git@github.com:Cybertrist/Serenity.git
 cd serenity
 cp .env.example .env   # puis remplis les valeurs
 make init

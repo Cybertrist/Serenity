@@ -134,6 +134,15 @@ class PasswordChangeIn(BaseModel):
     new: NewPasswordIn
 
 
+class RecoveryKitIn(BaseModel):
+    """§7.11: a new kit, proved by the master password and a TOTP code."""
+
+    current_auth_key: str = B64
+    totp: str = Code
+    recovery_auth_key: str = B64
+    uk_by_rk: str = B64
+
+
 class RecoverStartIn(BaseModel):
     username: str = Field(max_length=200)
     recovery_auth_key: str = B64
@@ -405,6 +414,29 @@ def post_password(
     except AuthError as exc:
         _raise(exc)
     return _session_out(row, row)
+
+
+@router.post("/recovery-kit", status_code=status.HTTP_204_NO_CONTENT)
+def post_recovery_kit(
+    body: RecoveryKitIn, row: UnlockedDep, db: DbDep, settings: SettingsDep, totp_key: TotpKeyDep
+) -> None:
+    """Replace the recovery kit of an unlocked account (docs/crypto.md §7.11)."""
+    try:
+        credentials.rotate_recovery_kit(
+            db,
+            settings,
+            totp_key,
+            row,
+            v.raw_key(body.current_auth_key, "current_auth_key"),
+            body.totp,
+            v.raw_key(body.recovery_auth_key, "recovery_auth_key"),
+            v.wrapped_key(body.uk_by_rk, "uk_by_rk"),
+            utcnow(),
+        )
+    except v.InvalidInputError as exc:
+        _bad(exc)
+    except AuthError as exc:
+        _raise(exc)
 
 
 @router.post("/recover/start")

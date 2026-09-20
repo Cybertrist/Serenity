@@ -32,6 +32,7 @@ Nommage : `ADR-NNN-titre-court.md`.
 - [ADR-010 — Veille : double scan, alertes sans secret, notifications sans texte](ADR-010-veille.md)
 - [ADR-011 — Agent : politiques, garde-fous par le code, rotation sans exécuteur](ADR-011-agent.md)
 - [ADR-012 — Interface responsive, dialogues centrés](ADR-012-interface-responsive.md)
+- [ADR-013 — Régénérer le kit de récupération depuis les réglages](ADR-013-regeneration-kit.md)
 
 ## Archives
 

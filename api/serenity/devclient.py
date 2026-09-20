@@ -167,6 +167,25 @@ class Client:
             {"current_auth_key": e(auth), "totp": code, "new": new.body},
         )
 
+    def rotate_recovery_kit(self, username: str, password: str, code: str) -> str:
+        """§7.11: a new kit for the same UK. Returns the NEW recovery kit text."""
+        auth, mek = self.derive(username, password)
+        self.call("POST", "/api/auth/unlock", {"auth_key": e(auth)})
+        keys = self.keys(mek)
+        rk = nacl.utils.random(recovery.RK_BYTES)
+        rak, rwk = recovery.derive_recovery_keys(rk)
+        self.call(
+            "POST",
+            "/api/auth/recovery-kit",
+            {
+                "current_auth_key": e(auth),
+                "totp": code,
+                "recovery_auth_key": e(rak),
+                "uk_by_rk": e(blocks.wrap_key(rwk, keys.uk, contexts.uk_by_rk(keys.user_id))),
+            },
+        )
+        return recovery.encode_recovery_key(rk)
+
     def recover(self, username: str, kit: str, code: str, new_password: str) -> str:
         """§7.8. Returns the NEW recovery kit text."""
         rak, rwk = recovery.derive_recovery_keys(recovery.decode_recovery_key(kit))

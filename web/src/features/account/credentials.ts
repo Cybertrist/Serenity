@@ -1,4 +1,4 @@
-/** Master password change and recovery with the kit (docs/crypto.md §7.7, §7.8). */
+/** Master password change and recovery kit flows (docs/crypto.md §7.7, §7.8, §7.11). */
 import type { Api } from "../../lib/api";
 import * as blocks from "../../crypto/blocks";
 import * as contexts from "../../crypto/contexts";
@@ -30,6 +30,39 @@ export async function changePassword(
     lib().memzero(current.authKey);
     lib().memzero(current.wrapKey);
     lib().memzero(next.authKey);
+  }
+}
+
+/**
+ * A new recovery kit for the same UK (docs/crypto.md §7.11). Entries are untouched and the
+ * sessions stay open. Returns the kit text: it is shown once, then forgotten.
+ */
+export async function regenerateRecoveryKit(
+  api: Api,
+  keyring: Keyring,
+  username: string,
+  password: string,
+  code: string,
+): Promise<string> {
+  const s = lib();
+  const current = await deriveForUser(api, username, password);
+  const rk = s.randombytes_buf(recovery.RK_BYTES);
+  const rec = recovery.deriveRecoveryKeys(rk);
+  try {
+    await api.post("/api/auth/recovery-kit", {
+      current_auth_key: b64urlEncode(current.authKey),
+      totp: code,
+      recovery_auth_key: b64urlEncode(rec.authKey),
+      uk_by_rk: b64urlEncode(
+        blocks.wrapKey(rec.wrapKey, keyring.userKey(), contexts.ukByRk(keyring.userId)),
+      ),
+    });
+    return recovery.encodeRecoveryKey(rk);
+  } finally {
+    s.memzero(current.authKey);
+    s.memzero(current.wrapKey);
+    s.memzero(rec.wrapKey);
+    s.memzero(rk);
   }
 }
 
