@@ -118,8 +118,14 @@ class Field_(BaseModel):
     id: str | None = None
     name: str | None = None
     placeholder: str | None = None
+    autocomplete: str | None = None
     label: str | None = None
     visible: bool = True
+
+
+class Link(BaseModel):
+    text: str
+    href: str
 
 
 class InspectOut(BaseModel):
@@ -127,6 +133,7 @@ class InspectOut(BaseModel):
     url: str
     fields: list[Field_]
     buttons: list[Field_]
+    links: list[Link] = []
     frames: int
     note: str | None = None
 
@@ -151,14 +158,21 @@ _PROBE = """() => {
       id: el.id || null,
       name: el.getAttribute('name'),
       placeholder: el.getAttribute('placeholder'),
-      label: label(el),
+      /* The standard hint: a serious site marks its password fields, and a recipe can follow. */
+      autocomplete: el.getAttribute('autocomplete'),
+      label: label(el) || (el.innerText || '').trim().slice(0, 60) || null,
       visible: box.width > 0 && box.height > 0,
     };
   };
   const fields = [...document.querySelectorAll('input, select, textarea')]
     .filter((el) => el.type !== 'hidden').map(pick);
-  const buttons = [...document.querySelectorAll('button, input[type=submit]')].map(pick);
-  return { title: document.title, url: location.href, fields, buttons,
+  const buttons = [...document.querySelectorAll('button, input[type=submit], [role=button]')]
+    .map(pick);
+  /* Links are how you find the next page: sign in, my account, change my password. */
+  const links = [...document.querySelectorAll('a[href]')]
+    .map((el) => ({ text: (el.innerText || '').trim().slice(0, 60), href: el.href }))
+    .filter((l) => l.text && !l.href.startsWith('javascript:'));
+  return { title: document.title, url: location.href, fields, buttons, links,
            frames: document.querySelectorAll('iframe').length };
 }"""
 
@@ -176,6 +190,13 @@ async def inspect(body: InspectIn, authorization: Token = None) -> InspectOut:
     page = await context.new_page()
     try:
         await page.goto(body.url, wait_until="domcontentloaded")
+        # A page built in the browser has nothing in it at `domcontentloaded`: its fields appear
+        # once its own code has run. Waiting for a quiet network catches them, and a page that
+        # never goes quiet is read anyway rather than making the inspection fail.
+        try:
+            await page.wait_for_load_state("networkidle", timeout=8000)
+        except PlaywrightError:
+            pass
         found = await page.evaluate(_PROBE)
     except PlaywrightError as exc:
         raise HTTPException(

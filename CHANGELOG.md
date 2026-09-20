@@ -130,6 +130,11 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
   sous l'image, jamais par-dessus l'appli, chaque phrase arrive quand l'écran qu'elle décrit est
   déjà là, et le montage est à cadence fixe pour que les deux ne dérivent pas. Le serveur de test sait maintenant
   jouer les rotations approuvées (`POST /__test/rotate`).
+- **L'inspection de page voit enfin les pages modernes.** Elle lisait le HTML avant que le site
+  ne se dessine, donc sur une appli React elle ne trouvait que des boutons sans nom. Elle attend
+  maintenant que le réseau se taise, lit le texte des boutons, liste les liens de la page (pour
+  trouver la connexion ou le compte) et rapporte l'attribut `autocomplete` des champs, qui est
+  la façon standard pour un site de désigner son mot de passe actuel et son nouveau.
 - **Import depuis Google.** Le CSV du gestionnaire de mots de passe de Google, et les codes à
   deux facteurs de Google Authenticator par le lien `otpauth-migration://` de son QR code, dont
   le protobuf est lu à la main pour ne pas ajouter de bibliothèque à un coffre. Un code rejoint
