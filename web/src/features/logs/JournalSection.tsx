@@ -31,7 +31,7 @@ const ACTOR: Record<AuditLine["actor"], { label: string; tone: Tone }> = {
   system: { label: "Système", tone: "neutral" },
 };
 
-/** The journal: consulted, not worked in — so it lives in the settings, not in the tab bar. */
+/** The journal: consulted, not worked in, so it lives in the settings, not in the tab bar. */
 export function JournalSection() {
   const logs = useLogs();
   const [filter, setFilter] = useState<Filter>("all");

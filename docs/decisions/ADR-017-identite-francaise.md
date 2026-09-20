@@ -1,4 +1,4 @@
-# ADR-017 — Identité française : bleu de France, blanc, rouge Marianne
+# ADR-017 : Identité française, bleu de France, blanc, rouge Marianne
 
 - **Date** : 2026-09-20
 - **Statut** : accepté
@@ -7,7 +7,7 @@
 
 Serenity était orange (`#F2711C`), repris du logo d'origine. L'orange ne disait rien du produit :
 ni de son pays, ni de son modèle à deux zones. Serenity est un coffre **auto-hébergé, en
-français, chez soi** — autant que la charte le dise.
+français, chez soi**, autant que la charte le dise.
 
 Le piège du « bleu blanc rouge » est connu : des rayures partout, une cocarde en coin, et le
 produit ressemble à un stand de foire. La contrainte était donc double : que ce soit français
@@ -17,7 +17,7 @@ produit ressemble à un stand de foire. La contrainte était donc double : que c
 
 1. **Trois couleurs, trois métiers.** Le **bleu de France** (`#0055A4`, ouvert en `#5B8DEF` sur
    fond noir) devient l'accent : tout ce qui agit. Le **blanc** (`#F2F4F8`) reste la marque. Le
-   **rouge Marianne** (`#E1000F`, ouvert en `#F76D72`) est celui des alertes — le jeton `crit`
+   **rouge Marianne** (`#E1000F`, ouvert en `#F76D72`) est celui des alertes : le jeton `crit`
    existait déjà en rouge, il prend la teinte de l'État au lieu d'un rouge quelconque.
    Aucun jeton n'est ajouté pour « faire drapeau » : les trois couleurs étaient déjà des rôles.
 2. **Le drapeau entier ne sort que trois fois**, là où il porte une information ou la marque :
@@ -28,7 +28,7 @@ produit ressemble à un stand de foire. La contrainte était donc double : que c
    de rayures dans l'icône : à 32 px, trois bandes deviennent de la bouillie, trois formes non.
 4. **Les valeurs officielles sont respectées telles quelles quand elles passent le contraste.**
    Le bleu `#0055A4` tient 7,4:1 sur du papier : inutile de le retoucher pour le thème clair.
-   Sur fond noir il est trop sombre, on l'ouvre — comme l'orange l'était déjà dans l'autre sens.
+   Sur fond noir il est trop sombre, on l'ouvre, comme l'orange l'était déjà dans l'autre sens.
 5. **Les gris se refroidissent.** Le crème et le papier chaud accompagnaient l'orange ; ils
    tiraient au jaune à côté du bleu. Surfaces, encre et papier passent à des neutres bleutés.
 

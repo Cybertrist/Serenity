@@ -1,4 +1,4 @@
-# ADR-006 — Choix cryptographiques précisant CLAUDE.md
+# ADR-006 : Choix cryptographiques précisant CLAUDE.md
 
 - **Date** : 2026-09-18
 - **Statut** : accepté (validé avec `docs/crypto.md`)

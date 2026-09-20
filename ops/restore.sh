@@ -77,7 +77,7 @@ if missing:
 users = db.execute('SELECT count(*) FROM user').fetchone()[0]
 items = db.execute('SELECT count(*) FROM item').fetchone()[0]
 version = db.execute(\"SELECT value FROM setting WHERE key='schema_version'\").fetchone()
-print(f'restore: base saine — {users} compte(s), {items} entrée(s), schéma {version[0] if version else \"?\"}')
+print(f'restore: base saine, {users} compte(s), {items} entrée(s), schéma {version[0] if version else \"?\"}')
 "
 
 if [ "$MODE" = "check" ]; then

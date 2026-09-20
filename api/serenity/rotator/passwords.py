@@ -1,7 +1,7 @@
 """New passwords for the agent, drawn from the system CSPRNG (docs/crypto.md §7.12).
 
 Deliberately narrow: one alphabet, one length, no "memorable" mode. What the agent writes,
-no human ever types — it goes straight into the vault.
+no human ever types: it goes straight into the vault.
 """
 
 import secrets

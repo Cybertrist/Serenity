@@ -1,4 +1,4 @@
-# ADR-015 — L'exécuteur de rotation : un conteneur à part, piloté par des recettes
+# ADR-015 : L'exécuteur de rotation : un conteneur à part, piloté par des recettes
 
 - **Date** : 2026-09-20
 - **Statut** : accepté
@@ -17,8 +17,8 @@ met tout ça au point sans mettre en jeu un vrai compte.
 ## Décision
 
 1. **Le navigateur vit dans son propre conteneur** (`rotator`), seule image à embarquer
-   Playwright et seule à avoir une route vers les sites. L'agent — le processus qui détient la
-   clé serveur et déchiffre la zone agent — n'a toujours pas de navigateur.
+   Playwright et seule à avoir une route vers les sites. L'agent, le processus qui détient la
+   clé serveur et déchiffre la zone agent, n'a toujours pas de navigateur.
 2. **Deux verbes, sans état** : `/verify` (se connecter) et `/change` (se connecter puis
    changer). La transaction, elle, reste dans l'agent : c'est lui qui enregistre le bloc en
    attente avant l'appel, et qui valide ou jette après.

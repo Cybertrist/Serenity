@@ -18,7 +18,7 @@ export function AppearanceSection() {
       <div className="flex flex-col gap-2">
         <p className="m-0 text-body font-medium">Thème</p>
         <p className="m-0 text-caption text-muted">
-          « Système » suit ton téléphone ou ton ordinateur, et change avec lui — y compris au
+          « Système » suit ton téléphone ou ton ordinateur, et change avec lui, y compris au
           basculement automatique du soir.
         </p>
       </div>

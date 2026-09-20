@@ -1,9 +1,9 @@
-# 01 — Dépôt et GitHub
+# 01 : Dépôt et GitHub
 
 ## Quoi
 
 La phase 1 a posé les fondations : l'arborescence du projet, les règles Git et l'automatisation
-GitHub. Cette page dit où vivent les choses et ce que la CI vérifie — elle est tenue à jour au
+GitHub. Cette page dit où vivent les choses et ce que la CI vérifie. Elle est tenue à jour au
 fil des phases.
 
 ## Pourquoi
@@ -59,12 +59,12 @@ Mises à jour **hebdomadaires** pour : `pip` (api), `npm` (web), les `Dockerfile
 ### GitHub
 
 - **Labels** : `backend`, `frontend`, `infra`, `security`, `docs`, `v1`, `v2`, `v3`.
-- **Milestones** : `V1 — Coffre maison`, `V2 — Appli Android`, `V3 — Rotation`, `V4 — Agent LLM`.
+- **Milestones** : `V1 : Coffre maison`, `V2 : Appli Android`, `V3 : Rotation`, `V4 : Agent LLM`.
 - **Issues** : une par phase de la V1, rattachées au milestone V1.
 - **Protection de `main`** : activée. Pull request obligatoire, branche à jour avec `main`,
   règles appliquées aussi aux administrateurs, force-push et suppression interdits.
   **Trois jobs bloquent la fusion** (Backend, Frontend, Secret scan) ; les cinq autres tournent
-  et se voient, mais n'empêchent pas de fusionner — voir « Protection de `main` » plus bas.
+  et se voient, mais n'empêchent pas de fusionner (voir « Protection de `main` » plus bas).
 - **Secret scanning / push protection** : **non disponible** sur ce dépôt privé
   (GitHub répond « Secret scanning is not available for this repository »).
 
@@ -85,10 +85,10 @@ gh label create backend --color 1d76db --description "API FastAPI"
 # ... (un par label)
 
 # Milestones
-gh api repos/Cybertrist/Serenity/milestones -f title="V1 — Coffre maison"
+gh api repos/Cybertrist/Serenity/milestones -f title="V1 : Coffre maison"
 
 # Issues
-gh issue create --title "Phase 1 — Dépôt et GitHub" --milestone "V1 — Coffre maison" --label v1,infra,docs
+gh issue create --title "Phase 1 : Dépôt et GitHub" --milestone "V1 : Coffre maison" --label v1,infra,docs
 ```
 
 ### Protection de `main`
@@ -128,7 +128,7 @@ JSON
 # Labels, milestones, issues
 gh label list
 gh api repos/Cybertrist/Serenity/milestones --jq '.[].title'
-gh issue list --milestone "V1 — Coffre maison"
+gh issue list --milestone "V1 : Coffre maison"
 
 # CI de la pull request
 gh pr checks

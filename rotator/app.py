@@ -1,8 +1,8 @@
 """The only thing in Serenity that opens a browser and touches a website.
 
 It is deliberately small and stupid: it knows how to fill two forms, following a recipe, and
-says whether it worked. Everything that decides — kill switch, zone, allowlist, daily limit,
-the transaction around the vault — stays in the agent (docs/crypto.md §7.12, ADR-015).
+says whether it worked. Everything that decides (kill switch, zone, allowlist, daily limit,
+the transaction around the vault) stays in the agent (docs/crypto.md §7.12, ADR-015).
 
 It never stores anything: no profile on disk, no cache between runs, no log of a body. The
 passwords it receives live in memory for the length of one run.
@@ -191,7 +191,7 @@ async def inspect(body: InspectIn, authorization: Token = None) -> InspectOut:
 
 @app.post("/verify")
 async def verify(body: Credentials, authorization: Token = None) -> Result:
-    """Log in from scratch. This is what proves a password works — before and after a change."""
+    """Log in from scratch. This is what proves a password works, before and after a change."""
     _check_token(authorization)
     recipe = _recipe(body.recipe)
     if not _host_allowed(recipe, body.base_url):

@@ -1,4 +1,4 @@
-# ADR-012 — Interface en carré, dialogues centrés, cadenas d'entrée
+# ADR-012 : Interface en carré, dialogues centrés, cadenas d'entrée
 
 - **Date** : 2026-09-19
 - **Statut** : accepté
@@ -6,8 +6,8 @@
 ## Contexte
 
 La première version de l'interface (phase 7) était pensée pour un téléphone : une colonne de
-480 px au plus, et tout ce qui s'ouvrait par-dessus un écran — fiche d'entrée, éditeur, réglages
-— arrivait en panneau glissant depuis le bas. Sur un écran d'ordinateur, où Serenity est utilisé
+480 px au plus, et tout ce qui s'ouvrait par-dessus un écran (fiche d'entrée, éditeur, réglages)
+arrivait en panneau glissant depuis le bas. Sur un écran d'ordinateur, où Serenity est utilisé
 autant que sur téléphone, le résultat était un ruban étroit au milieu du vide, avec des
 interactions empruntées au mobile. Plusieurs écrans n'expliquaient pas ce qu'ils faisaient, des
 actions irréversibles partaient au premier clic (supprimer une entrée), et des capacités déjà
@@ -21,7 +21,7 @@ appli **posée dans un carré**, comme un objet, plutôt qu'une page web qui rem
 
 1. **L'appli tient dans un carré centré** : côté = `min(92vw, 92vh, 980px)`, barre de titre en
    haut (marque, notifications, verrouiller, réglages), écran au milieu, onglets en bas. Sous
-   768 px, le carré cède la place au plein écran — un carré de 390 px serait inutilisable.
+   768 px, le carré cède la place au plein écran, car un carré de 390 px serait inutilisable.
 2. **La mise en page interne se règle sur le carré, pas sur la fenêtre** : container queries
    Tailwind (`@container`, `@[620px]:…`), donc les mêmes composants s'adaptent au téléphone
    comme au carré de bureau sans point de rupture global.

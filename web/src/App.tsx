@@ -13,7 +13,7 @@ export function App() {
   const covered = useRef<(() => void) | null>(null);
 
   /**
-   * Starts the fall of data and resolves once the screen is covered — the lock screens await
+   * Starts the fall of data and resolves once the screen is covered. The lock screens await
    * this before handing over, so the vault is mounted behind the rain, not in front of it.
    */
   const open = useCallback(
@@ -46,7 +46,7 @@ export function App() {
 
   /*
    * Three fixed slots. The rain has to keep the same position in the tree across the change of
-   * phase, otherwise React unmounts it with the lock screen and remounts it over the vault —
+   * phase, otherwise React unmounts it with the lock screen and remounts it over the vault,
    * and the animation plays twice.
    */
   return (

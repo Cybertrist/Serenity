@@ -1,4 +1,4 @@
-# 06 — Agent
+# 06 : Agent
 
 ## Quoi
 
@@ -11,7 +11,7 @@ L'agent (conteneur `agent`) a maintenant ses règles, ses garde-fous et son éch
 | Kill switch | `agent/killswitch.py` | Arrête l'agent ; vérifié avant **chaque** action |
 | Allowlist | `api/allowlist.yaml`, `agent/allowlist.py` | Les seuls sites que l'agent peut modifier |
 | Limite quotidienne | `SERENITY_MAX_ROTATIONS_PER_DAY` (3) | Nombre de rotations approuvées par 24 h |
-| Rotation transactionnelle | `rotator/base.py`, `agent/executor.py` | Interface `SiteRotator`, machine d'état, et l'exécuteur qui la joue pour de vrai ([08 — Rotation](08-rotation.md)) |
+| Rotation transactionnelle | `rotator/base.py`, `agent/executor.py` | Interface `SiteRotator`, machine d'état, et l'exécuteur qui la joue pour de vrai ([08 : Rotation](08-rotation.md)) |
 | Flux temps réel | `routes/events.py` | Notifications poussées à l'appli ouverte (Server-Sent Events) |
 | Référence de l'API | [`api.md`](api.md) | Générée depuis le schéma OpenAPI (`make api-doc`) |
 
@@ -24,8 +24,8 @@ L'agent (conteneur `agent`) a maintenant ses règles, ses garde-fous et son éch
 | **Zone personnelle** | Rappel seulement | Notification « pense à changer ce mot de passe » |
 
 - **Approuver** : la rotation passe `approved`, et l'exécuteur la joue au passage suivant de
-  l'agent ([08 — Rotation](08-rotation.md)). Sans jeton d'exécuteur configuré, ou sans recette
-  pour ce site, elle attend — et l'écran Agent dit laquelle des deux raisons.
+  l'agent ([08 : Rotation](08-rotation.md)). Sans jeton d'exécuteur configuré, ou sans recette
+  pour ce site, elle attend, et l'écran Agent dit laquelle des deux raisons.
 - **Refuser** : pas de rotation maintenant, la prochaine échéance est repoussée d'une période.
 
 ## Pourquoi

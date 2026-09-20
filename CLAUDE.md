@@ -1,4 +1,4 @@
-# CLAUDE.md — Serenity
+# CLAUDE.md : Serenity
 
 Relis ce fichier au début de chaque session. Ses règles priment sur tout le reste.
 
@@ -24,7 +24,7 @@ Le coffre de chaque utilisateur a deux zones :
 Par défaut, **toute entrée va dans la zone personnelle**. La délégation à l'agent est
 un choix explicite de l'utilisateur, entrée par entrée, avec confirmation.
 
-## Architecture cryptographique — non négociable
+## Architecture cryptographique, non négociable
 
 Toute la spécification détaillée vit dans `docs/crypto.md`. Résumé :
 
@@ -93,6 +93,24 @@ Pas de dépendance hors de cette liste sans me demander.
 - Type hints partout, `strict: true` en TypeScript, un module = une responsabilité.
 - Conventional Commits, une branche par phase, PR vers `main`, jamais de push direct.
 - `git diff --staged` vérifié avant chaque commit.
+
+## Écriture
+
+Vaut pour tout ce que tu écris : documentation, interface, commentaires de code, messages de
+commit, descriptions de PR, et tes réponses dans le terminal.
+
+1. **Jamais de tiret long `—` ni de tiret moyen `–`.** Ni dans un titre, ni dans un tableau, ni
+   au milieu d'une phrase. C'est la signature la plus reconnaissable d'un texte écrit par une IA,
+   et je ne veux pas la voir dans ce projet.
+2. **Pas d'incise au tiret.** Une virgule, un deux-points, une parenthèse ou deux phrases font
+   toujours mieux le travail.
+3. **Pour séparer un numéro de son titre, un deux-points** : `07 : Interface`,
+   `ADR-017 : Identité française`, `V1 : Coffre maison`.
+4. Le trait d'union normal reste normal : `sous-domaine`, `kill switch`, les puces Markdown, les
+   options (`--bg`), les noms de branches et de fichiers.
+5. **Écris comme quelqu'un qui explique à un ami** : phrases courtes, verbes simples, pas de
+   formule toute faite, pas de gras un mot sur trois, aucun emoji. Si une phrase ne se dit pas à
+   voix haute, elle se réécrit.
 
 ## Documentation
 

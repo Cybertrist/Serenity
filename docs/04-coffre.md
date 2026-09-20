@@ -1,4 +1,4 @@
-# 04 — Coffre et synchronisation
+# 04 : Coffre et synchronisation
 
 ## Quoi
 
@@ -14,11 +14,11 @@ sous forme de blocs illisibles pour lui (sauf la zone agent, pour le seul proces
 | Historique | Déchiffre les anciennes versions | Garde les 10 dernières versions chiffrées |
 | **Confier à l'agent** | Déchiffre avec UK, rechiffre avec AK, après confirmation | Change la zone, journalise |
 | **Reprendre** | Déchiffre avec AK, rechiffre avec UK, après confirmation | Change la zone, **efface l'historique « agent »**, journalise |
-| Générateur | Mots de passe et phrases de passe (liste EFF, 7 776 mots) | — |
-| Codes TOTP des entrées | Calculés dans le navigateur (Web Crypto) | — |
+| Générateur | Mots de passe et phrases de passe (liste EFF, 7 776 mots) | rien |
+| Codes TOTP des entrées | Calculés dans le navigateur (Web Crypto) | rien |
 | Verrouillage automatique | 15 min d'inactivité, fermeture de la page | Le niveau « déverrouillé » expire aussi |
 | **Import Bitwarden** | Export JSON **lu et chiffré dans le navigateur** | Reçoit des blocs chiffrés, par lots |
-| Export chiffré | Fichier protégé par une phrase de passe, produit dans le navigateur | — |
+| Export chiffré | Fichier protégé par une phrase de passe, produit dans le navigateur | rien |
 
 ### Routes
 

@@ -151,7 +151,7 @@ def execute_rotation(
     recipe = _pick_recipe(urls, recipes)
     if recipe is None:
         # Not a failure: nobody taught the executor this site yet. It must not look like
-        # silence either — an approved rotation that sleeps for ever is the thing phase 6
+        # silence either: an approved rotation that sleeps for ever is the thing phase 6
         # was built to avoid. Say it on the rotation, once.
         if rotation.error != NO_RECIPE:
             rotation.error = NO_RECIPE

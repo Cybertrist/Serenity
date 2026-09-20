@@ -85,7 +85,7 @@ export function DataRain({
     const trail = style.getPropertyValue("--rain-trail").trim() || "226 232 240";
     const [tr, tg, tb] = trail.split(/\s+/).map(Number);
     // The heads fall in three bands: the flag comes down with the data. Its white band takes
-    // the colour of the mark, which turns to ink on paper — a white head on paper is nothing.
+    // the colour of the mark, which turns to ink on paper: a white head on paper is nothing.
     const FALLBACK = ["#3b7dd8", "#f2f4f8", "#e8434b"] as const;
     const flag = ["--color-bleu", "--color-mark", "--color-rouge"].map(
       (name, i) => style.getPropertyValue(name).trim() || (FALLBACK[i] ?? "#3b7dd8"),

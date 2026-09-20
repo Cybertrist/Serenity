@@ -1,6 +1,6 @@
 """The whole rotation, for real: the agent, the executor, a browser, and the demo site.
 
-Skipped unless the demo stack is up — `make rotation-demo` builds it and sets the variables
+Skipped unless the demo stack is up: `make rotation-demo` builds it and sets the variables
 (it is a CI job too). Everything else in the suite runs against doubles; this one proves the
 last mile, including the rollback when the site says no.
 """

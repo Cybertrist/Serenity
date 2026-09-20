@@ -1,4 +1,4 @@
-# ADR-001 — Coffre maison à double zone plutôt que Vaultwarden
+# ADR-001 : Coffre maison à double zone plutôt que Vaultwarden
 
 - **Date** : 2026-09-18
 - **Statut** : accepté

@@ -1,4 +1,4 @@
-# 02 — Infrastructure Docker
+# 02 : Infrastructure Docker
 
 ## Quoi
 
@@ -18,7 +18,7 @@ L'accès depuis tes appareils passe uniquement par `tailscale serve` :
 (`serenity.tail18532b.ts.net`), dans `.env` sous `TAILNET_HOST`.
 
 Le site de démo ne démarre qu'avec son profil (`docker compose --profile demo up -d`) : c'est
-un jouet pour la rotation, pas un service de la stack ([08 — Rotation](08-rotation.md)).
+un jouet pour la rotation, pas un service de la stack ([08 : Rotation](08-rotation.md)).
 
 ## Pourquoi
 
@@ -100,7 +100,7 @@ make ps                        # les 4 services doivent être "healthy"
 ## Sauvegarder les clés (séparément)
 
 La sauvegarde automatique restic couvre la base **et** les deux clés : sans la clé serveur, la
-zone agent d'un coffre restauré ne se rouvrirait jamais ([09 — Sauvegardes](09-sauvegardes.md)).
+zone agent d'un coffre restauré ne se rouvrirait jamais ([09 : Sauvegardes](09-sauvegardes.md)).
 Le dépôt restic est donc aussi sensible que la VM elle-même, et son mot de passe vit **hors**
 de Serenity.
 

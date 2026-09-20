@@ -1,4 +1,4 @@
-# ADR-005 — Notifications maison, sans service tiers
+# ADR-005 : Notifications maison, sans service tiers
 
 - **Date** : 2026-09-18
 - **Statut** : accepté

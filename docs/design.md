@@ -37,7 +37,7 @@ tout l'écran (`AppFrame`, `web/src/app/shell/`).
 ```
 
 **Trois onglets seulement.** Le journal n'en fait pas partie : c'est un registre qu'on consulte,
-pas un endroit où l'on travaille — il vit dans les réglages, et l'écran Agent y renvoie.
+pas un endroit où l'on travaille. Il vit dans les réglages, et l'écran Agent y renvoie.
 « Verrouiller maintenant » n'est pas non plus dans la barre de titre : c'est une action de
 réglage, pas une action de tous les jours (le verrouillage automatique s'en charge).
 
@@ -61,7 +61,7 @@ réagissent à la place réellement disponible.
 Le logo est un **cadenas plein**, blanc (`--color-mark`, `#F2F4F8`), anse épaisse **détachée du
 corps** (le trait pochoir), **serrure rouge Marianne**. Le logotype « SEREN**I**TY » est en
 pochoir, le « I » **en rouge**. Posé sur le pavé **bleu de France** de l'icône, le tout donne le
-drapeau en un seul objet : un fond bleu, un cadenas blanc, une serrure rouge — sans rayures.
+drapeau en un seul objet, sans rayures : un fond bleu, un cadenas blanc, une serrure rouge.
 
 Les fichiers d'origine sont découpés en trois usages (`web/public/`) :
 
@@ -81,22 +81,22 @@ relancer le script.
 
 ## Bleu, blanc, rouge
 
-Serenity est un coffre français, et cela se voit — **sans déguisement**. Les trois couleurs ont
+Serenity est un coffre français, et cela se voit, **sans déguisement**. Les trois couleurs ont
 chacune un métier, et le drapeau entier n'apparaît qu'à trois endroits où il sert à quelque chose.
 
 | Couleur | Jeton | Son métier |
 |---|---|---|
 | **Bleu de France** | `accent` | Tout ce qui agit : bouton principal, onglet actif, interrupteur, choix sélectionné, couleur de l'agent |
 | **Blanc** | `mark` | La marque : le cadenas et le logotype. Sur papier, il passe à l'encre |
-| **Rouge Marianne** | `crit` | Ce qui alerte : erreurs, suppressions, compteurs de fuites — et la serrure du logo |
+| **Rouge Marianne** | `crit` | Ce qui alerte : erreurs, suppressions, compteurs de fuites, et la serrure du logo |
 
 Le drapeau **en entier** (`tricolore`, trois bandes à arêtes franches) sert trois fois :
 
-1. **Le filet sous la barre de titre** — l'en-tête de l'objet, comme un papier à en-tête.
-2. **Les trois étapes de la création de compte** — une bande par étape franchie, le drapeau est
+1. **Le filet sous la barre de titre**, l'en-tête de l'objet, comme un papier à en-tête.
+2. **Les trois étapes de la création de compte** : une bande par étape franchie, le drapeau est
    complet quand le coffre l'est. Une procédure à un autre nombre d'étapes retombe sur le bleu :
    le drapeau ne veut dire quelque chose que s'il est entier.
-3. **La cascade de déverrouillage** — les colonnes tombent en trois bandes.
+3. **La cascade de déverrouillage** : les colonnes tombent en trois bandes.
 
 Nulle part ailleurs. Une bande tricolore posée sur une carte serait de la décoration, et la
 première règle de cette charte l'interdit.
@@ -107,17 +107,17 @@ comme le reste de la palette. Voir [ADR-017](decisions/ADR-017-identite-francais
 ## Les écrans d'entrée
 
 Création du compte, connexion, code, déverrouillage, récupération : un seul cadre
-(`features/account/screens/AuthShell.tsx`) — le logotype, **une carte**, et les actions
+(`features/account/screens/AuthShell.tsx`) : le logotype, **une carte**, et les actions
 secondaires dessous. Rien d'autre : c'est la première chose qu'un inconnu voit du coffre.
 
 - **La carte** porte le titre, une phrase d'explication, les champs et l'action principale, avec
-  les mêmes composants que l'intérieur de l'appli (`Field`, `Button`, `Note`) — pas de langage
+  les mêmes composants que l'intérieur de l'appli (`Field`, `Button`, `Note`). Pas de langage
   visuel séparé pour l'entrée.
 - **Une procédure se compte** : `Étape 2 sur 3` et une barre en trois segments, en haut de la
-  carte — **bleu, blanc, rouge**, une bande par étape franchie. Le passage d'une étape à l'autre
+  carte, en **bleu, blanc, rouge**, une bande par étape franchie. Le passage d'une étape à l'autre
   fait glisser la carte de 24 px.
-- **Les actions secondaires sont de vrais boutons** sous la carte — « Changer de compte »,
-  « Utiliser mon kit de récupération », « Retour à la connexion » — jamais des liens en petit.
+- **Les actions secondaires sont de vrais boutons** sous la carte (« Changer de compte »,
+  « Utiliser mon kit de récupération », « Retour à la connexion »), jamais des liens en petit.
 - **Le code à six chiffres** est en six cases, la case active cerclée de bleu. Le vrai champ
   est transparent par-dessus : collage, clavier numérique et remplissage automatique des codes
   marchent toujours.
@@ -128,8 +128,8 @@ Le coffre a répondu oui : **une cascade de données chiffrées tombe du haut de
 (`design/DataRain.tsx`).
 
 - L'alphabet est celui des blocs du coffre : base64 et hexadécimal. **Les têtes de colonnes
-  tombent en trois bandes** — bleu à gauche, blanc au centre, rouge à droite : le drapeau
-  descend avec les données. La traînée est **volontairement pâle** (34 % au plus) — c'est une
+  tombent en trois bandes** : bleu à gauche, blanc au centre, rouge à droite. Le drapeau
+  descend avec les données. La traînée est **volontairement pâle** (34 % au plus), c'est une
   chute de données, pas un mur de blanc. Sur papier, la bande blanche passe à l'encre
   (`--color-mark`) : une tête blanche sur fond clair ne serait rien.
 - **Le front de la pluie est la ligne de révélation** : au-dessus, l'écran de déverrouillage a
@@ -141,12 +141,12 @@ Le coffre a répondu oui : **une cascade de données chiffrées tombe du haut de
   coffre reste visible à travers.
 
 **L'ordre compte** : le front couvre l'écran en 900 ms, les traînées finissent de sortir par le
-bas vers 1,56 s, et **c'est seulement là** que le coffre est monté — derrière un rideau resté
+bas vers 1,56 s, et **c'est seulement là** que le coffre est monté, derrière un rideau resté
 opaque. Le rideau ne se lève qu'une fois le coffre réellement en place (`lift`), pendant que
 celui-ci **arrive de loin** (`scale 0,78 → 1`, 620 ms). Sans cette attente, on voyait le coffre
 apparaître sous une pluie encore en cours.
 
-`App` garde **trois emplacements fixes** — décor, écran, pluie — et n'en déplace aucun : sans
+`App` garde **trois emplacements fixes** (décor, écran, pluie) et n'en déplace aucun : sans
 cela, React démonte la pluie avec l'écran de déverrouillage et la remonte au-dessus du coffre,
 et l'animation se joue deux fois.
 
@@ -156,7 +156,7 @@ et l'animation se joue deux fois.
 arrière-plan : le carré se détache seul, par son contour. Ce qui bouge dans Serenity bouge
 *dans* l'interface, jamais derrière elle.
 
-## Couleurs — thème sombre (par défaut sur un système sombre)
+## Couleurs du thème sombre (par défaut sur un système sombre)
 
 Définies dans `web/src/design/theme.css` (`@theme` de Tailwind v4) :
 
@@ -175,10 +175,10 @@ Définies dans `web/src/design/theme.css` (`@theme` de Tailwind v4) :
 | `glow` / `glow-strong` | accent à 18 % / 50 % | Le halo sous le carré, l'ombre sous le bouton d'ajout |
 
 Le bleu est **le même partout** : bouton principal, onglet actif, choix sélectionné, robot de la
-zone agent. Le rouge du logo est celui des alertes — c'est la même couleur, pas un quatrième
+zone agent. Le rouge du logo est celui des alertes : c'est la même couleur, pas un quatrième
 jeton.
 
-## Couleurs — thème clair
+## Couleurs du thème clair
 
 Même grille de jetons, redéfinie sous `[data-theme="light"]`. Rien dans les composants ne code
 une couleur en dur : un écran qui écrit `#5B8DEF` ou `white/45` casse le thème clair.
@@ -204,7 +204,7 @@ Trois choix, dans **Réglages → Apparence** : *Système*, *Clair*, *Sombre*. P
 et il suit en direct : le basculement automatique du soir change l'appli sans la recharger.
 
 - La préférence vit dans `localStorage` (`serenity.theme`), propre à cet appareil, jamais envoyée
-  au serveur — c'est un goût, pas un secret.
+  au serveur, car c'est un goût, pas un secret.
 - `web/src/design/theme.ts` pose `data-theme` sur `<html>` **avant le premier rendu** et met à
   jour la couleur de la barre du navigateur. Une requête média dans `theme.css` habille la toute
   première peinture, avant que le script tourne : pas d'éclair sombre sur un bureau clair.

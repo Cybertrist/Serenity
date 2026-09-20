@@ -4,7 +4,7 @@ import { EASE_OUT, Wordmark } from "../../../design";
 
 /**
  * The frame every entry screen shares: the wordmark, one card, and the secondary actions
- * under it. Nothing else — this is the first thing a stranger sees of the vault.
+ * under it. Nothing else: this is the first thing a stranger sees of the vault.
  */
 export function AuthShell({
   step,
@@ -47,7 +47,7 @@ export function AuthShell({
 
 /**
  * Three steps, three bands: the account creation fills the flag as it goes. Any other count
- * falls back to the accent — the flag only means something when it is whole.
+ * falls back to the accent: the flag only means something when it is whole.
  */
 const FLAG = ["bg-bleu", "bg-blanc", "bg-rouge"];
 
@@ -59,7 +59,7 @@ export function AuthHead({
 }: {
   title: string;
   subtitle: string;
-  /** [current, total] — shown as a bar, for the account creation. */
+  /** [current, total], shown as a bar, for the account creation. */
   step?: [number, number];
 }) {
   return (

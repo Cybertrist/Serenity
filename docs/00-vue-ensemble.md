@@ -1,4 +1,4 @@
-# 00 — Vue d'ensemble
+# 00 : Vue d'ensemble
 
 ## En une phrase
 
@@ -55,10 +55,10 @@ Téléphone / PC (tailnet)
 
 | Version | Contenu |
 |---|---|
-| **V1 — Coffre maison** | Coffre chiffré, API, PWA, import Bitwarden, veille, délégation, rappels, notifications dans l'appli, **exécuteur de rotation** (site de démo) et sauvegardes restic. |
-| **V2 — Appli Android** | Appli native Kotlin, notifications Android avec Approuver / Refuser, sans icône permanente ni service tiers. |
-| **V3 — Rotation sur tes vrais sites** | Une recette par site réel, l'inspection de page qui aide à l'écrire, et une extension navigateur. L'exécuteur, lui, existe depuis la V1 ([08 — Rotation](08-rotation.md)). |
-| **V4 — Agent LLM** | Un agent plus autonome, toujours encadré par des règles vérifiées par le code. |
+| **V1 : Coffre maison** | Coffre chiffré, API, PWA, import Bitwarden, veille, délégation, rappels, notifications dans l'appli, **exécuteur de rotation** (site de démo) et sauvegardes restic. |
+| **V2 : Appli Android** | Appli native Kotlin, notifications Android avec Approuver / Refuser, sans icône permanente ni service tiers. |
+| **V3 : Rotation sur tes vrais sites** | Une recette par site réel, l'inspection de page qui aide à l'écrire, et une extension navigateur. L'exécuteur, lui, existe depuis la V1 ([08 : Rotation](08-rotation.md)). |
+| **V4 : Agent LLM** | Un agent plus autonome, toujours encadré par des règles vérifiées par le code. |
 
 ## Règles de sécurité
 

@@ -22,7 +22,7 @@ body:
     id: version
     attributes:
       label: Version visée
-      options: [V1 — Veille, V2 — Rotation, V3 — Agent LLM]
+      options: ["V1 : Coffre maison", "V2 : Appli Android", "V3 : Rotation", "V4 : Agent LLM"]
   - type: textarea
     id: security
     attributes:

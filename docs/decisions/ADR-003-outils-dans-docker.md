@@ -1,4 +1,4 @@
-# ADR-003 — Lancer tests et linters dans Docker
+# ADR-003 : Lancer tests et linters dans Docker
 
 - **Date** : 2026-09-18
 - **Statut** : accepté

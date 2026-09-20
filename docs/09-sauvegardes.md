@@ -1,4 +1,4 @@
-# 09 — Sauvegardes : restic, et un exercice de restauration
+# 09 : Sauvegardes, restic et un exercice de restauration
 
 ## Quoi
 
@@ -25,7 +25,7 @@ Le dépôt restic contient donc la base **et** les clés serveur. Il est aussi s
 elle-même :
 
 - son **mot de passe** vit dans un fichier `root:root 0400`, jamais dans le dépôt, jamais dans
-  git, et **pas dans Serenity** — un gestionnaire de mots de passe qui aurait besoin de
+  git, et **pas dans Serenity** : un gestionnaire de mots de passe qui aurait besoin de
   lui-même pour être restauré ne sert à rien. Sur papier, avec ton kit de récupération ;
 - ta **zone personnelle reste chiffrée** par ta clé maître dans toutes les sauvegardes : même
   avec le dépôt et son mot de passe, elle ne s'ouvre pas sans ton mot de passe maître

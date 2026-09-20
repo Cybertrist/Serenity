@@ -1,4 +1,4 @@
-# ADR-007 — Fichiers de clés root et abandon de privilèges au démarrage
+# ADR-007 : Fichiers de clés root et abandon de privilèges au démarrage
 
 - **Date** : 2026-09-18
 - **Statut** : accepté

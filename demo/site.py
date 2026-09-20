@@ -1,7 +1,7 @@
 """A toy website for the rotation executor: log in, change the password, log in again.
 
 It exists so the agent can be watched doing its job end to end, and so CI can replay a real
-rotation — browser included — on every commit. It is deliberately dumb: one account, in
+rotation (browser included) on every commit. It is deliberately dumb: one account, in
 memory, no database, standard library only. It is never part of the production stack
 (compose profile "demo") and never reachable from outside the machine.
 """
@@ -43,7 +43,7 @@ def totp_ok(code: str) -> bool:
 
 
 PAGE = """<!doctype html>
-<html lang="fr"><head><meta charset="utf-8"><title>Démo — {title}</title>
+<html lang="fr"><head><meta charset="utf-8"><title>Démo : {title}</title>
 <style>
  body {{ font-family: system-ui, sans-serif; margin: 0; background: #f4f4f2; color: #16171a; }}
  main {{ max-width: 420px; margin: 8vh auto; background: #fff; border-radius: 14px; padding: 28px;
