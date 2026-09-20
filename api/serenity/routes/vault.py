@@ -28,6 +28,10 @@ class ItemOut(BaseModel):
     zone: Zone
     revision: int
     block: str | None
+    # A rotation that could not be undone leaves a second block: the password the site may have
+    # taken. The client shows both and asks (docs/crypto.md §7.12, point 7).
+    pending_block: str | None = None
+    pending_revision: int | None = None
     seq: int
     created_at: datetime
     updated_at: datetime
@@ -74,6 +78,10 @@ def _out(item: Item) -> ItemOut:
         zone=item.zone,
         revision=item.revision,
         block=b64url_encode(item.block) if item.block is not None else None,
+        pending_block=(
+            b64url_encode(item.pending_block) if item.pending_block is not None else None
+        ),
+        pending_revision=item.pending_revision,
         seq=item.seq,
         created_at=item.created_at,
         updated_at=item.updated_at,
@@ -154,6 +162,20 @@ def restore_item(item_id: str, row: UnlockedDep, db: DbDep) -> ItemOut:
     try:
         return _out(service.restore_item(db, row.user_id, item_id, utcnow()))
     except NotFoundError as exc:
+        _fail(exc)
+
+
+class ResolveIn(BaseModel):
+    """Which of the two passwords the site actually took. Only a human can know."""
+
+    keep: Literal["current", "pending"]
+
+
+@router.post("/items/{item_id}/resolve")
+def resolve_pending(item_id: str, body: ResolveIn, row: UnlockedDep, db: DbDep) -> ItemOut:
+    try:
+        return _out(service.resolve_pending(db, row.user_id, item_id, body.keep, utcnow()))
+    except (NotFoundError, InvalidRequestError, ConflictError) as exc:
         _fail(exc)
 
 

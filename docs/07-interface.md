@@ -14,7 +14,7 @@ min(92vw, 92vh, 980px)), qui devient le plein écran sous 768 px, et s'ouvre par
 | **Déverrouillage** | Au quotidien : mot de passe maître seul (fonctionne hors ligne) |
 | **Récupération** | Kit + code, nouveau mot de passe maître, **nouveau kit** |
 | **Coffre** | Les deux zones, chacune avec une phrase qui dit qui peut la lire (côte à côte dès que le carré dépasse 620 px), recherche, ajout avec générateur |
-| **Fiche** (dialogue centré) | Copier l'identifiant, afficher / copier le mot de passe (effacé du presse-papiers après 30 s), code TOTP en direct, rotation ou rappel, historique, **Confier à l'agent / Reprendre**, modifier, supprimer (les trois derniers avec confirmation) |
+| **Fiche** (dialogue centré) | Copier l'identifiant, afficher / copier le mot de passe (effacé du presse-papiers après 30 s), code TOTP en direct, rotation ou rappel, **arbitrage quand une rotation a laissé deux mots de passe**, historique, **Confier à l'agent / Reprendre**, modifier, supprimer (les trois derniers avec confirmation) |
 | **Codes** | Tous les codes à deux facteurs du coffre sur un écran : code en direct, anneau des secondes restantes, copie en un geste, recherche. Chaque ligne porte la marque de sa zone, et un mot dit lesquels le serveur peut calculer aussi |
 | **Fuites** | Veille lancée à l'ouverture de l'onglet, une alerte par carte, « Ouvrir l'entrée » et « Mettre de côté » |
 | **Journal** (dans les réglages) | Filtres Tout / Agent / Toi / Système, regroupé par jour ; l'écran Agent y renvoie |

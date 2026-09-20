@@ -29,6 +29,7 @@ sous forme de blocs illisibles pour lui (sauf la zone agent, pour le seul proces
 | `PUT /api/vault/items/{id}` | déverrouillé | Nouvelle révision (`409` si conflit) |
 | `DELETE /api/vault/items/{id}?base_revision=N` | déverrouillé | Mise à la corbeille |
 | `POST /api/vault/items/{id}/restore` | déverrouillé | Sortie de la corbeille |
+| `POST /api/vault/items/{id}/resolve` | déverrouillé | Trancher entre les deux mots de passe d'une rotation non annulable |
 | `GET /api/vault/items/{id}/history` | session | 10 dernières versions chiffrées |
 | `POST /api/vault/items/{id}/delegate` | déverrouillé | Confier à l'agent (`confirm: true` obligatoire) |
 | `POST /api/vault/items/{id}/reclaim` | déverrouillé | Reprendre (`confirm: true` obligatoire) |
@@ -54,6 +55,12 @@ sous forme de blocs illisibles pour lui (sauf la zone agent, pour le seul proces
   navigateur pour ne pas ajouter de bibliothèque à un coffre. Chaque compte redevient un
   `otpauth://` normal. Un code **rejoint l'entrée du même nom** si elle n'en a pas encore, sinon
   il devient sa propre entrée. Rien n'est jamais écrasé.
+- **Deux mots de passe, un seul œil pour trancher.** Quand une rotation échoue **et** que le
+  retour arrière échoue aussi, le bloc en attente est conservé : le site a peut-être pris le
+  nouveau mot de passe, peut-être gardé l'ancien, et lui seul le sait. La fiche affiche alors les
+  deux, en clair, avec un bouton par mot de passe. Garder celui de l'agent le promeut en révision
+  courante ; garder celui du coffre jette l'autre. L'agent, lui, ne devine jamais
+  ([`crypto.md`](crypto.md) §7.12, point 7).
 - **Une entrée supprimée reste 30 jours** dans la corbeille ; ensuite le bloc est effacé et seule
   une trace vide reste, pour que tes autres appareils le sachent.
 - Voir [ADR-009](decisions/ADR-009-coffre.md) pour les choix d'implémentation.
