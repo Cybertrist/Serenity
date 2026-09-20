@@ -162,6 +162,16 @@ jobs:
           path: ${{ runner.temp }}/shots
           if-no-files-found: ignore
 
+  rotation:
+    name: Rotation (demo site, real browser)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the images
+        run: docker build -q --target dev -t serenity-api-dev api
+      - name: Rotate a password end to end
+        run: scripts/rotation-demo.sh
+
   secrets:
     name: Secret scan (gitleaks)
     runs-on: ubuntu-latest

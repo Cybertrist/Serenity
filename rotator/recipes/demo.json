@@ -1,0 +1,18 @@
+{
+  "name": "demo",
+  "domains": ["demo.serenity.test"],
+  "login_path": "/connexion",
+  "account_path": "/compte",
+  "selectors": {
+    "username": "#username",
+    "password": "#password",
+    "totp": "#totp",
+    "submit": "#login",
+    "current": "#current",
+    "new": "#new",
+    "confirm": "#confirm",
+    "change_submit": "#change"
+  },
+  "signed_in": "#signed-in",
+  "changed": "#changed"
+}

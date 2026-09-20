@@ -133,6 +133,10 @@ class Item(SQLModel, table=True):
     revision: int = 1
     # None once purged from the trash (the row stays as a tombstone for sync).
     block: bytes | None
+    # Rotation in flight (docs/crypto.md §7.12): the next revision, encrypted with AK, held
+    # aside while the active one still opens the site. Agent zone only.
+    pending_block: bytes | None = None
+    pending_revision: int | None = None
     # Change sequence number (per user): set on every create, update, delete, restore, purge.
     seq: int = Field(index=True)
     created_at: datetime = _ts(default_factory=utcnow)

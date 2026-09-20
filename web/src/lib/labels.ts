@@ -45,6 +45,7 @@ const ACTIONS: Record<string, string> = {
   "agent.rotation.schedule": "Rotation planifiée",
   "agent.rotation.approve": "Rotation approuvée",
   "agent.rotation.refuse": "Rotation refusée",
+  "agent.rotation.execute": "Rotation exécutée",
   "agent.policy.set": "Politique de rotation réglée",
   "agent.kill_switch.engage": "Kill switch enclenché",
   "agent.kill_switch.release": "Agent relancé",
@@ -66,6 +67,9 @@ const ACTIONS: Record<string, string> = {
   "vault.item.restore": "Entrée restaurée",
   "vault.item.delegate": "Entrée confiée à l'agent",
   "vault.item.reclaim": "Entrée reprise",
+  "vault.item.pending": "Nouveau mot de passe en attente",
+  "vault.item.pending.discarded": "Mot de passe en attente abandonné",
+  "vault.item.rotated": "Mot de passe changé par l'agent",
   "vault.trash.purge": "Corbeille vidée",
   "watch.scan": "Veille des fuites",
   "watch.dismiss": "Alerte mise de côté",
@@ -89,5 +93,8 @@ export function actionLabel(action: string, outcome: string): string {
 export function notificationText(kind: string, name: string): string {
   if (kind === "rotation.due") return `${name} : rotation à valider`;
   if (kind === "reminder.due") return `${name} : pense à changer ce mot de passe`;
+  if (kind === "rotation.done") return `${name} : mot de passe changé par l'agent`;
+  if (kind === "rotation.failed") return `${name} : rotation annulée, rien n'a changé`;
+  if (kind === "rotation.manual") return `${name} : rotation à vérifier toi-même`;
   return `${name} : nouvelle alerte`;
 }

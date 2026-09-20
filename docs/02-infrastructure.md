@@ -8,7 +8,9 @@ La stack Serenity tourne en **Docker Compose** sur la VM, avec 3 services :
 |---|---|---|---|---|
 | `web` | nginx | Interface + proxy `/api` | `edge`, `internal` | `127.0.0.1:8080` |
 | `api` | Python 3.12 | Comptes, coffre chiffré, journal | `internal` | aucun |
-| `agent` | même image que `api` | Seul détenteur de la clé serveur : zone agent, veille, rotations | `egress` | aucun |
+| `agent` | même image que `api` | Seul détenteur de la clé serveur : zone agent, veille, rotations | `egress`, `rotation` | aucun |
+| `rotator` | Playwright | Seul conteneur avec un navigateur : exécute les rotations (ADR-015) | `rotation`, `egress` | aucun |
+| `demo` | Python 3.12 | Site jouet pour l'agent, profil compose `demo` | `edge`, `rotation` | `127.0.0.1:8090` |
 
 L'accès depuis tes appareils passe uniquement par `tailscale serve` :
 `https://<vm>` → `127.0.0.1:8080`. `<vm>` est le nom MagicDNS de la VM
@@ -42,8 +44,10 @@ sa clé publique, `web` affiche une page d'attente. Le reste arrive en phases 3 
 
 - `internal` (sans Internet) : `web` ↔ `api`.
 - `edge` : `web`, publié sur `127.0.0.1`.
-- `egress` : la sortie Internet de l'`agent` (Pwned Passwords en phase 5). L'`api` n'a **pas**
-  d'accès Internet.
+- `egress` : la sortie Internet de l'`agent` (Pwned Passwords) et du `rotator` (les sites
+  eux-mêmes). L'`api` n'a **pas** d'accès Internet.
+- `rotation` (sans Internet) : `agent` ↔ `rotator`, et le site de démo quand son profil tourne.
+  Aucun port publié : le rotateur n'est joignable que par l'agent, jeton à l'appui.
 
 ### Conteneurs durcis
 

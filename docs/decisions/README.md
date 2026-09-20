@@ -34,6 +34,7 @@ Nommage : `ADR-NNN-titre-court.md`.
 - [ADR-012 — Interface responsive, dialogues centrés](ADR-012-interface-responsive.md)
 - [ADR-013 — Régénérer le kit de récupération depuis les réglages](ADR-013-regeneration-kit.md)
 - [ADR-014 — Thème clair, réglé par appareil](ADR-014-theme-clair.md)
+- [ADR-015 — L'exécuteur de rotation : conteneur à part, recettes de sites](ADR-015-executeur-rotation.md)
 
 ## Archives
 

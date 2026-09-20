@@ -17,6 +17,7 @@ from sqlalchemy import Engine
 from sqlmodel import Session
 
 from serenity import audit
+from serenity.agent.executor import run_rotations
 from serenity.agent.rotations import run_schedule
 from serenity.agent.watch import run_watch
 from serenity.config import Settings
@@ -85,6 +86,24 @@ class Agent:
             " (kill switch)" if report.skipped else "",
         )
 
+    def rotate_once(self) -> None:
+        """Run what the schedule (or the user) left waiting. Nothing here raises upwards:
+        a site that misbehaves must not take the agent down."""
+        try:
+            report = run_rotations(self._engine, self._server_key, self._settings, utcnow())
+        except Exception:  # last line of defence around a browser and a site
+            logger.exception("rotation run failed")
+            return
+        if report.run or report.skipped:
+            logger.info(
+                "rotations: %d run, %d ok, %d rolled back, %d failed%s",
+                report.run,
+                report.succeeded,
+                report.rolled_back,
+                report.failed,
+                " (kill switch)" if report.skipped else "",
+            )
+
     def watch_once(self) -> None:
         """One server-side watch run (agent zone, watched e-mails). Errors never stop the agent."""
         key = self._settings.hibp_api_key
@@ -108,6 +127,16 @@ class Agent:
             max_instances=1,
             coalesce=True,
             id="schedule",
+        )
+        scheduler.add_job(
+            self.rotate_once,
+            "interval",
+            minutes=self._settings.schedule_interval_minutes,
+            next_run_time=utcnow()
+            + timedelta(seconds=self._settings.watch_first_delay_seconds + 30),
+            max_instances=1,
+            coalesce=True,
+            id="rotate",
         )
         scheduler.add_job(
             self.watch_once,
