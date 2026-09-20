@@ -2,15 +2,16 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useSession } from "../../app/session";
 import { useToast } from "../../app/toast";
-import { Button, Toggle } from "../../design";
+import { Button, ErrorNote, Segmented, Toggle } from "../../design";
 import { setPolicy, type Frequency, type Policy } from "../agent/api";
 import type { VaultEntry } from "../../app/hooks/useEntries";
+import { errorText } from "../account/screens/wording";
 
 const FREQUENCIES: { value: Frequency; label: string }[] = [
-  { value: 7, label: "7 j" },
-  { value: 30, label: "30 j" },
-  { value: 90, label: "90 j" },
-  { value: 180, label: "180 j" },
+  { value: 7, label: "7 jours" },
+  { value: 30, label: "30 jours" },
+  { value: 90, label: "90 jours" },
+  { value: 180, label: "180 jours" },
   { value: null, label: "Jamais" },
 ];
 
@@ -33,8 +34,10 @@ export function PolicyEditor({
   );
   const [autonomous, setAutonomous] = useState(policy?.mode === "autonomous");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const save = async () => {
     setBusy(true);
+    setError(null);
     try {
       await setPolicy(
         session.api,
@@ -46,6 +49,8 @@ export function PolicyEditor({
       await queryClient.invalidateQueries({ queryKey: ["policies"] });
       toast(agentZone ? "Rotation réglée." : "Rappel réglé.");
       onDone();
+    } catch (e) {
+      setError(errorText(e));
     } finally {
       setBusy(false);
     }
@@ -55,40 +60,38 @@ export function PolicyEditor({
       <p className="m-0 text-caption text-muted">
         {agentZone ? "Changer ce mot de passe tous les…" : "Me rappeler de le changer tous les…"}
       </p>
-      <div role="radiogroup" aria-label="Fréquence" className="flex flex-wrap gap-2">
-        {FREQUENCIES.map((f) => (
-          <button
-            key={f.label}
-            type="button"
-            role="radio"
-            aria-checked={frequency === f.value}
-            onClick={() => {
-              setFrequency(f.value);
-            }}
-            className={`h-9 rounded-full px-3.5 text-caption font-medium ${frequency === f.value ? "bg-text text-bg" : "border border-line text-muted"}`}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
+      <Segmented
+        options={FREQUENCIES}
+        value={frequency}
+        onChange={setFrequency}
+        label="Fréquence"
+      />
       {agentZone ? (
         <div className="flex items-center justify-between gap-3">
           <span className="flex flex-col">
             <span className="text-body">Sans me demander</span>
             <span className="text-caption text-muted">
-              Sinon, l'agent attend ton accord à chaque fois.
+              {autonomous
+                ? "L'agent change le mot de passe seul, et t'en informe après coup."
+                : "L'agent attend ton accord avant chaque changement."}
             </span>
           </span>
           <Toggle checked={autonomous} onChange={setAutonomous} label="Mode autonome" />
         </div>
       ) : (
         <p className="m-0 text-caption text-muted">
-          Zone personnelle : l'agent ne peut que te le rappeler.
+          Zone personnelle : l'agent ne peut rien lire ici, il peut seulement te le rappeler.
         </p>
       )}
-      <Button busy={busy} onClick={() => void save()}>
-        Enregistrer
-      </Button>
+      {error ? <ErrorNote>{error}</ErrorNote> : null}
+      <div className="flex gap-2">
+        <Button variant="secondary" className="flex-1" onClick={onDone}>
+          Annuler
+        </Button>
+        <Button className="flex-1" busy={busy} onClick={() => void save()}>
+          Enregistrer
+        </Button>
+      </div>
     </div>
   );
 }

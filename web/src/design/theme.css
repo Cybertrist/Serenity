@@ -2,15 +2,18 @@
 
 /* Serenity design tokens (docs/design.md). Dark theme by default. */
 @theme {
-  --color-bg: #141517;
-  --color-surface: #1c1d21;
-  --color-raised: #232429;
-  --color-line: rgb(255 255 255 / 0.06);
+  /* Pure black behind everything; the app's square keeps its own, lighter surface. */
+  --color-bg: #000000;
+  --color-surface: #16171a;
+  --color-raised: #1f2126;
+  --color-line: rgb(255 255 255 / 0.28);
+  --color-line-soft: rgb(255 255 255 / 0.14);
   --color-text: #ecedef;
   --color-muted: #9a9ca3;
-  --color-accent: #f2762e;
-  --color-accent-soft: rgb(242 118 46 / 0.12);
-  --color-on-accent: #1a1109;
+  /* The orange of the logo, and the only orange in the app. */
+  --color-accent: #f2711c;
+  --color-accent-soft: rgb(242 113 28 / 0.14);
+  --color-on-accent: #150d05;
   --color-ok: #6bd49a;
   --color-ok-soft: rgb(107 212 154 / 0.12);
   --color-warn: #f5c26b;
@@ -18,11 +21,17 @@
   --color-crit: #f27a7a;
   --color-crit-soft: rgb(242 122 122 / 0.12);
   --color-neutral-soft: rgb(255 255 255 / 0.06);
+  --color-hover: rgb(255 255 255 / 0.04);
+  /* The cream of the logo: the padlock and the wordmark, nothing else. */
+  --color-mark: #ece8e1;
 
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-  /* Three sizes only. */
+  /* Four sizes: display is reserved for page titles on a wide screen. */
+  --text-display: 26px;
+  --text-display--line-height: 1.2;
+  --text-display--font-weight: 600;
   --text-title: 20px;
   --text-title--line-height: 1.3;
   --text-title--font-weight: 600;
@@ -48,7 +57,14 @@
   --color-accent: #d85f1a;
   --color-accent-soft: rgb(216 95 26 / 0.1);
   --color-on-accent: #ffffff;
+  --color-ok: #1f9d5f;
+  --color-ok-soft: rgb(31 157 95 / 0.12);
+  --color-warn: #b07908;
+  --color-warn-soft: rgb(176 121 8 / 0.12);
+  --color-crit: #cf4b4b;
+  --color-crit-soft: rgb(207 75 75 / 0.1);
   --color-neutral-soft: rgb(20 21 23 / 0.05);
+  --color-hover: rgb(20 21 23 / 0.04);
 }
 
 @font-face {
@@ -77,6 +93,21 @@
   body {
     margin: 0;
     min-height: 100dvh;
+  }
+  /* Thin scrollbars: a dialog that scrolls should not grow a grey bar across the design. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 0.14) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(255 255 255 / 0.14);
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
   }
   :focus-visible {
     outline: 2px solid var(--color-accent);

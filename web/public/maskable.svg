@@ -1,8 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <rect width="512" height="512" fill="#141517"/>
-  <g transform="translate(256 256) scale(0.72) translate(-256 -256)">
-    <path d="M256 104 372 150v86c0 73-48 138-116 160-68-22-116-87-116-160v-86l116-46Z" fill="rgba(242,118,46,0.14)" stroke="#F2762E" stroke-width="22" stroke-linejoin="round"/>
-    <circle cx="256" cy="236" r="30" fill="#F2762E"/>
-    <path d="M256 262v54" stroke="#F2762E" stroke-width="22" stroke-linecap="round"/>
+  <g transform="translate(140 152) scale(1.16)">
+    <mask id="body" maskUnits="userSpaceOnUse">
+      <rect x="0" y="121" width="200" height="147" rx="45" fill="#fff"/>
+      <path d="M92 188 H108 L118 235 H82 Z" fill="#000"/>
+    </mask>
+    <path d="M25 101 V75 A75 75 0 0 1 175 75 V101 H145 V75 A45 45 0 0 0 55 75 V101 Z" fill="#ECE8E1"/>
+    <rect x="0" y="121" width="200" height="147" rx="45" fill="#ECE8E1" mask="url(#body)"/>
+    <circle cx="100" cy="175" r="23" fill="#F2711C"/>
   </g>
 </svg>

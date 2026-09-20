@@ -40,7 +40,8 @@ interface Session {
   refresh: () => Promise<void>;
   touch: () => void;
   enter: (keyring: Keyring, login: LoginPayload | null, username: string) => Promise<void>;
-  unlock: (password: string) => Promise<void>;
+  /** `beforeEnter` runs once the password is proven, before the app opens: the lock animation. */
+  unlock: (password: string, beforeEnter?: () => Promise<void>) => Promise<void>;
   lock: () => Promise<void>;
   logout: () => Promise<void>;
   showLogin: () => void;
@@ -139,18 +140,20 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   );
 
   const unlock = useCallback(
-    async (password: string) => {
+    async (password: string, beforeEnter?: () => Promise<void>) => {
       const cached = await loadCache();
       const user = username ?? cached?.username;
       if (!user) throw new Error("identifiant inconnu");
       try {
         const { keyring: keys } = await account.unlock(api, user, password);
+        await beforeEnter?.();
         await enter(keys, null, user);
       } catch (e) {
         // Offline: unlock locally from the encrypted cache, read-only.
         if (!(e instanceof TypeError) || !cached) throw e;
         const { wrapKey } = deriveWith(password, cached.kdf);
         const keys = unwrapKeyring(cached.userId, wrapKey, cached.ukByMk, cached.agentKey);
+        await beforeEnter?.();
         vault.current = new VaultState();
         vault.current.apply({ seq: cached.seq, items: cached.items });
         setKeyring(keys);

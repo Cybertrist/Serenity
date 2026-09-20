@@ -59,3 +59,21 @@ export function useLogs() {
     enabled: phase === "unlocked" && !offline,
   });
 }
+
+export interface NotificationRecord {
+  id: number;
+  kind: string;
+  breach_id: number | null;
+  item_id: string | null;
+  created_at: string;
+  read_at: string | null;
+}
+
+export function useNotifications() {
+  const { api, phase, offline } = useSession();
+  return useQuery({
+    queryKey: ["notifications"],
+    queryFn: () => api.get<NotificationRecord[]>("/api/notifications?limit=50"),
+    enabled: phase === "unlocked" && !offline,
+  });
+}

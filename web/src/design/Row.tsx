@@ -1,4 +1,6 @@
+import { motion } from "motion/react";
 import type { ReactNode } from "react";
+import { SPRING } from "./motion";
 
 /** A list row: chip, a title and a caption, something on the right. 60 px high, 44+ touch. */
 export function Row({
@@ -26,11 +28,18 @@ export function Row({
       {trailing}
     </>
   );
-  const classes = `flex min-h-[60px] w-full items-center gap-3 py-2 ${first ? "" : "border-t border-line"}`;
+  const classes = `flex min-h-[60px] w-full items-center gap-3 px-4 py-2 ${first ? "" : "border-t border-line"}`;
   return onClick ? (
-    <button type="button" onClick={onClick} className={classes}>
+    <motion.button
+      type="button"
+      onClick={onClick}
+      whileHover={{ x: 3 }}
+      whileTap={{ scale: 0.995 }}
+      transition={SPRING}
+      className={`${classes} transition-colors duration-150 hover:bg-hover`}
+    >
       {content}
-    </button>
+    </motion.button>
   ) : (
     <div className={classes}>{content}</div>
   );

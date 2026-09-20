@@ -3,31 +3,21 @@ import {
   CloudSlashIcon,
   MagnifyingGlassIcon,
   PlusIcon,
+  QuestionIcon,
+  RobotIcon,
   ShieldCheckIcon,
   ShieldWarningIcon,
   VaultIcon,
-  XIcon,
 } from "@phosphor-icons/react";
 import { motion } from "motion/react";
 import { useMemo, useState } from "react";
 import { useBreaches, usePolicies, useRotations } from "../../app/hooks/queries";
 import { useEntries, type VaultEntry } from "../../app/hooks/useEntries";
 import { useSession } from "../../app/session";
-import {
-  Button,
-  Card,
-  Chip,
-  EmptyState,
-  Field,
-  IconButton,
-  Row,
-  SectionTitle,
-  stagger,
-} from "../../design";
+import { Button, Card, Chip, EmptyState, LIST, LIST_ITEM, Note, Pill, Row } from "../../design";
 import { Header } from "../../app/shell/Header";
 import { useShell } from "../../app/shell/context";
 import { daysUntil, plural } from "../../lib/format";
-import { EntryEditor } from "./EntryEditor";
 import { zoneChip } from "./zone";
 
 function EntryList({
@@ -41,29 +31,59 @@ function EntryList({
 }) {
   return (
     <Card padded={false}>
-      {entries.map((e, i) => {
-        const chip = zoneChip(e.item.zone);
-        return (
-          <motion.div
-            key={e.item.id}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={stagger(i)}
-          >
-            <Row
-              first={i === 0}
-              chip={<Chip icon={chip.icon} tone={chip.tone} />}
-              title={e.entry.name}
-              caption={e.entry.username || e.domain || " "}
-              trailing={trailing(e)}
-              onClick={() => {
-                onOpen(e);
-              }}
-            />
-          </motion.div>
-        );
-      })}
+      <motion.div variants={LIST} initial="initial" animate="animate">
+        {entries.map((e, i) => {
+          const chip = zoneChip(e.item.zone);
+          return (
+            <motion.div key={e.item.id} variants={LIST_ITEM}>
+              <Row
+                first={i === 0}
+                chip={<Chip icon={chip.icon} tone={chip.tone} />}
+                title={e.entry.name}
+                caption={e.entry.username || e.domain || "sans identifiant"}
+                trailing={trailing(e)}
+                onClick={() => {
+                  onOpen(e);
+                }}
+              />
+            </motion.div>
+          );
+        })}
+      </motion.div>
     </Card>
+  );
+}
+
+/**
+ * A zone and, in one sentence, who can read it. Both are always shown: it is the model — and
+ * the header carries the same mark as its entries, so the glyph is its own legend.
+ */
+function Zone({
+  zone,
+  title,
+  explanation,
+  count,
+  children,
+}: {
+  zone: "personal" | "agent";
+  title: string;
+  explanation: string;
+  count: number;
+  children: React.ReactNode;
+}) {
+  const chip = zoneChip(zone);
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1 px-1">
+        <div className="flex items-center gap-2">
+          <Chip icon={chip.icon} tone={chip.tone} size={26} />
+          <h2 className="m-0 text-body font-semibold">{title}</h2>
+          <Pill tone="neutral">{String(count)}</Pill>
+        </div>
+        <p className="m-0 text-caption text-muted">{explanation}</p>
+      </div>
+      {children}
+    </section>
   );
 }
 
@@ -80,9 +100,7 @@ export function VaultScreen() {
   const policies = usePolicies();
   const rotations = useRotations();
   const [query, setQuery] = useState("");
-  const [searching, setSearching] = useState(false);
   const shell = useShell();
-  const [adding, setAdding] = useState(false);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -99,13 +117,13 @@ export function VaultScreen() {
 
   const agentTrailing = (e: VaultEntry) => {
     if (rotations.data?.some((r) => r.item_id === e.item.id && r.status === "scheduled")) {
-      return <span className="text-caption text-accent">à valider</span>;
+      return <Pill tone="accent">à valider</Pill>;
     }
     const due = daysUntil(policies.data?.find((p) => p.item_id === e.item.id)?.next_due_at);
     if (due !== null)
       return (
         <span className="whitespace-nowrap text-caption text-muted">
-          {due <= 0 ? "due" : `dans ${String(due)} j`}
+          {due <= 0 ? "rotation due" : `dans ${String(due)} j`}
         </span>
       );
     return <CaretRightIcon size={20} className="text-muted" aria-hidden="true" />;
@@ -113,141 +131,145 @@ export function VaultScreen() {
 
   return (
     <>
-      <Header
-        title="Coffre"
-        actions={
-          <IconButton
-            icon={MagnifyingGlassIcon}
-            label="Rechercher"
-            onClick={() => {
-              setSearching(true);
-            }}
-          />
-        }
-      />
-      <div className="flex flex-col gap-4 px-4 pb-6">
+      <Header title="Coffre" subtitle="Tes comptes, dans leurs deux zones." />
+      <div className="flex flex-col gap-5 pb-6">
         {session.offline ? (
-          <Card className="flex items-center gap-3">
-            <Chip icon={CloudSlashIcon} tone="warn" />
-            <span className="text-body">Hors ligne : lecture seule.</span>
-          </Card>
+          <Note tone="warn" icon={CloudSlashIcon}>
+            Hors ligne : tu peux lire ton coffre, mais rien n'y est modifiable tant que le serveur
+            n'est pas joignable.
+          </Note>
         ) : null}
-        {searching ? (
-          <Field
-            label="Rechercher"
-            value={query}
-            autoFocus
-            onChange={(e) => {
-              setQuery(e.target.value);
-            }}
-            trailing={
-              <IconButton
-                icon={XIcon}
-                label="Fermer la recherche"
-                onClick={() => {
-                  setQuery("");
-                  setSearching(false);
-                }}
-              />
-            }
-          />
+
+        {entries.length > 0 ? (
+          <div className="relative mx-auto w-full max-w-[420px]">
+            <MagnifyingGlassIcon
+              size={18}
+              aria-hidden="true"
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"
+            />
+            <input
+              type="search"
+              aria-label="Rechercher une entrée"
+              placeholder="Rechercher"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+              }}
+              className="h-11 w-full rounded-control border border-line bg-raised pl-10 pr-4 text-body outline-none placeholder:text-muted focus-visible:border-accent"
+            />
+          </div>
         ) : null}
+
         {/* Offline, alerts cannot be checked: no "all is well" that could be wrong. */}
-        {!searching && !session.offline && entries.length > 0 ? (
-          <Card className="flex items-center gap-3">
-            {watched.size === 0 ? (
-              <Chip icon={ShieldCheckIcon} tone="ok" duotone />
-            ) : (
-              <Chip icon={ShieldWarningIcon} tone="warn" duotone />
-            )}
-            <span className="flex flex-col">
+        {!session.offline && entries.length > 0 && !query ? (
+          <Card className="mx-auto flex w-full max-w-[520px] items-center gap-3.5">
+            <motion.span
+              animate={watched.size === 0 ? { scale: [1, 1.05, 1] } : { scale: 1 }}
+              transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <Chip
+                icon={watched.size === 0 ? ShieldCheckIcon : ShieldWarningIcon}
+                tone={watched.size === 0 ? "ok" : "warn"}
+                duotone
+                size={44}
+              />
+            </motion.span>
+            <span className="flex min-w-0 flex-1 flex-col">
               <span className="text-body font-semibold">
                 {watched.size === 0
                   ? "Tout va bien."
                   : `${plural(watched.size, "compte", "comptes")} à surveiller`}
               </span>
               <span className="text-caption text-muted">
-                {plural(entries.length, "entrée", "entrées")} ·{" "}
-                {delegatedLabel(entries.filter((e) => e.item.zone === "agent").length)}
+                {plural(entries.length, "entrée", "entrées")} · {delegatedLabel(agent.length)}
               </span>
             </span>
+            {watched.size > 0 ? (
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  shell.go("breaches");
+                }}
+              >
+                Voir
+              </Button>
+            ) : null}
           </Card>
         ) : null}
 
         {entries.length === 0 ? (
           <EmptyState
             icon={VaultIcon}
-            text="Ton coffre est vide."
+            title="Ton coffre est vide."
+            text="Ajoute un compte, ou importe ton export Bitwarden depuis les réglages. Tout arrive d'abord dans ta zone personnelle."
             action={
-              <Button
-                icon={PlusIcon}
-                onClick={() => {
-                  setAdding(true);
-                }}
-              >
-                Ajouter une entrée
-              </Button>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button icon={PlusIcon} disabled={session.offline} onClick={shell.addEntry}>
+                  Ajouter une entrée
+                </Button>
+                <Button variant="secondary" icon={QuestionIcon} onClick={shell.openGuide}>
+                  Comment ça marche ?
+                </Button>
+              </div>
             }
           />
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            icon={MagnifyingGlassIcon}
+            title="Aucun résultat."
+            text={`Rien ne correspond à « ${query} ».`}
+          />
         ) : (
-          <>
-            <SectionTitle
+          <div className="grid gap-5 @[620px]:grid-cols-2 @[620px]:items-start">
+            <Zone
+              zone="personal"
               title="Protégé par toi"
-              subtitle="Seul ton appareil peut lire ces comptes."
-            />
-            {personal.length ? (
-              <EntryList
-                entries={personal}
-                onOpen={(e) => {
-                  shell.openEntry(e.item.id);
-                }}
-                trailing={() => (
-                  <CaretRightIcon size={20} className="text-muted" aria-hidden="true" />
-                )}
-              />
-            ) : (
-              <p className="m-0 px-1 text-caption text-muted">Aucune entrée ici.</p>
-            )}
-            <SectionTitle
+              explanation="Chiffré par ton mot de passe maître. Ni le serveur ni l'agent ne peut le lire."
+              count={personal.length}
+            >
+              {personal.length ? (
+                <EntryList
+                  entries={personal}
+                  onOpen={(e) => {
+                    shell.openEntry(e.item.id);
+                  }}
+                  trailing={() => (
+                    <CaretRightIcon size={20} className="text-muted" aria-hidden="true" />
+                  )}
+                />
+              ) : (
+                <EmptyState
+                  icon={ShieldCheckIcon}
+                  title="Rien dans cette zone."
+                  text="Toute nouvelle entrée arrive ici par défaut."
+                />
+              )}
+            </Zone>
+            <Zone
+              zone="agent"
               title="Confié à l'agent"
-              subtitle="L'agent les surveille et prévoit leurs rotations."
-            />
-            {agent.length ? (
-              <EntryList
-                entries={agent}
-                onOpen={(e) => {
-                  shell.openEntry(e.item.id);
-                }}
-                trailing={agentTrailing}
-              />
-            ) : (
-              <p className="m-0 px-1 text-caption text-muted">
-                Rien de confié pour l'instant. Ouvre une entrée pour la confier.
-              </p>
-            )}
-          </>
+              explanation="Le serveur peut les déchiffrer pour les surveiller et changer leur mot de passe."
+              count={agent.length}
+            >
+              {agent.length ? (
+                <EntryList
+                  entries={agent}
+                  onOpen={(e) => {
+                    shell.openEntry(e.item.id);
+                  }}
+                  trailing={agentTrailing}
+                />
+              ) : (
+                <EmptyState
+                  icon={RobotIcon}
+                  title="Rien de confié."
+                  text="Ouvre une entrée, puis « Confier à l'agent » : c'est toujours ton choix, entrée par entrée."
+                />
+              )}
+            </Zone>
+          </div>
         )}
       </div>
-      {entries.length > 0 && !session.offline ? (
-        <button
-          type="button"
-          aria-label="Ajouter une entrée"
-          onClick={() => {
-            setAdding(true);
-          }}
-          className="fixed bottom-[108px] right-[max(20px,calc(50vw-220px))] z-20 flex h-14 w-14 items-center justify-center rounded-[18px] bg-accent text-on-accent"
-        >
-          <PlusIcon size={24} aria-hidden="true" />
-        </button>
-      ) : null}
-      {adding ? (
-        <EntryEditor
-          open
-          onClose={() => {
-            setAdding(false);
-          }}
-        />
-      ) : null}
     </>
   );
 }

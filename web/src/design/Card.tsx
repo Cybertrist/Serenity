@@ -12,18 +12,29 @@ export function Card({
 }) {
   return (
     <div
-      className={`rounded-card border border-line bg-surface ${padded ? "p-4" : "px-4 py-1"} ${className}`}
+      className={`rounded-card border border-line bg-surface ${padded ? "p-4" : "overflow-hidden"} ${className}`}
     >
       {children}
     </div>
   );
 }
 
-export function SectionTitle({ title, subtitle }: { title: string; subtitle?: string }) {
+export function SectionTitle({
+  title,
+  subtitle,
+  trailing,
+}: {
+  title: string;
+  subtitle?: string;
+  trailing?: ReactNode;
+}) {
   return (
-    <div className="flex flex-col gap-0.5 px-1">
-      <h2 className="m-0 text-body font-semibold">{title}</h2>
-      {subtitle ? <p className="m-0 text-caption text-muted">{subtitle}</p> : null}
+    <div className="flex items-end justify-between gap-3 px-1">
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <h2 className="m-0 text-body font-semibold">{title}</h2>
+        {subtitle ? <p className="m-0 text-caption text-muted">{subtitle}</p> : null}
+      </div>
+      {trailing}
     </div>
   );
 }

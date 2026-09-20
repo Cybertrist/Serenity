@@ -1,7 +1,7 @@
 /**
  * UI smoke test (make ui-smoke, CI): the production web image (nginx + strict CSP) against a
- * throwaway test API. Walks every screen on a phone-sized viewport, saves screenshots, and
- * fails on any page error, console error or CSP violation.
+ * throwaway test API. Walks every screen on a phone, then again on a desktop-sized viewport,
+ * saves screenshots, and fails on any page error, console error or CSP violation.
  */
 import { chromium } from "playwright";
 import { createHmac } from "node:crypto";
@@ -60,7 +60,8 @@ page.on("console", (m) => {
 });
 page.on("pageerror", (e) => problems.push(`pageerror: ${e.message}`));
 const shot = async (name) => {
-  await page.waitForTimeout(450);
+  // Long enough for the lock-opening sequence to have cleared.
+  await page.waitForTimeout(4000);
   await page.screenshot({ path: `${shots}/${name}.png` });
 };
 
@@ -73,7 +74,7 @@ await page.getByLabel("Confirme le mot de passe maître").fill("une phrase de pa
 await page.getByRole("button", { name: "Continuer" }).click();
 await page.getByLabel("Code à 6 chiffres").waitFor({ timeout: 20000 });
 await shot("02-totp");
-const secret = (await page.locator("p.font-mono").first().innerText()).replace(/\s/g, "");
+const secret = (await page.locator("[data-totp-secret]").innerText()).replace(/\s/g, "");
 await page.getByLabel("Code à 6 chiffres").fill(totp(secret, await tick()));
 await page.getByRole("button", { name: "Vérifier" }).click();
 await page.getByText("Ton kit de récupération").waitFor();
@@ -111,19 +112,20 @@ await page
   .waitFor();
 await page.waitForTimeout(2500);
 await shot("09-fuites");
-await page.getByLabel("Navigation principale").getByRole("button", { name: "Journal" }).click();
-await page.waitForTimeout(800);
-await shot("10-journal");
 await page.getByLabel("Navigation principale").getByRole("button", { name: "Agent" }).click();
 await page.waitForTimeout(800);
 await shot("11-agent");
+// The journal is not a tab any more: it is a section of the settings.
+await page.getByRole("button", { name: "Voir le journal" }).click();
+await page.getByRole("dialog").waitFor();
+await shot("10-journal");
+await page.keyboard.press("Escape");
 await page.getByRole("button", { name: "Réglages" }).first().click();
 await page.getByRole("dialog").waitFor();
 await shot("12-reglages");
-await page.keyboard.press("Escape");
-await page.getByRole("button", { name: "Réglages" }).first().click();
+await page.getByRole("button", { name: "Verrouillage" }).click();
 await page.getByRole("button", { name: "Verrouiller maintenant" }).click();
-await page.getByText(/Bon retour/).waitFor();
+await page.getByText(/Ton coffre est verrouillé/).waitFor();
 await shot("13-deverrouillage");
 await page.getByLabel("Mot de passe maître").fill("une phrase de passe de test");
 await page.getByRole("button", { name: "Déverrouiller" }).click();
@@ -132,17 +134,83 @@ await shot("14-deverrouille");
 
 // Offline: the service worker serves the app, the encrypted cache is unlocked locally, read-only.
 await page.getByRole("button", { name: "Réglages" }).first().click();
+await page.getByRole("dialog").waitFor();
 await page.getByRole("button", { name: "Verrouiller maintenant" }).click();
-await page.getByText(/Bon retour/).waitFor();
+await page.getByText(/Ton coffre est verrouillé/).waitFor();
 await context.setOffline(true);
 await page.reload();
-await page.getByText(/Bon retour/).waitFor({ timeout: 20000 });
+await page.getByText(/Ton coffre est verrouillé/).waitFor({ timeout: 20000 });
 await page.getByLabel("Mot de passe maître").fill("une phrase de passe de test");
 await page.getByRole("button", { name: "Déverrouiller" }).click();
-await page.getByText("Hors ligne : lecture seule.").waitFor({ timeout: 20000 });
+await page.getByText(/Hors ligne : tu peux lire ton coffre/).waitFor({ timeout: 20000 });
 await page.getByText("Netflix").first().waitFor();
 await shot("15-hors-ligne");
 await context.setOffline(false);
+await context.close();
+
+// Desktop: a second browser context logs in from scratch, sidebar layout, centred dialogs.
+const wide = await browser.newContext({
+  viewport: { width: 1440, height: 900 },
+  deviceScaleFactor: 1,
+  locale: "fr-FR",
+});
+const big = await wide.newPage();
+big.on("console", (m) => {
+  const text = m.text();
+  if (
+    (m.type() === "error" || /Refused|Content Security/.test(text)) &&
+    !EXPECTED.some((r) => r.test(text))
+  ) {
+    problems.push(`console (bureau): ${text}`);
+  }
+});
+big.on("pageerror", (e) => problems.push(`pageerror (bureau): ${e.message}`));
+const wideShot = async (name) => {
+  await big.waitForTimeout(4000);
+  await big.screenshot({ path: `${shots}/${name}.png` });
+};
+
+/** On failure, say what the page was showing: a bare timeout is useless in CI. */
+async function report(page, step, run) {
+  try {
+    await run();
+  } catch (error) {
+    const text = await page.locator("body").innerText();
+    console.error(`UI smoke: step "${step}" failed.\nPage said:\n${text}\n`);
+    if (problems.length) console.error("Console problems:\n" + problems.join("\n"));
+    throw error;
+  }
+}
+
+await big.goto(BASE);
+await big.getByRole("button", { name: "Continuer" }).waitFor({ timeout: 20000 });
+await big.getByLabel("Identifiant").fill("tristan");
+await big.getByLabel("Mot de passe maître").fill("une phrase de passe de test");
+await wideShot("16-bureau-cadenas");
+await big.getByRole("button", { name: "Continuer" }).click();
+await wideShot("17-bureau-code");
+await big.getByLabel("Code à 6 chiffres").fill(totp(secret, await tick()));
+await report(big, "connexion sur le cadenas", async () => {
+  await big.getByRole("button", { name: "Déverrouiller" }).click();
+  await big.getByText("Protégé par toi").waitFor({ timeout: 20000 });
+});
+await wideShot("18-bureau-coffre");
+await big.getByRole("button", { name: /Banque/ }).click();
+await big.getByRole("dialog").waitFor();
+await wideShot("19-bureau-fiche");
+await big.keyboard.press("Escape");
+await big.getByLabel("Navigation principale").getByRole("button", { name: "Agent" }).click();
+await big.waitForTimeout(500);
+await wideShot("20-bureau-agent");
+await big.getByRole("button", { name: "Notifications" }).click();
+await big.getByRole("dialog").waitFor();
+await wideShot("21-bureau-notifications");
+await big.keyboard.press("Escape");
+await big.getByRole("button", { name: "Réglages" }).click();
+await big.getByRole("dialog").waitFor();
+await big.getByRole("button", { name: "Corbeille" }).click();
+await wideShot("22-bureau-reglages");
+await big.keyboard.press("Escape");
 await browser.close();
 if (problems.length) {
   console.error("UI smoke: problems found\n" + problems.join("\n"));
