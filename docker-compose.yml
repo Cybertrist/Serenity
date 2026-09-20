@@ -1,5 +1,6 @@
 # Serenity stack. See docs/02-infrastructure.md.
-# Every published port is bound to 127.0.0.1; external access goes through `tailscale serve`.
+# Every published port is bound to 127.0.0.1; reaching it from another device is the
+# operator's job (mesh network, VPN, SSH tunnel or a local reverse proxy).
 
 x-hardening: &hardening
   restart: unless-stopped

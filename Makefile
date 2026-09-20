@@ -9,7 +9,7 @@ DEV_RUN   := docker run --rm --user $(shell id -u):$(shell id -g) \
 # Container UIDs (see docker-compose.yml and api/Dockerfile).
 UID_API := 10001
 
-.PHONY: help init keys up down restart logs ps client reset-totp watch-now schedule-now rotate-now recipe-inspect backup-now backup-check restore-check test lint vectors web-test crypto-interop e2e ui-smoke rotation-demo api-doc brand-icons dev-image
+.PHONY: help init keys up down restart logs ps client reset-totp watch-now schedule-now rotate-now recipe-inspect backup-now backup-check restore-check test lint vectors web-test crypto-interop e2e ui-smoke rotation-demo api-doc brand dev-image
 
 help: ## Show this help
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-10s %s\n", $$1, $$2}'
@@ -110,8 +110,8 @@ ui-smoke: dev-image ## Walk every screen in Chromium (production web image, stri
 	$(COMPOSE) build web
 	scripts/ui-smoke.sh web/e2e/shots
 
-brand-icons: ## Rebuild the PNG app icons from web/public/*.svg (Chromium in Docker)
-	scripts/brand-icons.sh
+brand: ## Rebuild the icons and the social banner from the mark (Chromium in Docker)
+	scripts/brand.sh
 
 api-doc: dev-image ## Regenerate docs/api.md from the OpenAPI schema
 	docker run --rm --user $(shell id -u):$(shell id -g) -v "$(CURDIR)/api:/app" -v "$(CURDIR)/docs:/docs" \

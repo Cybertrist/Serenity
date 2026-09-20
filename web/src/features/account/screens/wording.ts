@@ -18,6 +18,6 @@ export function errorText(e: unknown): string {
     if (status === 401) return detail ?? "Identifiants incorrects.";
     return detail ?? "Une erreur est survenue.";
   }
-  if (e instanceof TypeError) return "Serveur injoignable. Vérifie ta connexion au tailnet.";
+  if (e instanceof TypeError) return "Serveur injoignable. Vérifie ta connexion au serveur.";
   return e instanceof Error ? e.message : "Une erreur est survenue.";
 }

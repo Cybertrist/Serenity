@@ -85,7 +85,7 @@ Puis lance la stack avec le site de démo et regarde :
 docker compose --profile demo up -d --build
 ```
 
-Le site jouet est sur `http://127.0.0.1:8090` (hors de la VM : passe par le tailnet). Dans
+Le site jouet est sur `http://127.0.0.1:8090` (hors de la VM : passe par ton accès privé). Dans
 Serenity, crée une entrée avec l'identifiant `tristan@exemple.fr`, le mot de passe
 `mot-de-passe-de-depart` et l'adresse `http://demo.serenity.test:8000/connexion`, **confie-la à
 l'agent**, puis demande une rotation depuis l'écran Agent. Quand elle passe :

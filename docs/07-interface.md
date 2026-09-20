@@ -86,10 +86,10 @@ pour la mise en page de bureau, puis un passage complet en **thème clair**. Il 
 moindre erreur JavaScript ou violation de CSP, et tourne aussi en CI (captures dans l'artefact
 `ui-screenshots`).
 
-### En vrai (navigateur, depuis un appareil du tailnet)
+### En vrai (navigateur, depuis un de tes appareils)
 
 1. Sur la VM : `make up`.
-2. Ouvre **https://serenity.tail18532b.ts.net** : écran « Connexion ».
+2. Ouvre Serenity sur le nom d'hôte que tu as choisi : écran « Connexion ».
 3. Connecte-toi avec ton compte (`tristan`, mot de passe maître, code TOTP) : tu retrouves les
    entrées créées avec `make client`.
 4. **Installer l'appli** : sur Android (Chrome), menu ⋮ → « Installer l'application » ; sur

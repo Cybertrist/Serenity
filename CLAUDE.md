@@ -64,7 +64,7 @@ Toute la spécification détaillée vit dans `docs/crypto.md`. Résumé :
 | Notifications | Maison, sans service tiers : centre de notifications dans l'API ; appli Android par vérification périodique (WorkManager), sans icône permanente |
 | Appli Android (V2) | Kotlin, Jetpack Compose, libsodium (binding Lazysodium) |
 | Rotation (V3) | Playwright, pyotp |
-| Infra | Docker Compose sur VM Debian 13, `tailscale serve` pour le HTTPS, restic |
+| Infra | Docker Compose sur VM Debian 13, accès privé en HTTPS (chez moi `tailscale serve`), restic |
 | Qualité | ruff, mypy, pytest ; eslint, prettier, vitest ; gitleaks |
 
 Pas de dépendance hors de cette liste sans me demander.
@@ -83,7 +83,8 @@ Pas de dépendance hors de cette liste sans me demander.
 6. Rotation **transactionnelle** : nouvelle révision « en attente », ancienne conservée,
    vérification par reconnexion, retour arrière si échec.
 7. Kill switch vérifié avant **chaque** action de l'agent.
-8. Rien n'écoute hors `127.0.0.1` ; l'accès externe passe par `tailscale serve`.
+8. Rien n'écoute hors `127.0.0.1` ; Serenity ne s'expose jamais sur Internet, l'accès
+   extérieur passe par un chemin privé en HTTPS (chez moi, `tailscale serve`).
 9. Chaque action de l'agent et chaque connexion écrivent une ligne dans le journal d'audit.
 10. Toute modification de `docs/crypto.md` ou du code crypto : **arrête-toi et demande-moi.**
 

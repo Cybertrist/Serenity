@@ -1,0 +1,145 @@
+<!doctype html>
+<!--
+  Social banner, 1280x640. Rendered to docs/img/banniere.png by scripts/brand.sh.
+  Same tokens as the app (web/src/design/theme.css): white mark, Marianne red keyhole,
+  Bleu de France glow, and the flag as the rule that closes the frame.
+-->
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      @font-face {
+        font-family: "Geist";
+        src: url("../web/public/fonts/geist-latin.woff2") format("woff2");
+        font-weight: 400 600;
+      }
+      :root {
+        --bleu: #3b7dd8;
+        --blanc: #f2f4f8;
+        --rouge: #e8434b;
+        --accent: #5b8def;
+        --muted: #99a0ad;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        width: 1280px;
+        height: 640px;
+        overflow: hidden;
+        position: relative;
+        background: #05070c;
+        font-family: "Geist", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      /* One light source, behind the padlock, in the accent blue. Nothing else moves. */
+      .halo {
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(620px 520px at 22% 48%, rgb(91 141 239 / 0.22), transparent 70%),
+          radial-gradient(760px 620px at 88% 88%, rgb(232 67 75 / 0.09), transparent 70%);
+      }
+      .frame {
+        position: absolute;
+        inset: 40px 40px 52px;
+        border: 2px solid rgb(255 255 255 / 0.1);
+        border-radius: 28px;
+      }
+      .content {
+        position: absolute;
+        inset: 40px 40px 52px;
+        display: flex;
+        align-items: center;
+        gap: 72px;
+        justify-content: center;
+        padding: 0 72px;
+      }
+      .lock {
+        width: 212px;
+        flex-shrink: 0;
+      }
+      .text {
+        display: flex;
+        flex-direction: column;
+        gap: 26px;
+      }
+      .wordmark {
+        width: 430px;
+      }
+      .tagline {
+        font-size: 27px;
+        line-height: 1.35;
+        color: var(--blanc);
+        font-weight: 500;
+        max-width: 640px;
+      }
+      .tagline b {
+        color: var(--accent);
+        font-weight: 600;
+      }
+      .chips {
+        display: flex;
+        gap: 10px;
+        flex-wrap: nowrap;
+        max-width: 640px;
+      }
+      .chip {
+        font-size: 17px;
+        color: var(--muted);
+        border: 1px solid rgb(255 255 255 / 0.16);
+        border-radius: 999px;
+        padding: 7px 16px;
+      }
+      /* The flag closes the object, exactly as it closes the title bar in the app. */
+      .tricolore {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 10px;
+        background: linear-gradient(
+          90deg,
+          var(--bleu) 0 33.34%,
+          var(--blanc) 33.34% 66.67%,
+          var(--rouge) 66.67% 100%
+        );
+      }
+    </style>
+  </head>
+  <body>
+    <div class="halo"></div>
+    <div class="frame"></div>
+    <div class="content">
+      <svg class="lock" viewBox="0 0 200 268" aria-hidden="true">
+        <mask id="body" maskUnits="userSpaceOnUse">
+          <rect x="0" y="121" width="200" height="147" rx="45" fill="#fff" />
+          <path d="M92 188 H108 L118 235 H82 Z" fill="#000" />
+        </mask>
+        <path
+          d="M25 101 V75 A75 75 0 0 1 175 75 V101 H145 V75 A45 45 0 0 0 55 75 V101 Z"
+          fill="#F2F4F8"
+        />
+        <rect x="0" y="121" width="200" height="147" rx="45" fill="#F2F4F8" mask="url(#body)" />
+        <circle cx="100" cy="175" r="23" fill="#E8434B" />
+      </svg>
+      <div class="text">
+        <img class="wordmark" src="../web/public/brand/wordmark.png" alt="Serenity" />
+        <p class="tagline">
+          Ton coffre de mots de passe, chez toi.<br />
+          Un <b>agent</b> surveille les fuites,<br />
+          et change ceux que tu lui confies.
+        </p>
+        <div class="chips">
+          <span class="chip">Zéro connaissance</span>
+          <span class="chip">libsodium</span>
+          <span class="chip">Auto-hébergé</span>
+          <span class="chip">AGPL v3</span>
+        </div>
+      </div>
+    </div>
+    <div class="tricolore"></div>
+  </body>
+</html>

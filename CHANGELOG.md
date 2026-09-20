@@ -107,9 +107,19 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
   périmètre et ce qui n'y est pas) et `CONTRIBUTING.md` (règles qui ne se discutent pas, commandes
   de vérification, forme d'une pull request). Le dépôt reste privé : ces fichiers préparent le
   passage en public, ils ne le déclenchent pas.
+- **Un dépôt présentable** : `CODE_OF_CONDUCT.md`, un sélecteur d'issue qui renvoie les failles
+  vers le signalement privé, une description et des sujets sur GitHub, des badges et une section
+  « Le projet en chiffres » dans le README, et une **bannière** 1280 × 640 dessinée par
+  `scripts/banniere.html`. `make brand-icons` devient `make brand` et produit les deux.
 
 ### Modifié
 
+- **Tailscale n'est plus présenté comme un prérequis.** La règle qui compte est que Serenity ne
+  s'expose jamais sur Internet et n'écoute rien en dehors de `127.0.0.1` ; la façon de l'atteindre
+  depuis un téléphone est un choix d'hébergement. La page infrastructure compare quatre chemins
+  (réseau maillé, VPN, tunnel SSH, reverse proxy local) et garde la recette Tailscale comme
+  exemple. L'interface ne dit plus « reconnecte-toi au tailnet » mais « au serveur », et plus
+  aucune adresse personnelle ne traîne dans la documentation.
 - **Revue de toute la documentation** : captures d'écran refaites aux nouvelles couleurs
   (README et `07-interface.md`), architecture à jour (4 services + le rotateur + les
   sauvegardes), CI décrite avec ses huit jobs et les trois qui bloquent vraiment une fusion,
@@ -122,7 +132,7 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
   quelque chose : le filet sous la barre de titre, les trois étapes de la création de compte, et
   les têtes de la cascade de déverrouillage. La marque devient le drapeau en un objet (pavé
   bleu, cadenas blanc, serrure rouge), et les icônes de l'appli se regénèrent depuis les SVG
-  (`scripts/brand-icons.sh`). Les deux thèmes, les jetons et la charte suivent
+  (`make brand`). Les deux thèmes, les jetons et la charte suivent
   (ADR-017, `docs/design.md`).
 - Phase 7 : les panneaux glissants venus du bas (fiche, éditeur, réglages) deviennent des
   **dialogues centrés** avec focus piégé, fermeture par Échap et page bloquée derrière.

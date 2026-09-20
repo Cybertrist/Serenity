@@ -25,9 +25,9 @@ Par défaut, **tout va dans la zone personnelle**.
 ## Architecture
 
 ```
-Téléphone / PC (tailnet)
+Téléphone / PC (réseau privé)
   └─ appli web PWA : toute la crypto de la zone personnelle ici
-        │  HTTPS via tailscale serve (seuls des blocs chiffrés transitent)
+        │  HTTPS par ton accès privé (seuls des blocs chiffrés transitent)
         ▼
 ┌──────────────── VM serenity (Docker Compose) ────────────────┐
 │  web (nginx : SPA + proxy /api)                              │
@@ -49,7 +49,7 @@ Téléphone / PC (tailnet)
 | **Clé serveur** | Fichier hors de la base. Déchiffre la clé d'agent, donc la zone agent uniquement. |
 | **rotator** | Le seul conteneur avec un navigateur : il exécute les rotations que l'agent décide, d'après une recette par site. Il ne détient aucune clé. |
 | **Notifications** | Maison : stockées par l'api, affichées dans l'appli, récupérées périodiquement par l'appli Android. Aucun service tiers. |
-| **Tailscale** | Le seul accès depuis l'extérieur, en HTTPS, réservé à ton tailnet. |
+| **Accès privé** | Le seul chemin depuis l'extérieur, en HTTPS. Réseau maillé, VPN, tunnel ou reverse proxy local, au choix. |
 
 ## Les quatre versions
 

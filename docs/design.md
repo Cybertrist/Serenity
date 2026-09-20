@@ -76,8 +76,9 @@ La marque dans la barre de titre (`design/Lock.tsx`) reprend **exactement** cett
 mesurée sur le fichier d'origine.
 
 Les PNG d'icône ne se retouchent pas à la main : ils se **regénèrent** depuis les deux SVG par
-`scripts/brand-icons.sh` (Chromium dans Docker). Changer la marque = changer le SVG, puis
-relancer le script.
+`make brand` (Chromium dans Docker), qui produit aussi la bannière du dépôt
+(`docs/img/banniere.png`, dessinée par `scripts/banniere.html`). Changer la marque, c'est
+changer le SVG puis relancer la commande.
 
 ## Bleu, blanc, rouge
 

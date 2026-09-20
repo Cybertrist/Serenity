@@ -58,7 +58,7 @@ export function SettingsDialog({
     if (blocked)
       return (
         <Note tone="warn" icon={CloudSlashIcon}>
-          Hors ligne : cette section a besoin du serveur. Reconnecte-toi au tailnet pour l'utiliser.
+          Hors ligne : cette section a besoin du serveur. Reconnecte-toi au serveur pour l'utiliser.
         </Note>
       );
     switch (current) {
