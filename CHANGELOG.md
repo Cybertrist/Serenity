@@ -102,6 +102,10 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- **Le logotype est composé, plus dessiné.** « SEREN**I**TY » est maintenant écrit en Black Ops
+  One, la police des titres d'écran : la marque et les titres sont les mêmes lettres. Les deux
+  découpes PNG disparaissent, le logotype suit `--color-mark` comme le reste de la marque et
+  reste net à n'importe quelle taille.
 - **Toute l'interface passe en Chakra Petch.** Geist sort du projet : ses lettres étaient
   neutres, celles-ci sont droites et coupées, et prolongent le pochoir du titre sans crier.
   Choisie après comparaison sur un vrai écran, contre Geist, Black Ops One et Saira. Trois

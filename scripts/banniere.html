@@ -9,6 +9,11 @@
     <meta charset="utf-8" />
     <style>
       @font-face {
+        font-family: "Black Ops One";
+        src: url("../web/public/fonts/black-ops-one-latin.woff2") format("woff2");
+        font-weight: 400;
+      }
+      @font-face {
         font-family: "Chakra Petch";
         src: url("../web/public/fonts/chakra-petch-400-latin.woff2") format("woff2");
         font-weight: 400;
@@ -42,6 +47,8 @@
         position: relative;
         background: #05070c;
         font-family: "Chakra Petch", system-ui, sans-serif;
+        /* Same rule as the app: the "fi" ligature eats the dot of the i. */
+        font-variant-ligatures: none;
         -webkit-font-smoothing: antialiased;
       }
       /* One light source, behind the padlock, in the accent blue. Nothing else moves. */
@@ -77,7 +84,16 @@
         gap: 26px;
       }
       .wordmark {
-        width: 430px;
+        font-family: "Black Ops One", sans-serif;
+        font-size: 58px;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--blanc);
+      }
+      .wordmark i {
+        color: var(--rouge);
+        font-style: normal;
       }
       .tagline {
         font-size: 27px;
@@ -136,7 +152,7 @@
         <circle cx="100" cy="175" r="23" fill="#E8434B" />
       </svg>
       <div class="text">
-        <img class="wordmark" src="../web/public/brand/wordmark.png" alt="Serenity" />
+        <div class="wordmark">Seren<i>i</i>ty</div>
         <p class="tagline">
           Ton coffre de mots de passe, chez toi.<br />
           Un <b>agent</b> surveille les fuites,<br />

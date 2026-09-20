@@ -130,7 +130,7 @@ export function Modal({
                 <>
                   {icon ? <Chip icon={icon} tone={tone} duotone /> : null}
                   <div className="flex min-w-0 flex-1 flex-col">
-                    <h2 className="m-0 truncate text-title">{title}</h2>
+                    <h2 className="m-0 text-balance text-title">{title}</h2>
                     {subtitle ? (
                       <p className="m-0 truncate text-caption text-muted">{subtitle}</p>
                     ) : null}

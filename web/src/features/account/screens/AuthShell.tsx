@@ -20,7 +20,7 @@ export function AuthShell({
     <main className="flex min-h-dvh items-center justify-center px-5 py-10">
       <div className="flex w-full max-w-[420px] flex-col items-center gap-7">
         <Wordmark
-          className="h-[19px] w-auto"
+          size={25}
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
