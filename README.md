@@ -61,7 +61,8 @@ Par défaut, tout va dans la zone personnelle.
 
 - Coffre chiffré dans le navigateur (libsodium : Argon2id, XChaCha20-Poly1305), kit de récupération.
 - Appli web installable (PWA), en thème clair ou sombre, pensée d'abord pour le mobile.
-- Import depuis un export Bitwarden, chiffré sur place, dans le navigateur.
+- Import depuis Google (mots de passe en CSV, codes à deux facteurs d'Authenticator) ou
+  Bitwarden, chiffré sur place, dans le navigateur.
 - Veille des fuites : Pwned Passwords (k-anonymat), mots de passe réutilisés, faibles ou anciens.
 - **Codes à deux facteurs** : tous tes codes sur un écran, calculés dans le navigateur, hors ligne compris.
 - Délégation d'entrées à l'agent, planification des rotations avec rappels.
