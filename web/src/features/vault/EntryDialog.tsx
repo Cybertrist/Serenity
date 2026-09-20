@@ -9,6 +9,7 @@ import {
   PencilSimpleIcon,
   RobotIcon,
   TrashIcon,
+  WarningIcon,
 } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -20,7 +21,15 @@ import { useToast } from "../../app/toast";
 import { Button, Card, Chip, Confirm, IconButton, Modal, Note, Pill } from "../../design";
 import { daysUntil, plural, relative } from "../../lib/format";
 import { ROTATION_LABELS } from "../../lib/labels";
-import { delegate, history, reclaim, trash, type HistoryEntry } from "../../vault/operations";
+import {
+  delegate,
+  history,
+  reclaim,
+  resolvePending,
+  trash,
+  type HistoryEntry,
+} from "../../vault/operations";
+import { decryptPending } from "../../vault/state";
 import { errorText } from "../account/screens/wording";
 import { EntryEditor } from "./EntryEditor";
 import { PolicyEditor } from "./PolicyEditor";
@@ -76,6 +85,21 @@ export function EntryDialog({ entry, onClose }: { entry: VaultEntry | null; onCl
   const openRotation = rotations.data?.find((r) => r.item_id === item.id);
   const due = daysUntil(policy?.next_due_at);
   const chip = zoneChip(item.zone);
+  // The password the site may have taken, when a rollback could not put things back.
+  const pending = session.keyring ? decryptPending(session.keyring, item) : null;
+
+  const decide = async (keep: "current" | "pending") => {
+    setBusy(true);
+    try {
+      await resolvePending(session.api, session.vault, item, keep);
+      await session.refresh();
+      toast(keep === "pending" ? "Gardé : celui de l'agent." : "Gardé : celui du coffre.");
+    } catch (e) {
+      toast(errorText(e), "crit");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const copy = (value: string, what: string) => {
     void copySecret(value).then(() => {
@@ -206,6 +230,47 @@ export function EntryDialog({ entry, onClose }: { entry: VaultEntry | null; onCl
           </div>
         }
       >
+        {pending ? (
+          <Card className="flex flex-col gap-3 border-warn">
+            <div className="flex items-start gap-2.5">
+              <Chip icon={WarningIcon} tone="warn" duotone />
+              <div className="flex flex-col gap-1">
+                <p className="m-0 text-body font-medium">Deux mots de passe pour cette entrée.</p>
+                <p className="m-0 text-caption text-muted">
+                  La rotation n'a pas pu être annulée : le site a peut-être pris le nouveau, peut
+                  être gardé l'ancien. Essaie de te connecter, puis dis lequel marche. L'autre sera
+                  jeté.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between gap-2 rounded-control border border-line px-3.5 py-2.5">
+                <div className="flex min-w-0 flex-col">
+                  <span className="text-caption text-muted">Celui du coffre</span>
+                  <span className="truncate font-mono text-body">{data.password}</span>
+                </div>
+                <Button
+                  variant="secondary"
+                  busy={busy}
+                  onClick={() => void decide("current")}
+                  className="shrink-0"
+                >
+                  Garder
+                </Button>
+              </div>
+              <div className="flex items-center justify-between gap-2 rounded-control border border-line px-3.5 py-2.5">
+                <div className="flex min-w-0 flex-col">
+                  <span className="text-caption text-muted">Celui que l'agent a posé</span>
+                  <span className="truncate font-mono text-body">{pending.password}</span>
+                </div>
+                <Button busy={busy} onClick={() => void decide("pending")} className="shrink-0">
+                  Garder
+                </Button>
+              </div>
+            </div>
+          </Card>
+        ) : null}
+
         <Note tone={agentZone ? "accent" : "neutral"} icon={agentZone ? RobotIcon : LockSimpleIcon}>
           {agentZone
             ? "Le serveur peut déchiffrer cette entrée pour la surveiller et changer son mot de passe."

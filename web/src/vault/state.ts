@@ -14,6 +14,9 @@ export interface ItemRecord {
   zone: Zone;
   revision: number;
   block: string | null;
+  /** A rotation that could not be undone left a second password (docs/crypto.md §7.12). */
+  pending_block?: string | null;
+  pending_revision?: number | null;
   seq: number;
   created_at: string;
   updated_at: string;
@@ -69,4 +72,11 @@ export function decryptRecord(keyring: Keyring, item: ItemRecord): Entry {
   if (item.block === null) throw new Error("item was purged");
   const context = contexts.item(keyring.userId, item.id, item.zone, item.revision);
   return decryptItem(keyFor(keyring, item.zone), b64urlDecode(item.block), context);
+}
+
+/** The password the site may have taken, when a rotation could not be undone. */
+export function decryptPending(keyring: Keyring, item: ItemRecord): Entry | null {
+  if (!item.pending_block || item.pending_revision == null) return null;
+  const context = contexts.item(keyring.userId, item.id, item.zone, item.pending_revision);
+  return decryptItem(keyFor(keyring, item.zone), b64urlDecode(item.pending_block), context);
 }

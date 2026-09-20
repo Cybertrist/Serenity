@@ -40,6 +40,9 @@ ROLES = {
     "PUT /api/vault/items/{item_id}": "Nouvelle révision (409 si modifiée ailleurs)",
     "DELETE /api/vault/items/{item_id}": "Mettre à la corbeille (30 jours)",
     "POST /api/vault/items/{item_id}/restore": "Sortir de la corbeille",
+    "POST /api/vault/items/{item_id}/resolve": (
+        "Trancher entre les deux mots de passe d'une rotation non annulable"
+    ),
     "GET /api/vault/items/{item_id}/history": "10 dernières versions chiffrées",
     "POST /api/vault/items/{item_id}/delegate": (
         "Confier à l'agent (rechiffrée avec AK, confirmation)"

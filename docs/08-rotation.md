@@ -26,7 +26,8 @@ Conforme à [`crypto.md`](crypto.md) §7.12 et à la règle 6 : **le coffre est 
 5. Réussite : le bloc en attente devient la révision courante, l'ancien part dans l'historique.
 6. Échec : le site est remis à l'ancien mot de passe, le bloc en attente est supprimé, le coffre
    n'a pas bougé. Si le retour arrière échoue lui aussi, le bloc est **gardé** et l'entrée est
-   signalée (`rotation.manual`) : les deux mots de passe sont dans le coffre, à toi de trancher.
+   signalée (`rotation.manual`) : la fiche affiche alors **les deux mots de passe** avec un bouton
+   par choix. Tu essaies de te connecter, tu dis lequel marche, l'autre est jeté.
 
 ### Ce qui est isolé de quoi
 

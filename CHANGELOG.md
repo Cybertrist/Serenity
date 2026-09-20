@@ -130,6 +130,12 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
   sous l'image, jamais par-dessus l'appli, chaque phrase arrive quand l'écran qu'elle décrit est
   déjà là, et le montage est à cadence fixe pour que les deux ne dérivent pas. Le serveur de test sait maintenant
   jouer les rotations approuvées (`POST /__test/rotate`).
+- **L'écran « deux mots de passe ».** Quand une rotation échoue et que le retour arrière échoue
+  aussi, le coffre garde les deux mots de passe : le site a peut-être pris le nouveau, peut-être
+  gardé l'ancien, et lui seul le sait. La fiche les affiche maintenant tous les deux, en clair,
+  avec un bouton par choix. C'était écrit dans `crypto.md` §7.12 depuis la phase 8 et il
+  manquait l'écran. Le bloc en attente voyage désormais jusqu'au client, et
+  `POST /api/vault/items/{id}/resolve` promeut l'un ou jette l'autre.
 - **L'inspection de page voit enfin les pages modernes.** Elle lisait le HTML avant que le site
   ne se dessine, donc sur une appli React elle ne trouvait que des boutons sans nom. Elle attend
   maintenant que le réseau se taise, lit le texte des boutons, liste les liens de la page (pour

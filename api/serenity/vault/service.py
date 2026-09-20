@@ -279,6 +279,44 @@ def trash_item(
     return item
 
 
+def resolve_pending(session: Session, user_id: str, item_id: str, keep: str, now: datetime) -> Item:
+    """The user arbitrates a rotation that could not be undone (docs/crypto.md §7.12, point 7).
+
+    Two passwords exist and only the site knows which one it took, so only a human can say.
+    Keeping the pending one promotes it to the current revision; keeping the current one throws
+    the other away. Either way the entry leaves the "two passwords" state.
+    """
+    item = _get(session, user_id, item_id)
+    if item.pending_block is None:
+        raise InvalidRequestError("Aucun bloc en attente sur cette entrée.")
+    if keep not in ("current", "pending"):
+        raise InvalidRequestError("Choix inconnu.")
+    if keep == "current":
+        item.pending_block = None
+        item.pending_revision = None
+        item.updated_at = now
+        item.seq = _next_seq(session, user_id)
+        session.add(item)
+        session.commit()
+        audit.record(
+            session,
+            Actor.USER,
+            "vault.item.pending.resolved",
+            user_id=user_id,
+            target_type="item",
+            target_id=item.id,
+            details={"keep": "current"},
+        )
+        session.refresh(item)
+        return item
+    if item.pending_revision != item.revision + 1:
+        raise ConflictError("Entrée modifiée depuis : le bloc en attente ne s'applique plus.", item)
+    block = item.pending_block
+    item.pending_block = None
+    item.pending_revision = None
+    return _replace(session, item, item.zone, block, now, Actor.USER, "vault.item.pending.resolved")
+
+
 def restore_item(session: Session, user_id: str, item_id: str, now: datetime) -> Item:
     item = _get(session, user_id, item_id)
     if item.deleted_at is not None:

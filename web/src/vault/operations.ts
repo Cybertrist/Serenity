@@ -127,6 +127,21 @@ async function moveTo(
   return moved;
 }
 
+/**
+ * Say which of the two passwords the site took, after a rollback that failed. Only a human can
+ * know, which is why the agent never guesses (docs/crypto.md §7.12, point 7).
+ */
+export async function resolvePending(
+  api: Api,
+  state: VaultState,
+  item: ItemRecord,
+  keep: "current" | "pending",
+): Promise<ItemRecord> {
+  const updated = await api.post<ItemRecord>(`/api/vault/items/${item.id}/resolve`, { keep });
+  state.put(updated);
+  return updated;
+}
+
 export async function trash(api: Api, state: VaultState, item: ItemRecord): Promise<ItemRecord> {
   const trashed = await withConflict(
     api.delete<ItemRecord>(`/api/vault/items/${item.id}?base_revision=${String(item.revision)}`),

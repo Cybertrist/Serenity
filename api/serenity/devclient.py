@@ -263,6 +263,13 @@ class Client:
         result: dict[str, Any] = self.call("POST", f"/api/vault/items/{item['id']}/{action}", body)
         return result
 
+    def resolve(self, item_id: str, keep: str) -> dict[str, Any]:
+        """Say which of the two passwords the site took, after a rollback that failed."""
+        result: dict[str, Any] = self.call(
+            "POST", f"/api/vault/items/{item_id}/resolve", {"keep": keep}
+        )
+        return result
+
     def trash(self, item: dict[str, Any]) -> dict[str, Any]:
         result: dict[str, Any] = self.call(
             "DELETE", f"/api/vault/items/{item['id']}?base_revision={item['revision']}"

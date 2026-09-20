@@ -84,6 +84,7 @@ chiffrés (voir [`crypto.md`](crypto.md)).
 | `POST /api/vault/items/{item_id}/delegate` | déverrouillé | `ZoneChangeIn` | `ItemOut` | Confier à l'agent (rechiffrée avec AK, confirmation) |
 | `GET /api/vault/items/{item_id}/history` | session |  | `RevisionOut` (liste) | 10 dernières versions chiffrées |
 | `POST /api/vault/items/{item_id}/reclaim` | déverrouillé | `ZoneChangeIn` | `ItemOut` | Reprendre (rechiffrée avec UK, confirmation) |
+| `POST /api/vault/items/{item_id}/resolve` | déverrouillé | `ResolveIn` | `ItemOut` | Trancher entre les deux mots de passe d'une rotation non annulable |
 | `POST /api/vault/items/{item_id}/restore` | déverrouillé |  | `ItemOut` | Sortir de la corbeille |
 
 ## watch
@@ -109,7 +110,7 @@ chiffrés (voir [`crypto.md`](crypto.md)).
 - **EmailIn** : `email`
 - **EmailOut** : `id`, `email`, `added_at`, `last_checked_at`
 - **EmailsOut** : `enabled`, `emails`
-- **ItemOut** : `id`, `zone`, `revision`, `block`, `seq`, `created_at`, `updated_at`, `deleted_at`, `purged`
+- **ItemOut** : `id`, `zone`, `revision`, `block`, `pending_block`, `pending_revision`, `seq`, `created_at`, `updated_at`, `deleted_at`, `purged`
 - **KdfIn** : `salt`, `memlimit`, `opslimit`
 - **KdfOut** : `salt`, `memlimit`, `opslimit`
 - **KeysOut** : `user_id`, `uk_by_mk`, `agent_key`
@@ -129,6 +130,7 @@ chiffrés (voir [`crypto.md`](crypto.md)).
 - **RecoverStartOut** : `user_id`, `ticket`, `uk_by_rk`, `agent_key`
 - **RecoveryKitIn** : `current_auth_key`, `totp`, `recovery_auth_key`, `uk_by_rk`
 - **ReportIn** : `scanned`, `checked`, `alerts`
+- **ResolveIn** : `keep`
 - **RevisionOut** : `revision`, `zone`, `block`, `created_at`
 - **RotationOut** : `id`, `item_id`, `status`, `trigger`, `mode`, `requested_at`, `decided_at`, `finished_at`, `error`
 - **ServerKey** : `public_key`, `key_id`

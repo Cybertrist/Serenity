@@ -249,6 +249,53 @@ def test_a_discarded_pending_block_leaves_no_trace(
     assert account.api.decrypt(keys, fresh)["password"] == DEMO_SECRET
 
 
+def test_the_user_arbitrates_when_the_rollback_failed(
+    account: Account, engine: Engine, agent_ready: bytes
+) -> None:
+    """docs/crypto.md 7.12, point 7: two passwords exist, and only the site knows which one."""
+    item_id, ak = agent_item(account, engine)
+    with Session(engine) as session:
+        item = session.get(Item, item_id)
+        assert item is not None
+        vault = AgentVault(session=session, item=item, ak=ak, now=utcnow())
+        vault.open()
+        vault.save_pending("celui-que-le-site-a-peut-etre-pris")
+
+    keys = account.keys()
+    # The client sees both blocks, and can open both: the entry asks for an eye.
+    shown = next(i for i in account.api.sync()["items"] if i["id"] == item_id)
+    assert shown["pending_block"] is not None
+    assert shown["pending_revision"] == shown["revision"] + 1
+    assert account.api.decrypt(keys, shown)["password"] == DEMO_SECRET
+
+    # Keeping the pending one promotes it, and the old password lands in the history.
+    account.api.resolve(item_id, "pending")
+    after = next(i for i in account.api.sync()["items"] if i["id"] == item_id)
+    assert after["pending_block"] is None
+    assert account.api.decrypt(keys, after)["password"] == "celui-que-le-site-a-peut-etre-pris"
+    assert account.api.history(keys, item_id)[0]["entry"]["password"] == DEMO_SECRET
+
+
+def test_keeping_the_current_password_throws_the_other_away(
+    account: Account, engine: Engine, agent_ready: bytes
+) -> None:
+    item_id, ak = agent_item(account, engine)
+    with Session(engine) as session:
+        item = session.get(Item, item_id)
+        assert item is not None
+        vault = AgentVault(session=session, item=item, ak=ak, now=utcnow())
+        vault.open()
+        vault.save_pending("celui-dont-on-ne-veut-pas")
+
+    keys = account.keys()
+    before = next(i for i in account.api.sync()["items"] if i["id"] == item_id)["revision"]
+    account.api.resolve(item_id, "current")
+    after = next(i for i in account.api.sync()["items"] if i["id"] == item_id)
+    assert after["pending_block"] is None and after["pending_revision"] is None
+    assert after["revision"] == before  # the entry itself never moved
+    assert account.api.decrypt(keys, after)["password"] == DEMO_SECRET
+
+
 def test_an_edit_during_a_rotation_keeps_both(
     account: Account, engine: Engine, agent_ready: bytes
 ) -> None:
