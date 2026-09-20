@@ -100,6 +100,14 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
   (`make api-doc`, vérifié en CI), client TypeScript de l'agent, `make schedule-now`, commandes
   `make client` (policy, rotations, approve, refuse, stop, start), doc `06-agent.md`, ADR-011.
 
+### Ajouté
+
+- **Le nécessaire pour ouvrir le code** : `LICENSE` (GNU AGPL v3, le choix habituel d'un serveur
+  auto-hébergé), `SECURITY.md` (signalement privé par GitHub, délais visés, ce qui est dans le
+  périmètre et ce qui n'y est pas) et `CONTRIBUTING.md` (règles qui ne se discutent pas, commandes
+  de vérification, forme d'une pull request). Le dépôt reste privé : ces fichiers préparent le
+  passage en public, ils ne le déclenchent pas.
+
 ### Modifié
 
 - **Revue de toute la documentation** : captures d'écran refaites aux nouvelles couleurs
