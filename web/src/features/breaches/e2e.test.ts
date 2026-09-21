@@ -7,7 +7,7 @@ import { addEntries, delegate, sync } from "../../vault/operations";
 import { VaultState } from "../../vault/state";
 import { signup } from "../account";
 import { PwnedPasswords, sha1Hex } from "./pwned";
-import { openBreaches, report, scanVault } from "./scan";
+import { openBreaches, report, scanPlan, scanVault } from "./scan";
 
 const URL = process.env.SERENITY_E2E_URL;
 
@@ -57,10 +57,47 @@ describe.skipIf(!URL)("watch against the Python API", () => {
     const kinds = (await openBreaches(api)).map((b) => b.kind).sort();
     expect(kinds).toEqual(["pwned_password", "weak"]);
     const notifications = await api.get<{ kind: string }[]>("/api/notifications");
-    expect(notifications.map((n) => n.kind)).toEqual(["breach.new", "breach.new"]);
+    // The exposed entry was delegated to the agent, so its rotation is scheduled on the spot
+    // instead of waiting for the hourly pass (docs/05-veille.md).
+    expect(notifications.map((n) => n.kind).sort()).toEqual([
+      "breach.new",
+      "breach.new",
+      "rotation.due",
+    ]);
+    const scheduled = await api.get<{ item_id: string; trigger: string }[]>("/api/agent/rotations");
+    expect(scheduled.map((r) => [r.item_id, r.trigger])).toEqual([[weak.id, "breach"]]);
 
     // Without Pwned Passwords (unreachable), the "exposed" alert must stay open.
     expect(await report(api, await scanVault(state, keyring, null))).toMatchObject({ resolved: 0 });
     expect((await openBreaches(api)).map((b) => b.kind).sort()).toEqual(["pwned_password", "weak"]);
+  });
+
+  it("only asks the network about what the plan holds", async () => {
+    await new Api(URL).post("/__test/reset");
+    const api = device();
+    const pending = await signup(api, "tristan", "une phrase de passe de test");
+    const { now } = await new Api(URL).post<{ now: number }>("/__test/tick");
+    const { keyring } = await pending.confirm(await totpCode(pending.totpSecret, now));
+    const state = new VaultState();
+    await addEntries(api, keyring, state, [
+      { v: 1, type: "login", name: "Vieux site", password: "password123" },
+    ]);
+    await sync(api, state);
+
+    // Fresh entry: the server asks for it, and the answer empties the plan.
+    const plan = await scanPlan(api);
+    expect(plan.items).toEqual(state.active().map((i) => i.id));
+    expect(plan.last_scan_at).toBeNull();
+    const scope = new Set(plan.items);
+    await report(api, await scanVault(state, keyring, offlinePwned, new Date(), scope));
+    const after = await scanPlan(api);
+    expect(after.items).toEqual([]);
+    expect(after.last_scan_at).not.toBeNull();
+
+    // A second visit the same day asks about nothing, and the alert stays open.
+    const second = await scanVault(state, keyring, offlinePwned, new Date(), new Set());
+    expect(second.pwned_scanned).toEqual([]);
+    expect(await report(api, second)).toMatchObject({ resolved: 0 });
+    expect((await openBreaches(api)).map((b) => b.kind)).toContain("pwned_password");
   });
 });

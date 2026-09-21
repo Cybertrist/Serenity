@@ -60,14 +60,14 @@ recipe-inspect: ## List the form fields of a page, to write a site recipe: make 
 	@test -n "$(URL)" || { echo "usage: make recipe-inspect URL=https://exemple.fr/connexion"; exit 1; }
 	$(COMPOSE) exec agent python -m serenity.admin inspect "$(URL)"
 
-backup-now: ## Back up the vault and the keys with restic (reads .env)
-	ops/backup.sh
+backup-now: ## Back up the vault and the keys with restic (root: reads the restic password)
+	sudo ops/backup.sh
 
 backup-check: dev-image ## Full drill: build a throwaway vault, back it up, destroy it, restore it
 	scripts/backup-drill.sh
 
-restore-check: ## Restore the latest real backup into a temp dir and verify it (writes nothing)
-	ops/restore.sh --check
+restore-check: ## Restore the latest real backup into a temp dir and verify it (root, writes nothing)
+	sudo ops/restore.sh --check
 
 rotate-now: ## Execute the rotations that are waiting now (instead of waiting for the agent)
 	$(COMPOSE) exec agent python -m serenity.admin rotate-now
