@@ -376,6 +376,24 @@ def test_the_api_serves_the_agent_zone_icons_of_this_account_only(
     ) == (PNG)
 
 
+def test_taking_an_entry_back_takes_its_icon_away(
+    account: Account, keys: Keyring, client: TestClient, agent_ready: bytes
+) -> None:
+    """Reclaiming means the server has no business knowing the site any more, and the agent
+    process can read that icon: it must go, like the agent-zone history does."""
+    _, agent_id = _two_entries(account, keys)
+    with _client(_site()) as http:
+        run_icons(_engine(client), agent_ready, http, NOW)
+    with Session(_engine(client)) as db:
+        assert db.get(ItemIcon, agent_id) is not None
+    item = account.api.call("GET", "/api/vault/items")["items"]
+    current = next(i for i in item if i["id"] == agent_id)
+    account.api.move(keys, current, "personal")
+    with Session(_engine(client)) as db:
+        assert db.get(ItemIcon, agent_id) is None
+    assert account.api.call("GET", "/api/vault/icons") == []
+
+
 def test_a_deleted_entry_stops_showing_its_icon(
     account: Account, keys: Keyring, client: TestClient, agent_ready: bytes
 ) -> None:

@@ -272,7 +272,9 @@ marques vivent dans le coffre.
   et le bloc n'existe que pour la zone agent, dont le serveur connaît le domaine.
 
 Une entrée dont l'icône n'a pas été trouvée garde une ligne sans bloc : c'est la trace de la
-tentative, elle évite de redemander au site à chaque passage.
+tentative, elle évite de redemander au site à chaque passage. Une entrée **reprise** par
+l'utilisateur (agent → personnelle) perd son icône au même titre que son historique de zone
+agent (§7.6) : le serveur n'a plus à savoir de quel site il s'agit.
 
 ## 6. Ce que stocke le serveur
 

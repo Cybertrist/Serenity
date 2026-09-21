@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from sqlmodel import Session, col, delete, select
 
 from serenity import audit
-from serenity.models import Actor, Item, ItemRevision, User, Zone
+from serenity.models import Actor, Item, ItemIcon, ItemRevision, User, Zone
 from serenity.vault.errors import ConflictError, InvalidRequestError, NotFoundError
 
 HISTORY_LIMIT = 10
@@ -148,6 +148,8 @@ def change_zone(
     """Delegation (personal -> agent) or reclaim (agent -> personal), re-encrypted by the client.
 
     On reclaim, the agent-zone history is deleted: the server could read it (docs/crypto.md §7.6).
+    The cached site icon goes with it: taking an entry back means the server has no business
+    knowing which site it is, and that icon is readable by the agent process (ADR-020).
     """
     item = _get(session, user_id, item_id)
     if item.deleted_at is not None:
@@ -165,6 +167,7 @@ def change_zone(
                 col(ItemRevision.item_id) == item.id, col(ItemRevision.zone) == Zone.AGENT
             )
         )
+        session.exec(delete(ItemIcon).where(col(ItemIcon.item_id) == item.id))
         session.commit()
     return item
 

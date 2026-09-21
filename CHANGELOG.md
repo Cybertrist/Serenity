@@ -26,6 +26,10 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
   Banc d'essai de onze sites, tous servis. Un site qui ne donne rien est redemandé au bout de
   trois jours et non de trente, et `make icons-now FORCE=1` redemande à tout le monde tout de
   suite : une panne d'une après-midi ne doit pas coûter un mois de monogramme. ADR-020.
+- **Reprendre une entrée à l'agent efface son icône.** Elle restait en base, chiffrée avec une
+  clé que le processus agent sait ouvrir : le serveur gardait donc la trace du site d'une entrée
+  redevenue personnelle. Elle part maintenant avec l'historique de zone agent, qui était déjà
+  effacé pour la même raison. `docs/crypto.md` §5.8.
 - **Les entrées confiées à l'agent ont leur vraie favicon.** L'agent va la chercher une fois
   par jour, et la range chiffrée avec la clé d'agent : une base volée ne dit toujours pas
   quelles marques vivent dans ton coffre, et l'api sert un bloc qu'elle ne sait pas lire. Le

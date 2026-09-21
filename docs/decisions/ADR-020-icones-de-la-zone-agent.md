@@ -102,9 +102,10 @@ Deux détails qui décident de tout :
 
 - La zone personnelle n'est pas concernée, ici et nulle part : ses entrées ne sont pas même
   sélectionnées, et AK ne pourrait pas les ouvrir.
-- Confier une entrée à l'agent lui donne donc une icône au prochain passage. La reprendre laisse
-  l'icône en base jusqu'à la suppression de l'entrée ; elle n'est plus servie, puisque la route
-  filtre sur la zone.
+- Confier une entrée à l'agent lui donne une icône au prochain passage. **La reprendre efface
+  l'icône**, comme elle efface déjà l'historique de la zone agent : reprendre une entrée, c'est
+  dire que le serveur n'a plus à savoir de quel site il s'agit, et cette icône-là, le processus
+  agent sait l'ouvrir.
 - `make icons-now` déclenche une passe tout de suite, sans attendre.
 - Une entrée dont le site ne donne rien garde une ligne sans bloc : c'est la trace de la
   tentative, et c'est elle qui évite de redemander à chaque passage. Cette trace vaut un
