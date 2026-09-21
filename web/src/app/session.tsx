@@ -16,6 +16,7 @@ import {
 import { deriveWith, unwrapKeyring } from "../features/account/keys";
 import * as account from "../features/account";
 import type { KeysPayload, LoginPayload } from "../features/account/types";
+import { forgetPwned } from "../features/breaches/pwned";
 import { Api, ApiError } from "../lib/api";
 import { subscribe, type NotificationEvent } from "../lib/events";
 import { AutoLock } from "../vault/autolock";
@@ -102,6 +103,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       current?.wipe();
       return null;
     });
+    forgetPwned();
     queryClient.clear();
   }, [queryClient]);
 

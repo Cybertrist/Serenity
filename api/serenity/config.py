@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     # Server-side watch of the agent zone.
     watch_interval_hours: int = Field(default=6, ge=1, le=168)
     watch_first_delay_seconds: int = Field(default=60, ge=0, le=3600)
+    # How long a Pwned Passwords answer is trusted before the browser asks again. A new entry,
+    # or one whose password changed, is asked about at once whatever this says.
+    watch_recheck_hours: int = Field(default=24, ge=1, le=168)
     # Agent limits (docs/06-agent.md): allowlist file and rotations per day.
     allowlist_file: Path = Path("/app/allowlist.yaml")
     max_rotations_per_day: int = Field(default=3, ge=0, le=100)

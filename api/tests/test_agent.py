@@ -389,3 +389,53 @@ def test_events_stream_new_notifications(account: Account, client: TestClient) -
         body = "".join(response.iter_text())
     assert "event: notification" in body
     assert '"kind": "breach.new"' in body
+
+
+def test_a_reported_leak_schedules_the_rotation_at_once(
+    account: Account, keys: Keyring, client: TestClient
+) -> None:
+    """A leak found by the browser must not wait for the hourly pass (docs/05-veille.md)."""
+    personal, agent = _items(account, keys)
+    body = {
+        "scanned": [personal["id"], agent["id"]],
+        "pwned_scanned": [personal["id"], agent["id"]],
+        "alerts": [
+            {"item_id": personal["id"], "kind": "pwned_password"},
+            {"item_id": agent["id"], "kind": "pwned_password"},
+        ],
+    }
+    assert account.api.call("POST", "/api/watch/report", body)["new"] == 2
+    with Session(_engine(client)) as db:
+        triggered = [(r.item_id, r.trigger) for r in db.exec(select(Rotation))]
+    # The personal entry is only reported, never rotated: the agent cannot read it.
+    assert triggered == [(agent["id"], "breach")]
+
+
+def test_the_kill_switch_stops_the_immediate_scheduling(
+    account: Account, keys: Keyring, client: TestClient
+) -> None:
+    _, agent = _items(account, keys)
+    with Session(_engine(client)) as db:
+        killswitch.set_engaged(db, True, account.user_id, datetime.now(UTC))
+    body = {
+        "scanned": [agent["id"]],
+        "pwned_scanned": [agent["id"]],
+        "alerts": [{"item_id": agent["id"], "kind": "pwned_password"}],
+    }
+    account.api.call("POST", "/api/watch/report", body)
+    with Session(_engine(client)) as db:
+        assert db.exec(select(Rotation)).all() == []
+
+
+def test_a_scan_that_finds_nothing_new_schedules_nothing(
+    account: Account, keys: Keyring, client: TestClient
+) -> None:
+    _, agent = _items(account, keys)
+    body = {
+        "scanned": [agent["id"]],
+        "pwned_scanned": [agent["id"]],
+        "alerts": [{"item_id": agent["id"], "kind": "weak"}],
+    }
+    assert account.api.call("POST", "/api/watch/report", body)["new"] == 1
+    with Session(_engine(client)) as db:
+        assert db.exec(select(Rotation)).all() == []
