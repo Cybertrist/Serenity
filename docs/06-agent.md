@@ -12,6 +12,7 @@ L'agent (conteneur `agent`) a maintenant ses règles, ses garde-fous et son éch
 | Allowlist | `api/allowlist.yaml`, `agent/allowlist.py` | Les seuls sites que l'agent peut modifier |
 | Limite quotidienne | `SERENITY_MAX_ROTATIONS_PER_DAY` (3) | Nombre de rotations approuvées par 24 h |
 | Rotation transactionnelle | `rotator/base.py`, `agent/executor.py` | Interface `SiteRotator`, machine d'état, et l'exécuteur qui la joue pour de vrai ([08 : Rotation](08-rotation.md)) |
+| Icônes des sites | `agent/icons.py` | Une fois par jour : la vraie favicon des entrées de la zone agent, rangée **chiffrée avec AK** ([ADR-020](decisions/ADR-020-icones-de-la-zone-agent.md)) |
 | Flux temps réel | `routes/events.py` | Notifications poussées à l'appli ouverte (Server-Sent Events) |
 | Référence de l'API | [`api.md`](api.md) | Générée depuis le schéma OpenAPI (`make api-doc`) |
 
@@ -56,6 +57,13 @@ L'agent (conteneur `agent`) a maintenant ses règles, ses garde-fous et son éch
   gardés et tu es prévenu. Chaque transition est contrôlée.
 - **Temps réel sans service tiers** (ADR-005) : `/api/events` pousse les notifications à
   l'appli ouverte ; l'appli Android (V2) interrogera `/api/notifications`.
+- **Les icônes sont un travail d'agent, pas d'api** : l'`api` n'a ni accès Internet (réseau
+  `internal`) ni la clé serveur, donc elle ne peut ni joindre un site ni savoir de quel site il
+  s'agit. L'agent, lui, connaît déjà ces domaines : c'est le sens même de la zone agent. La zone
+  personnelle n'est jamais concernée. L'URL vient du coffre, donc tout est vérifié avant
+  d'ouvrir quoi que ce soit : https seulement, adresses publiques seulement, redirections
+  recontrôlées une par une, 64 Kio au maximum, type lu dans les octets, SVG refusé
+  ([ADR-020](decisions/ADR-020-icones-de-la-zone-agent.md)).
 - Voir [ADR-011](decisions/ADR-011-agent.md).
 
 ## Comment tester
@@ -64,6 +72,7 @@ L'agent (conteneur `agent`) a maintenant ses règles, ses garde-fous et son éch
 
 ```bash
 make test        # Python : toute la suite, dont allowlist, rotation, kill switch, zone personnelle
+make icons-now   # une passe d'icônes tout de suite (zone agent), au lieu d'attendre le tour quotidien
 make e2e         # dont politique -> échéance -> refus -> kill switch -> approbation
 make api-doc     # régénère docs/api.md (la CI vérifie qu'il est à jour)
 ```

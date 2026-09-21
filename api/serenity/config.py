@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     # How long a Pwned Passwords answer is trusted before the browser asks again. A new entry,
     # or one whose password changed, is asked about at once whatever this says.
     watch_recheck_hours: int = Field(default=24, ge=1, le=168)
+    # Site icons of the agent zone (ADR-020): how often the agent asks a site again, and
+    # the pass interval. Zero days would hammer the sites for nothing.
+    icons_refresh_days: int = Field(default=30, ge=1, le=365)
+    icons_interval_hours: int = Field(default=24, ge=1, le=168)
     # Agent limits (docs/06-agent.md): allowlist file and rotations per day.
     allowlist_file: Path = Path("/app/allowlist.yaml")
     max_rotations_per_day: int = Field(default=3, ge=0, le=100)

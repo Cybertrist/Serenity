@@ -9,7 +9,7 @@ DEV_RUN   := docker run --rm --user $(shell id -u):$(shell id -g) \
 # Container UIDs (see docker-compose.yml and api/Dockerfile).
 UID_API := 10001
 
-.PHONY: help init keys up down restart logs ps client reset-totp watch-now schedule-now rotate-now recipe-inspect backup-now backup-check restore-check test lint vectors web-test crypto-interop e2e ui-smoke rotation-demo api-doc brand film dev-image
+.PHONY: help init keys up down restart logs ps client reset-totp watch-now schedule-now icons-now rotate-now recipe-inspect backup-now backup-check restore-check test lint vectors web-test crypto-interop e2e ui-smoke rotation-demo api-doc brand film dev-image
 
 help: ## Show this help
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-10s %s\n", $$1, $$2}'
@@ -55,6 +55,9 @@ watch-now: ## Run the agent-zone breach watch now (instead of waiting for the 6-
 
 schedule-now: ## Run the rotation due-date check now (instead of waiting for the hourly run)
 	$(COMPOSE) exec agent python -m serenity.admin schedule-now
+
+icons-now: ## Fetch the missing site icons of the agent zone now (instead of the daily run)
+	$(COMPOSE) exec agent python -m serenity.admin icons-now
 
 recipe-inspect: ## List the form fields of a page, to write a site recipe: make recipe-inspect URL=https://...
 	@test -n "$(URL)" || { echo "usage: make recipe-inspect URL=https://exemple.fr/connexion"; exit 1; }

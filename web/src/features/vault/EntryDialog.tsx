@@ -35,6 +35,7 @@ import { EntryEditor } from "./EntryEditor";
 import { PolicyEditor } from "./PolicyEditor";
 import { TotpCode } from "./TotpCode";
 import { EntryMark } from "./EntryMark";
+import { useIcons } from "./icons";
 
 function FieldRow({
   label,
@@ -65,6 +66,7 @@ export function EntryDialog({ entry, onClose }: { entry: VaultEntry | null; onCl
   const queryClient = useQueryClient();
   const policies = usePolicies();
   const rotations = useRotations();
+  const icons = useIcons();
   const [revealed, setRevealed] = useState(false);
   const [editing, setEditing] = useState(false);
   const [policyOpen, setPolicyOpen] = useState(false);
@@ -172,7 +174,7 @@ export function EntryDialog({ entry, onClose }: { entry: VaultEntry | null; onCl
         subtitle={entry.domain ?? "sans adresse"}
         header={
           <>
-            <EntryMark name={data.name} domain={entry.domain} size={44} />
+            <EntryMark name={data.name} domain={entry.domain} icon={icons.get(item.id)} size={44} />
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               <h2 className="m-0 truncate text-title">{data.name}</h2>
               <div className="flex flex-wrap items-center gap-2">

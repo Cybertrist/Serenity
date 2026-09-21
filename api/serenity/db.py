@@ -80,6 +80,8 @@ MIGRATIONS: list[Migration] = [
     # item_scan is a new table, created by create_all. An empty table means "never checked",
     # which is exactly what the plan needs: everything gets scanned once after the upgrade.
     lambda session: None,
+    # item_icon is a new table, created by create_all. Empty means "no icon fetched yet".
+    lambda session: None,
 ]
 
 

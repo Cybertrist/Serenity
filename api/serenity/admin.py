@@ -14,6 +14,7 @@ import httpx
 from sqlmodel import Session, select
 
 from serenity import audit
+from serenity.agent import icons
 from serenity.agent.executor import run_rotations
 from serenity.agent.rotations import run_schedule
 from serenity.agent.watch import run_watch
@@ -76,6 +77,24 @@ def watch_now() -> int:
         return 0
     print(f"Veille terminée : {report.users} compte(s), {report.new_alerts} nouvelle(s) alerte(s).")
     print("E-mails : " + ("vérifiés (HIBP)" if hibp else "non vérifiés (pas de HIBP_API_KEY)"))
+    return 0
+
+
+def icons_now() -> int:
+    """Fetch the missing site icons of the agent zone, now (ADR-020)."""
+    settings = get_settings()
+    server_key = read_key_file(settings.server_key_file)
+    drop_privileges()
+    engine = create_db_engine(settings.db_path)
+    check_schema(engine)
+    with httpx.Client(
+        timeout=icons.TIMEOUT_SECONDS, headers={"user-agent": icons.ICON_USER_AGENT}
+    ) as http:
+        report = icons.run_icons(engine, server_key, http, utcnow(), settings.icons_refresh_days)
+    if report.skipped:
+        print("Kill switch actif : aucune icône récupérée.")
+        return 0
+    print(f"Icônes : {report.fetched} récupérée(s), {report.failed} site(s) sans icône utilisable.")
     return 0
 
 
@@ -169,6 +188,7 @@ def main(argv: list[str] | None = None) -> int:
     reset.add_argument("username")
     sub.add_parser("watch-now", help="run the agent-zone watch now (agent container)")
     sub.add_parser("schedule-now", help="run the rotation due-date check now")
+    sub.add_parser("icons-now", help="fetch the missing site icons of the agent zone")
     sub.add_parser("rotate-now", help="execute the rotations that are waiting")
     look = sub.add_parser("inspect", help="list the form fields of a page (writing a recipe)")
     look.add_argument("url")
@@ -177,6 +197,8 @@ def main(argv: list[str] | None = None) -> int:
         return watch_now()
     if args.command == "schedule-now":
         return schedule_now()
+    if args.command == "icons-now":
+        return icons_now()
     if args.command == "rotate-now":
         return rotate_now()
     if args.command == "inspect":

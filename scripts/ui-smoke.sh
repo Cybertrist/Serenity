@@ -16,7 +16,10 @@ cleanup
 mkdir -p "$SHOTS"
 
 docker network create "$NET" >/dev/null
+# ma-banque.test is the site the icon pass pretends to fetch: the address is public (so the
+# checks of agent/icons.py pass) and nothing is ever sent to it (the transport is a double).
 docker run -d --name ui-smoke-api --network "$NET" --network-alias api \
+  --add-host=ma-banque.test:93.184.216.34 \
   -v "$PWD/api:/app" -w /app serenity-api-dev \
   python -c "import pathlib, tempfile, uvicorn; from tests.e2e_server import build; \
 uvicorn.run(build(pathlib.Path(tempfile.mkdtemp())), host='0.0.0.0', port=8000, log_level='warning')" >/dev/null

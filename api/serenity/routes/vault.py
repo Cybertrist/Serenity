@@ -9,11 +9,12 @@ from typing import Annotated, Literal, NoReturn
 from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
+from sqlmodel import select
 
 from serenity.auth import validation as auth_validation
 from serenity.crypto.encoding import b64url_encode
 from serenity.deps import DbDep, SessionDep, UnlockedDep
-from serenity.models import Item, ItemRevision, Zone, utcnow
+from serenity.models import Item, ItemIcon, ItemRevision, Zone, utcnow
 from serenity.vault import service
 from serenity.vault.blocks import MAX_BLOCK_BYTES, item_block
 from serenity.vault.errors import ConflictError, InvalidRequestError, NotFoundError
@@ -177,6 +178,44 @@ def resolve_pending(item_id: str, body: ResolveIn, row: UnlockedDep, db: DbDep) 
         return _out(service.resolve_pending(db, row.user_id, item_id, body.keep, utcnow()))
     except (NotFoundError, InvalidRequestError, ConflictError) as exc:
         _fail(exc)
+
+
+class IconOut(BaseModel):
+    """One cached site icon. `block` is opaque to the api: only AK opens it."""
+
+    item_id: str
+    version: int
+    mime: str
+    block: str
+
+
+@router.get("/icons")
+def get_icons(row: SessionDep, db: DbDep) -> list[IconOut]:
+    """Every icon the agent has fetched for this account.
+
+    Sent in one go rather than one request per entry: the client asks for "my icons", never for
+    "the icon of this site", so nothing here says which entry is being looked at. Entries of the
+    personal zone have no icon at all, by construction (the agent cannot read them).
+    """
+    rows = db.exec(
+        select(ItemIcon, Item)
+        .join(Item, Item.id == ItemIcon.item_id)  # type: ignore[arg-type]
+        .where(
+            ItemIcon.user_id == row.user_id,
+            ItemIcon.block.is_not(None),  # type: ignore[union-attr]
+            Item.zone == Zone.AGENT,
+            Item.deleted_at.is_(None),  # type: ignore[union-attr]
+        )
+    ).all()
+    return [
+        IconOut(
+            item_id=icon.item_id,
+            version=icon.version,
+            mime=icon.mime or "",
+            block=b64url_encode(icon.block or b""),
+        )
+        for icon, _item in rows
+    ]
 
 
 @router.get("/items/{item_id}/history")

@@ -181,10 +181,13 @@ que le contexte correspond exactement à celui attendu, sinon il rejette.
 | AK chiffrée par UK | `serenity/v1/ak-by-uk/<user_id>/<ak_version>` |
 | AK scellée pour le serveur | `serenity/v1/ak-by-sk/<user_id>/<ak_version>` |
 | Entrée | `serenity/v1/item/<user_id>/<item_id>/<zone>/<revision>` |
+| Icône d'une entrée (zone agent) | `serenity/v1/icon/<user_id>/<item_id>/<icon_version>` |
 | Secret TOTP de connexion (serveur) | `serenity/v1/totp/<user_id>` |
 | Export chiffré | `serenity/v1/export/<user_id>/<export_id>` |
 
-`<zone>` vaut `personal` ou `agent`. `<revision>` et `<ak_version>` sont des entiers ≥ 1.
+`<zone>` vaut `personal` ou `agent`. `<revision>`, `<ak_version>` et `<icon_version>` sont des
+entiers ≥ 1. L'icône porte **sa propre version**, pas la révision de l'entrée : une rotation ne
+doit pas invalider une icône, et une icône ne doit pas pouvoir être présentée comme une entrée.
 
 Par rapport à `CLAUDE.md` (identifiant + zone + révision), on ajoute l'**identifiant
 utilisateur** : un bloc ne peut pas non plus passer d'un compte à un autre.
@@ -252,6 +255,24 @@ Un lecteur **ignore** les champs inconnus (compatibilité ascendante) et refuse 
 supérieur à celui qu'il connaît. Le nom de l'entrée est **chiffré** : pour la zone personnelle,
 le serveur ne connaît même pas le nom des sites.
 
+### 5.8 Icône d'une entrée (zone agent)
+
+L'agent va chercher l'icône du site d'une entrée de la zone agent, et la range chiffrée. Le
+clair est l'image **telle quelle**, octets bruts, sans bourrage : une icône n'est pas un secret,
+mais la liste des sites en est un, et un bloc en clair dans la base dirait exactement quelles
+marques vivent dans le coffre.
+
+- **Clé** : AK. Le navigateur la possède déjà, l'api ne l'a jamais.
+- **Contexte** : `serenity/v1/icon/<user_id>/<item_id>/<icon_version>` (§5.4).
+- **Taille** : 64 Kio au maximum, avant chiffrement.
+- **Type MIME** en clair à côté du bloc, parmi `image/png`, `image/jpeg`, `image/webp`,
+  `image/x-icon`. Le SVG est refusé : c'est du XML exécutable.
+- Pas de bourrage : la taille d'une icône publique n'apprend rien que son domaine ne dise déjà,
+  et le bloc n'existe que pour la zone agent, dont le serveur connaît le domaine.
+
+Une entrée dont l'icône n'a pas été trouvée garde une ligne sans bloc : c'est la trace de la
+tentative, elle évite de redemander au site à chaque passage.
+
 ## 6. Ce que stocke le serveur
 
 | Donnée | Forme | Lisible par le serveur ? |
@@ -267,6 +288,7 @@ le serveur ne connaît même pas le nom des sites.
 | Entrées zone personnelle | blocs `0x01` (UK) | **non** |
 | Entrées zone agent | blocs `0x01` (AK) | oui, processus agent seulement |
 | Bloc **en attente** d'une rotation | bloc `0x01` (AK), révision `r+1` | oui, processus agent seulement |
+| Icône d'une entrée de la zone agent | bloc `0x01` (AK) | oui, processus agent seulement |
 | Zone, révision, dates, corbeille, politiques de rotation | clair | oui |
 
 Métadonnées visibles : nombre d'entrées, taille approximative (au multiple de 256 o près),

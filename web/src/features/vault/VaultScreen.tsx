@@ -19,6 +19,7 @@ import { Header } from "../../app/shell/Header";
 import { useShell } from "../../app/shell/context";
 import { daysUntil, plural } from "../../lib/format";
 import { EntryMark } from "./EntryMark";
+import { useIcons } from "./icons";
 import { zoneChip } from "./zone";
 
 function EntryList({
@@ -30,6 +31,7 @@ function EntryList({
   onOpen: (e: VaultEntry) => void;
   trailing: (e: VaultEntry) => React.ReactNode;
 }) {
+  const icons = useIcons();
   return (
     <Card padded={false}>
       <motion.div variants={LIST} initial="initial" animate="animate">
@@ -37,7 +39,7 @@ function EntryList({
           <motion.div key={e.item.id} variants={LIST_ITEM}>
             <Row
               first={i === 0}
-              chip={<EntryMark name={e.entry.name} domain={e.domain} />}
+              chip={<EntryMark name={e.entry.name} domain={e.domain} icon={icons.get(e.item.id)} />}
               title={e.entry.name}
               caption={e.entry.username || e.domain || "sans identifiant"}
               trailing={trailing(e)}

@@ -117,6 +117,27 @@ await shot("07-confier");
 await page.getByRole("button", { name: "Confier", exact: true }).click();
 await page.getByRole("dialog").waitFor({ state: "detached" });
 await shot("08-coffre-delegue");
+// An entry the logo pack does not know, confided to the agent: the agent fetches its real
+// favicon, encrypts it with AK, and the browser decrypts it to draw the row (ADR-020).
+await add("Ma banque", "tristan", "9Yb!q4Wm2#zL7v", "https://ma-banque.test");
+await page.getByRole("button", { name: /Ma banque/ }).click();
+await page.getByRole("dialog").waitFor();
+await page.getByRole("button", { name: "Confier à l'agent" }).click();
+await page.getByRole("button", { name: "Confier", exact: true }).click();
+await page.getByRole("dialog").waitFor({ state: "detached" });
+const icons = await (await fetch(API + "/__test/icons", { method: "POST" })).json();
+// Two entries live in the agent zone by now: Netflix and this one. Netflix keeps its pack
+// logo on screen, since the pack comes first, but the agent fetched an icon for both.
+if (icons.fetched !== 2) problems.push(`icon pass fetched ${icons.fetched}, expected 2`);
+// Reload: the keys live in memory only, so this also proves the icon is decrypted afresh.
+await page.reload();
+await page.getByText(/Ton coffre est verrouillé/).waitFor({ timeout: 20000 });
+await page.getByLabel("Mot de passe maître").fill("une phrase de passe de test");
+await page.getByRole("button", { name: "Déverrouiller" }).click();
+await page.getByText("Confié à l'agent").waitFor({ timeout: 20000 });
+await page.waitForTimeout(500);
+await shot("08c-icone-agent");
+
 await page.getByLabel("Navigation principale").getByRole("button", { name: "Codes" }).click();
 // The row is named after its entry; the code itself changes every 30 s.
 await page

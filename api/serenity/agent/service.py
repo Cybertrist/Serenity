@@ -18,6 +18,7 @@ from sqlmodel import Session
 
 from serenity import audit
 from serenity.agent.executor import run_rotations
+from serenity.agent.icons import ICON_USER_AGENT, TIMEOUT_SECONDS, run_icons
 from serenity.agent.rotations import run_schedule
 from serenity.agent.watch import run_watch
 from serenity.config import Settings
@@ -117,6 +118,31 @@ class Agent:
             " (kill switch)" if report.skipped else "",
         )
 
+    def icons_once(self) -> None:
+        """Fetch the missing site icons of the agent zone. A site that misbehaves is skipped,
+        never fatal: this job is cosmetic and must never disturb the rest."""
+        try:
+            with httpx.Client(
+                timeout=TIMEOUT_SECONDS, headers={"user-agent": ICON_USER_AGENT}
+            ) as http:
+                report = run_icons(
+                    self._engine,
+                    self._server_key,
+                    http,
+                    utcnow(),
+                    self._settings.icons_refresh_days,
+                )
+        except Exception:  # last line of defence around foreign sites
+            logger.exception("icon run failed")
+            return
+        if report.fetched or report.failed or report.skipped:
+            logger.info(
+                "icons: %d fetched, %d without one%s",
+                report.fetched,
+                report.failed,
+                " (kill switch)" if report.skipped else "",
+            )
+
     def run_forever(self) -> None:
         scheduler = BackgroundScheduler(timezone="UTC")
         scheduler.add_job(
@@ -146,6 +172,16 @@ class Agent:
             max_instances=1,
             coalesce=True,
             id="watch",
+        )
+        scheduler.add_job(
+            self.icons_once,
+            "interval",
+            hours=self._settings.icons_interval_hours,
+            next_run_time=utcnow()
+            + timedelta(seconds=self._settings.watch_first_delay_seconds + 60),
+            max_instances=1,
+            coalesce=True,
+            id="icons",
         )
         touch(self._settings.agent_heartbeat_file)
         scheduler.start()

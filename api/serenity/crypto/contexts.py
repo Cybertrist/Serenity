@@ -43,6 +43,13 @@ def item(user_id: str, item_id: str, zone: str, revision: int) -> str:
     return f"{PREFIX}/item/{_uuid(user_id)}/{_uuid(item_id)}/{zone}/{_positive(revision)}"
 
 
+def icon(user_id: str, item_id: str, icon_version: int) -> str:
+    """The cached site icon of an agent-zone entry (docs/crypto.md §5.4). It has its own
+    version, which moves when the icon is fetched again, and not the entry's revision: a
+    rotation must not invalidate an icon, and an icon must not look like an entry."""
+    return f"{PREFIX}/icon/{_uuid(user_id)}/{_uuid(item_id)}/{_positive(icon_version)}"
+
+
 def totp(user_id: str) -> str:
     return f"{PREFIX}/totp/{_uuid(user_id)}"
 

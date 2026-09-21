@@ -62,6 +62,8 @@ services:
       <<: *api-env
       SERENITY_WATCH_INTERVAL_HOURS: ${SERENITY_WATCH_INTERVAL_HOURS:-6}
       SERENITY_SCHEDULE_INTERVAL_MINUTES: ${SERENITY_SCHEDULE_INTERVAL_MINUTES:-60}
+      SERENITY_ICONS_INTERVAL_HOURS: ${SERENITY_ICONS_INTERVAL_HOURS:-24}
+      SERENITY_ICONS_REFRESH_DAYS: ${SERENITY_ICONS_REFRESH_DAYS:-30}
       # Paid HIBP key (optional): the agent alone calls HIBP.
       HIBP_API_KEY: ${HIBP_API_KEY:-}
       # The executor (ADR-015). Without a token, approved rotations simply wait.

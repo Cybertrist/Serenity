@@ -42,6 +42,14 @@ export function item(userId: string, itemId: string, zone: Zone, revision: numbe
   return `${PREFIX}/item/${uuid(userId)}/${uuid(itemId)}/${zone}/${positive(revision)}`;
 }
 
+/**
+ * The cached site icon of an agent-zone entry. Its own version, not the entry's revision:
+ * a rotation must not invalidate an icon, and an icon must not look like an entry.
+ */
+export function icon(userId: string, itemId: string, iconVersion: number): string {
+  return `${PREFIX}/icon/${uuid(userId)}/${uuid(itemId)}/${positive(iconVersion)}`;
+}
+
 export function totp(userId: string): string {
   return `${PREFIX}/totp/${uuid(userId)}`;
 }

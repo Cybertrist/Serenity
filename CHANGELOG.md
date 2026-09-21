@@ -17,6 +17,14 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- **Les entrées confiées à l'agent ont leur vraie favicon.** L'agent va la chercher une fois
+  par jour, et la range chiffrée avec la clé d'agent : une base volée ne dit toujours pas
+  quelles marques vivent dans ton coffre, et l'api sert un bloc qu'elle ne sait pas lire. Le
+  navigateur demande « mes icônes », jamais « l'icône de ce site » : rien ne dit quelle entrée
+  est regardée. La zone personnelle n'est pas concernée, ses entrées ne sont pas même
+  sélectionnées. L'agent n'ouvre que du https vers une adresse publique, recontrôle chaque
+  redirection, plafonne à 64 Kio, lit le type dans les octets et refuse le SVG. `make icons-now`
+  déclenche une passe. ADR-020, `docs/06-agent.md`, `docs/crypto.md` §5.8.
 - **Le logo du site sur chaque entrée.** À la place du bouclier ou du robot, chaque ligne du
   coffre et de l'onglet Codes porte le logo de son site, et à défaut sa première lettre sur une
   couleur qui ne change jamais. Les logos sont embarqués dans Serenity (3455 marques) : le

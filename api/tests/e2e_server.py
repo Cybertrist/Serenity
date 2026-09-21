@@ -4,20 +4,25 @@ Only in the dev image (tests/ is not shipped). Temporary database, random keys, 
 test-only clock for TOTP: POST /__test/tick moves it 30 s forward and returns it, so the
 client can compute a fresh code for each step without waiting. POST /__test/schedule runs the
 agent's due-date check, POST /__test/rotate runs the approved rotations for real (used by the
-film that records the agent at work). POST /__test/reset empties
+film that records the agent at work), POST /__test/icons runs the icon pass against a site
+double. POST /__test/reset empties
 every table except the settings (server key), so each test file starts from scratch.
 """
 
+import struct
 import sys
 import tempfile
+import zlib
 from pathlib import Path
 
+import httpx
 import nacl.utils
 import uvicorn
 from sqlmodel import Session, SQLModel
 
 import serenity.auth.totp
 from serenity.agent.executor import run_rotations
+from serenity.agent.icons import run_icons
 from serenity.agent.rotations import run_schedule
 from serenity.agent.service import publish_server_key
 from serenity.config import Settings
@@ -26,6 +31,30 @@ from serenity.main import create_app
 from serenity.models import utcnow
 
 CLOCK = {"now": 1_900_000_000.0}
+
+
+def square_png(size: int = 32, rgb: tuple[int, int, int] = (0xE8, 0x43, 0x4B)) -> bytes:
+    """A plain coloured square, built by hand: the dev image has no image library, and a
+    screenshot needs something one can actually see."""
+
+    def chunk(kind: bytes, data: bytes) -> bytes:
+        return (
+            struct.pack(">I", len(data))
+            + kind
+            + data
+            + struct.pack(">I", zlib.crc32(kind + data) & 0xFFFFFFFF)
+        )
+
+    header = struct.pack(">IIBBBBB", size, size, 8, 2, 0, 0, 0)
+    row = b"\x00" + bytes(rgb) * size
+    return (
+        b"\x89PNG\r\n\x1a\n"
+        + chunk(b"IHDR", header)
+        + chunk(b"IDAT", zlib.compress(row * size, 9))
+        + chunk(b"IEND", b"")
+    )
+
+
 # Kept, unlike a throwaway: the executor needs the seed to open the agent zone.
 SERVER_KEY = nacl.utils.random(32)
 
@@ -68,6 +97,22 @@ def build(tmp: Path) -> object:
             "failed": report.failed,
             "skipped": report.skipped,
         }
+
+    @app.post("/__test/icons")
+    def icons() -> dict[str, int]:
+        """Run the agent's icon pass against a site double that always answers one PNG.
+
+        The checks of `agent/icons.py` are not bypassed: the entry must still point at https
+        and at a name that resolves to a public address (ui-smoke.sh adds one to /etc/hosts).
+        """
+        transport = httpx.MockTransport(
+            lambda request: httpx.Response(
+                200, content=square_png(), headers={"content-type": "image/png"}
+            )
+        )
+        with httpx.Client(transport=transport) as http:
+            report = run_icons(app.state.engine, SERVER_KEY, http, utcnow(), 30)
+        return {"fetched": report.fetched, "failed": report.failed}
 
     @app.post("/__test/reset", status_code=204)
     def reset() -> None:

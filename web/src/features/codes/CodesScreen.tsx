@@ -13,6 +13,7 @@ import { Button, Card, EmptyState, LIST, LIST_ITEM, Note } from "../../design";
 import { plural } from "../../lib/format";
 import { TotpCode } from "../vault/TotpCode";
 import { EntryMark } from "../vault/EntryMark";
+import { useIcons } from "../vault/icons";
 import { zoneChip } from "../vault/zone";
 
 /**
@@ -23,17 +24,19 @@ function CodeRow({
   entry,
   first,
   onOpen,
+  icon,
 }: {
   entry: VaultEntry;
   first: boolean;
   onOpen: () => void;
+  icon?: string | undefined;
 }) {
   const chip = zoneChip(entry.item.zone);
   return (
     <div
       className={`flex min-h-[60px] w-full items-center gap-3 px-4 py-2 ${first ? "" : "border-t border-line"}`}
     >
-      <EntryMark name={entry.entry.name} domain={entry.domain} />
+      <EntryMark name={entry.entry.name} domain={entry.domain} icon={icon} />
       <button
         type="button"
         onClick={onOpen}
@@ -57,6 +60,7 @@ function CodeRow({
 export function CodesScreen() {
   const { entries } = useEntries();
   const { openEntry, go } = useShell();
+  const icons = useIcons();
   const [query, setQuery] = useState("");
 
   const coded = useMemo(() => entries.filter((e) => (e.entry.totp ?? "").trim() !== ""), [entries]);
@@ -119,6 +123,7 @@ export function CodesScreen() {
                   <CodeRow
                     entry={e}
                     first={i === 0}
+                    icon={icons.get(e.item.id)}
                     onOpen={() => {
                       openEntry(e.item.id);
                     }}

@@ -77,6 +77,7 @@ chiffrés (voir [`crypto.md`](crypto.md)).
 
 | Route | Accès | Corps | Réponse | Rôle |
 |---|---|---|---|---|
+| `GET /api/vault/icons` | session |  | `IconOut` (liste) | Icônes des entrées de la zone agent, chiffrées avec AK |
 | `GET /api/vault/items` | session |  | `SyncOut` | Synchronisation : changements depuis un curseur |
 | `POST /api/vault/items` | déverrouillé | `CreateIn` | `ItemOut` (liste) | Ajout d'entrées chiffrées (zone personnelle), par lots |
 | `PUT /api/vault/items/{item_id}` | déverrouillé | `UpdateIn` | `ItemOut` | Nouvelle révision (409 si modifiée ailleurs) |
@@ -111,6 +112,7 @@ chiffrés (voir [`crypto.md`](crypto.md)).
 - **EmailIn** : `email`
 - **EmailOut** : `id`, `email`, `added_at`, `last_checked_at`
 - **EmailsOut** : `enabled`, `emails`
+- **IconOut** : `item_id`, `version`, `mime`, `block`
 - **ItemOut** : `id`, `zone`, `revision`, `block`, `pending_block`, `pending_revision`, `seq`, `created_at`, `updated_at`, `deleted_at`, `purged`
 - **KdfIn** : `salt`, `memlimit`, `opslimit`
 - **KdfOut** : `salt`, `memlimit`, `opslimit`

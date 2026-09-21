@@ -88,8 +88,12 @@ Trois sources, dans cet ordre ([ADR-019](decisions/ADR-019-logos-des-entrees.md)
 1. **Le pack embarqué**, 3455 marques dessinées dans l'image web à la construction. Le navigateur
    déduit la marque du domaine qu'il a déjà en mémoire, puis demande un fichier à Serenity.
    Aucun domaine n'est envoyé nulle part, et nginx ne journalise pas cette route.
-2. **La favicon du site**, seulement si tu l'as activée (voir plus bas). Coupée par défaut.
-3. **Le monogramme** : la première lettre, sur une couleur stable tirée du domaine. C'est ce que
+2. **La vraie favicon, pour les entrées confiées à l'agent.** C'est l'agent qui va la chercher,
+   une fois par jour, et qui la range chiffrée avec AK : l'api sert un bloc qu'elle ne sait pas
+   lire, ton navigateur l'ouvre. La zone personnelle n'est jamais concernée
+   ([ADR-020](decisions/ADR-020-icones-de-la-zone-agent.md)).
+3. **La favicon du site**, seulement si tu l'as activée (voir plus bas). Coupée par défaut.
+4. **Le monogramme** : la première lettre, sur une couleur stable tirée du domaine. C'est ce que
    voient les sites que le pack ne connaît pas, dont beaucoup de services français : Crédit
    Agricole, Ameli, Doctolib, Leboncoin, ainsi qu'Amazon et LinkedIn, retirés du pack pour des
    raisons de marque.

@@ -44,6 +44,7 @@ ROLES = {
         "Trancher entre les deux mots de passe d'une rotation non annulable"
     ),
     "GET /api/vault/items/{item_id}/history": "10 dernières versions chiffrées",
+    "GET /api/vault/icons": "Icônes des entrées de la zone agent, chiffrées avec AK",
     "POST /api/vault/items/{item_id}/delegate": (
         "Confier à l'agent (rechiffrée avec AK, confirmation)"
     ),

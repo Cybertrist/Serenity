@@ -19,7 +19,8 @@ function load(name: string): unknown {
   return JSON.parse(readFileSync(resolve(VECTORS, name), "utf-8"));
 }
 
-type ContextKind = "uk_by_mk" | "uk_by_rk" | "ak_by_uk" | "ak_by_sk" | "item" | "totp" | "export";
+type ContextKind =
+  "uk_by_mk" | "uk_by_rk" | "ak_by_uk" | "ak_by_sk" | "item" | "icon" | "totp" | "export";
 
 function buildContext(kind: ContextKind, args: (string | number)[]): string {
   const [a, b, c, n] = args;
@@ -34,6 +35,8 @@ function buildContext(kind: ContextKind, args: (string | number)[]): string {
       return contexts.akBySk(a as string, b as number);
     case "item":
       return contexts.item(a as string, b as string, c as contexts.Zone, n as number);
+    case "icon":
+      return contexts.icon(a as string, b as string, c as number);
     case "totp":
       return contexts.totp(a as string);
     case "export":

@@ -166,6 +166,7 @@ def gen_contexts() -> None:
             "args": [USER, ITEM, "agent", 42],
             "context": contexts.item(USER, ITEM, "agent", 42),
         },
+        {"kind": "icon", "args": [USER, ITEM, 1], "context": contexts.icon(USER, ITEM, 1)},
         {"kind": "totp", "args": [USER], "context": contexts.totp(USER)},
         {"kind": "export", "args": [USER, EXPORT], "context": contexts.export(USER, EXPORT)},
     ]
@@ -175,6 +176,7 @@ def gen_contexts() -> None:
         {"kind": "item", "args": [USER, ITEM, "shared", 1], "reason": "unknown zone"},
         {"kind": "item", "args": [USER, ITEM, "agent", 0], "reason": "revision 0"},
         {"kind": "ak_by_uk", "args": [USER, -1], "reason": "negative version"},
+        {"kind": "icon", "args": [USER, ITEM, 0], "reason": "icon version 0"},
         {
             "kind": "item",
             "args": [USER, "0f0c7a9e-1b2c-1d5e-8f90-123456789abc", "agent", 1],

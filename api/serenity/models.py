@@ -229,6 +229,27 @@ class ItemScan(SQLModel, table=True):
     pwned_checked_at: datetime = _ts(default_factory=utcnow)
 
 
+class ItemIcon(SQLModel, table=True):
+    """The site icon of an agent-zone entry, fetched by the agent and stored encrypted with AK.
+
+    The api can serve this row but cannot read it: only the clients and the agent process hold
+    AK. `block` is null when the site gave nothing usable, which is remembered so the agent does
+    not ask again at every pass. No domain and no name is stored here (docs/crypto.md §5.8).
+    """
+
+    __tablename__ = "item_icon"
+
+    item_id: str = Field(primary_key=True, foreign_key="item.id", ondelete="CASCADE")
+    user_id: str = Field(foreign_key="user.id", index=True, ondelete="CASCADE")
+    # Moves on every successful fetch: it is part of the encryption context.
+    version: int = 1
+    # image/png, image/jpeg, image/webp or image/x-icon. Null when there is no block.
+    mime: str | None = None
+    block: bytes | None = None
+    # Set on every attempt, successful or not: the refresh schedule reads this one.
+    attempted_at: datetime = _ts(default_factory=utcnow)
+
+
 class Notification(SQLModel, table=True):
     """In-app notification (ADR-005). No text: the client renders it, so no entry name is stored."""
 
