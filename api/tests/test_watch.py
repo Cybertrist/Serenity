@@ -18,9 +18,11 @@ from serenity.models import (
     Breach,
     BreachKind,
     BreachStatus,
+    ItemScan,
     Notification,
     Setting,
     WatchedEmail,
+    utcnow,
 )
 from serenity.watcher import rules
 from serenity.watcher.checks import ScannedEntry, analyze
@@ -303,3 +305,114 @@ def test_a_scan_only_closes_the_kinds_it_checked(account: Account, keys: Keyring
     body = {"scanned": [item], "checked": ["weak"], "alerts": [{"item_id": item, "kind": "old"}]}
     with pytest.raises(ApiError):
         account.api.call("POST", "/api/watch/report", body)  # alert of an unchecked kind
+
+
+# --- incremental Pwned Passwords checks (docs/05-veille.md) -------------------------------
+
+
+def _plan(account: Account) -> dict[str, Any]:
+    out: dict[str, Any] = account.api.call("GET", "/api/watch/plan")
+    return out
+
+
+def _partial(
+    account: Account, scanned: list[str], pwned_scanned: list[str], alerts: list[tuple[str, str]]
+) -> dict[str, Any]:
+    body = {
+        "scanned": scanned,
+        "pwned_scanned": pwned_scanned,
+        "alerts": [{"item_id": i, "kind": k} for i, k in alerts],
+    }
+    out: dict[str, Any] = account.api.call("POST", "/api/watch/report", body)
+    return out
+
+
+def test_plan_holds_what_was_never_asked(account: Account, keys: Keyring) -> None:
+    a = account.api.add(keys, {"v": 1, "type": "login", "name": "A", "password": "x"})["id"]
+    b = account.api.add(keys, {"v": 1, "type": "login", "name": "B", "password": "y"})["id"]
+    plan = _plan(account)
+    assert sorted(plan["items"]) == sorted([a, b])
+    assert plan["last_scan_at"] is None
+    assert plan["recheck_hours"] == 24
+    # Asking about both empties the plan: nothing goes back on the network for a day.
+    _partial(account, [a, b], [a, b], [])
+    plan = _plan(account)
+    assert plan["items"] == []
+    assert plan["last_scan_at"] is not None
+
+
+def test_plan_holds_back_what_was_just_asked(account: Account, keys: Keyring) -> None:
+    a = account.api.add(keys, {"v": 1, "type": "login", "name": "A", "password": "x"})["id"]
+    b = account.api.add(keys, {"v": 1, "type": "login", "name": "B", "password": "y"})["id"]
+    _partial(account, [a, b], [a], [])
+    assert _plan(account)["items"] == [b]
+
+
+def test_a_new_entry_is_asked_about_at_once(account: Account, keys: Keyring) -> None:
+    a = account.api.add(keys, {"v": 1, "type": "login", "name": "A", "password": "x"})["id"]
+    _partial(account, [a], [a], [])
+    assert _plan(account)["items"] == []
+    fresh = account.api.add(keys, {"v": 1, "type": "login", "name": "C", "password": "z"})["id"]
+    assert _plan(account)["items"] == [fresh]
+
+
+def test_a_changed_password_goes_back_in_the_plan(account: Account, keys: Keyring) -> None:
+    item = account.api.add(keys, {"v": 1, "type": "login", "name": "A", "password": "x"})
+    _partial(account, [item["id"]], [item["id"]], [])
+    assert _plan(account)["items"] == []
+    account.api.edit(keys, item, {"v": 1, "type": "login", "name": "A", "password": "z"})
+    assert _plan(account)["items"] == [item["id"]]
+
+
+def test_an_old_check_goes_back_in_the_plan(account: Account, keys: Keyring, db: Session) -> None:
+    item = account.api.add(keys, {"v": 1, "type": "login", "name": "A", "password": "x"})["id"]
+    _partial(account, [item], [item], [])
+    assert _plan(account)["items"] == []
+    row = db.exec(select(ItemScan)).one()
+    row.pwned_checked_at = utcnow() - timedelta(hours=25)
+    db.add(row)
+    db.commit()
+    assert _plan(account)["items"] == [item]
+
+
+def test_a_deleted_entry_leaves_the_plan(account: Account, keys: Keyring) -> None:
+    item = account.api.add(keys, {"v": 1, "type": "login", "name": "A", "password": "x"})
+    assert _plan(account)["items"] == [item["id"]]
+    account.api.trash(item)
+    assert _plan(account)["items"] == []
+
+
+def test_a_partial_scan_keeps_the_alerts_it_did_not_check(account: Account, keys: Keyring) -> None:
+    a = account.api.add(keys, {"v": 1, "type": "login", "name": "A", "password": "x"})["id"]
+    b = account.api.add(keys, {"v": 1, "type": "login", "name": "B", "password": "y"})["id"]
+    _report(account, [a, b], [(a, "pwned_password"), (b, "pwned_password"), (a, "weak")])
+    assert len(account.api.call("GET", "/api/breaches")) == 3
+    # A scan that only asked about A: B keeps its alert, A's fixed "weak" is resolved.
+    assert _partial(account, [a, b], [a], [(a, "pwned_password")]) == {
+        "new": 0,
+        "open": 1,
+        "resolved": 1,
+    }
+    open_kinds = {(x["item_id"], x["kind"]) for x in account.api.call("GET", "/api/breaches")}
+    assert open_kinds == {(a, "pwned_password"), (b, "pwned_password")}
+    # Now A is fixed too, and it was asked about: its alert goes.
+    assert _partial(account, [a, b], [a], [])["resolved"] == 1
+    assert [x["item_id"] for x in account.api.call("GET", "/api/breaches")] == [b]
+
+
+def test_an_exposed_password_cannot_be_reported_without_asking(
+    account: Account, keys: Keyring
+) -> None:
+    a = account.api.add(keys, {"v": 1, "type": "login", "name": "A", "password": "x"})["id"]
+    b = account.api.add(keys, {"v": 1, "type": "login", "name": "B", "password": "y"})["id"]
+    with pytest.raises(ApiError) as exc:
+        _partial(account, [a, b], [a], [(b, "pwned_password")])
+    assert exc.value.status == 422
+
+
+def test_a_checked_entry_must_be_part_of_the_scan(account: Account, keys: Keyring) -> None:
+    a = account.api.add(keys, {"v": 1, "type": "login", "name": "A", "password": "x"})["id"]
+    b = account.api.add(keys, {"v": 1, "type": "login", "name": "B", "password": "y"})["id"]
+    with pytest.raises(ApiError) as exc:
+        _partial(account, [a], [a, b], [])
+    assert exc.value.status == 422
