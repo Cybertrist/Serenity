@@ -264,7 +264,8 @@ marques vivent dans le coffre.
 
 - **Clé** : AK. Le navigateur la possède déjà, l'api ne l'a jamais.
 - **Contexte** : `serenity/v1/icon/<user_id>/<item_id>/<icon_version>` (§5.4).
-- **Taille** : 64 Kio au maximum, avant chiffrement.
+- **Taille** : 64 Kio au maximum, avant chiffrement. Un fichier ICO plus gros est réduit à une
+  seule de ses tailles avant d'être rangé (ADR-020) ; au-delà, l'icône est refusée.
 - **Type MIME** en clair à côté du bloc, parmi `image/png`, `image/jpeg`, `image/webp`,
   `image/x-icon`. Le SVG est refusé : c'est du XML exécutable.
 - Pas de bourrage : la taille d'une icône publique n'apprend rien que son domaine ne dise déjà,

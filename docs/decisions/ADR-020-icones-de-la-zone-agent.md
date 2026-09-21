@@ -50,12 +50,38 @@ transformer en sonde de son propre réseau. D'où, dans `agent/icons.py` :
   la moindre requête.
 - **Les redirections sont suivies à la main**, trois au maximum, chaque saut repassant le même
   contrôle : une redirection vers le réseau interne ne sert à rien.
-- **Le corps est lu par morceaux** et jeté dès qu'il dépasse 64 Kio : un site ne doit pas
-  pouvoir remplir la mémoire de l'agent en répondant un gigaoctet.
+- **Le corps est lu par morceaux**, jamais d'un bloc : un site ne doit pas pouvoir remplir la
+  mémoire de l'agent en répondant un gigaoctet. Une image au-delà de 512 Kio est refusée, et
+  seuls 64 Kio au plus sont gardés en base. Une page, elle, est coupée au plafond et analysée
+  telle quelle : ce qu'on y cherche est dans l'en-tête.
 - **Le type vient des octets**, jamais de l'en-tête `Content-Type`.
 - **Kill switch vérifié avant chaque récupération**, pas seulement au début de la passe
   (règle 7), et **le journal ne compte que des nombres** : un domaine n'a rien à y faire
   (règle 1).
+
+## Chercher le logo, pas seulement `/favicon.ico`
+
+Les sites qui comptent ne laissent plus leur logo à l'adresse historique. Mesuré le
+21 septembre 2026 : La Poste le range dans `/ecom/`, impots.gouv.fr dans `/libraries/dsfr/`,
+Grindr sur un CDN Webflow, Cineville (`.nl`) dans `/favicon/`. Tous les quatre le déclarent dans
+l'en-tête de leur page d'accueil. L'agent lit donc la page, et dans cet ordre :
+
+1. un `apple-touch-icon` déclaré : c'est un vrai logo, carré, autour de 180 px ;
+2. une icône déclarée qui s'annonce en 64 px ou plus, puis `/favicon.ico` ;
+3. les autres déclarations, souvent du 16 px flou ;
+4. `/apple-touch-icon.png`, la convention, pour les sites qui ne déclarent rien.
+
+Deux détails qui décident de tout :
+
+- **Une page d'accueil trop grosse est coupée, pas jetée.** Celle de La Poste dépasse 256 Kio,
+  et le premier jet du code abandonnait la page entière : la déclaration se trouve dans
+  l'en-tête, donc dans les premiers octets. Elle est maintenant lue jusqu'au plafond et
+  analysée telle quelle.
+- **Un fichier ICO est un empilement de tailles.** Celui de La Poste pèse 279 Kio pour une
+  pastille de 36 px. `trim_ico()` n'en garde qu'une, la plus grande qui tienne sous les 64 Kio,
+  et reconstruit un fichier à une seule entrée : 279 Kio deviennent 9,6 Kio. Seul le répertoire
+  est analysé, bornes vérifiées ; les octets de l'image sont recopiés sans être décodés, donc
+  rien ne déplie des pixels hostiles.
 
 ## Alternatives écartées
 
@@ -67,7 +93,10 @@ transformer en sonde de son propre réseau. D'où, dans `agent/icons.py` :
   Netflix à côté d'une entrée. Le chiffrement coûte une trentaine de lignes.
 - **Se faire passer pour un navigateur** dans l'en-tête `User-Agent` pour contourner les
   filtres anti-robot : l'agent se nomme. Un site qui l'éconduit garde son icône, et l'entrée
-  garde son monogramme.
+  garde son monogramme. Vérifié sur les dix sites du banc d'essai : aucun ne demande ça.
+- **Redimensionner l'image** avec une bibliothèque : une dépendance de plus, et surtout du
+  décodage d'images venues d'Internet dans le processus qui détient la clé serveur. Garder une
+  taille déjà présente dans le fichier coûte quarante lignes et ne décode rien.
 
 ## Conséquences
 

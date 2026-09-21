@@ -39,7 +39,10 @@ logger = logging.getLogger(__name__)
 # Said plainly. A site that turns away a named fetcher simply keeps its icon, and the entry
 # keeps its monogram: nothing here is worth pretending to be a browser for.
 ICON_USER_AGENT = "Serenity (favicon fetcher)"
+# What may be kept, and what may be downloaded before trimming. An ICO carries every size the
+# site ever drew, stacked: La Poste ships 279 Kio that way, for a 36 px tile.
 MAX_ICON_BYTES = 64 * 1024
+MAX_SOURCE_BYTES = 512 * 1024
 MAX_PAGE_BYTES = 256 * 1024
 TIMEOUT_SECONDS = 8
 MAX_REDIRECTS = 3
@@ -51,6 +54,8 @@ MAGIC: tuple[tuple[bytes, str], ...] = (
     (b"\x00\x00\x01\x00", "image/x-icon"),
 )
 LINK_TAG = re.compile(rb"<link\b[^>]*>", re.IGNORECASE)
+APPLE_TOUCH = re.compile(rb"apple-touch-icon", re.IGNORECASE)
+SIZES = re.compile(rb'sizes\s*=\s*["\']?(\d+)', re.IGNORECASE)
 REL_ICON = re.compile(rb'rel\s*=\s*["\']?[^"\'>]*\bicon\b', re.IGNORECASE)
 HREF = re.compile(rb'href\s*=\s*["\']([^"\']+)["\']', re.IGNORECASE)
 
@@ -75,6 +80,43 @@ def sniff(data: bytes) -> str | None:
     if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
         return "image/webp"
     return None
+
+
+def trim_ico(data: bytes) -> bytes | None:
+    """Keep one image out of an ICO, the largest that fits, and rebuild a one-entry file.
+
+    An ICO is a directory: a 6-byte header, then 16 bytes per size, then the images. Only the
+    directory is read here, with its bounds checked; the image bytes are copied untouched and
+    never decoded, so nothing parses hostile pixels.
+    """
+    if len(data) < 6 or data[:4] != b"\x00\x00\x01\x00":
+        return None
+    count = int.from_bytes(data[4:6], "little")
+    if count < 1 or len(data) < 6 + 16 * count:
+        return None
+    best: tuple[int, int] | None = None  # (width, index in the directory)
+    for i in range(count):
+        entry = data[6 + 16 * i : 22 + 16 * i]
+        width = entry[0] or 256  # 0 means 256, the format has one byte for it
+        size = int.from_bytes(entry[8:12], "little")
+        offset = int.from_bytes(entry[12:16], "little")
+        if size == 0 or offset + size > len(data) or size + 22 > MAX_ICON_BYTES:
+            continue
+        if best is None or width > best[0]:
+            best = (width, i)
+    if best is None:
+        return None
+    chosen = bytearray(data[6 + 16 * best[1] : 22 + 16 * best[1]])
+    size = int.from_bytes(chosen[8:12], "little")
+    offset = int.from_bytes(chosen[12:16], "little")
+    # The one image left starts right after a one-entry directory.
+    chosen[12:16] = (22).to_bytes(4, "little")
+    return (
+        b"\x00\x00\x01\x00"
+        + (1).to_bytes(2, "little")
+        + bytes(chosen)
+        + data[offset : offset + size]
+    )
 
 
 def is_public(host: str) -> bool:
@@ -109,12 +151,15 @@ def _check(url: str) -> str:
     return url
 
 
-def get(http: httpx.Client, url: str, max_bytes: int) -> tuple[bytes, str]:
+def get(
+    http: httpx.Client, url: str, max_bytes: int, *, truncate: bool = False
+) -> tuple[bytes, str]:
     """One GET: the body and the URL it finally came from.
 
     Redirects are followed by hand so every hop is checked again, and the body is read in
-    pieces and dropped as soon as it goes over the cap: a site must not be able to fill the
-    agent's memory by answering a gigabyte.
+    pieces: a site must not be able to fill the agent's memory by answering a gigabyte. An
+    image that goes over the cap is refused, but a page is simply cut (`truncate`): home pages
+    weigh megabytes and what we are looking for is in the head, in the first bytes.
     """
     for _ in range(MAX_REDIRECTS):
         with http.stream("GET", _check(url), follow_redirects=False) as response:
@@ -130,35 +175,72 @@ def get(http: httpx.Client, url: str, max_bytes: int) -> tuple[bytes, str]:
             for chunk in response.iter_bytes():
                 body += chunk
                 if len(body) > max_bytes:
-                    raise IconError("too large")
+                    if not truncate:
+                        raise IconError("too large")
+                    return bytes(body[:max_bytes]), str(response.url)
             return bytes(body), str(response.url)
     raise IconError("too many redirects")
 
 
+def _rank(tag: bytes) -> int:
+    """Which declaration is worth trying first, for a 36 px tile on a dense screen.
+
+    An `apple-touch-icon` is a real logo, square and around 180 px: it beats everything. A
+    declared icon that says it is 64 px or more comes next, then `/favicon.ico`, which is
+    often a multi-size ICO, then the rest, which is usually a 16 px blur.
+    """
+    if APPLE_TOUCH.search(tag):
+        return 3
+    sizes = SIZES.search(tag)
+    if sizes and int(sizes.group(1)) >= 64:
+        return 2
+    return 1
+
+
 def _candidates(http: httpx.Client, domain: str) -> list[str]:
-    """`/favicon.ico` first, then whatever the home page declares."""
+    """Everything worth trying for this site, best first.
+
+    Sites that matter rarely leave their logo at `/favicon.ico` any more: La Poste keeps it in
+    `/ecom/`, impots.gouv.fr in `/libraries/dsfr/`, Grindr on a CDN. All three say so in the
+    head of their home page, so that is what is read first.
+    """
     root = f"https://{domain}/"
-    urls = [urljoin(root, "/favicon.ico")]
+    ranked: list[tuple[int, str]] = []
     try:
-        page, final_url = get(http, root, MAX_PAGE_BYTES)
+        page, final_url = get(http, root, MAX_PAGE_BYTES, truncate=True)
     except (IconError, httpx.HTTPError):
-        return urls
+        page, final_url = b"", root
     for tag in LINK_TAG.findall(page):
         href = HREF.search(tag)
         if REL_ICON.search(tag) and href:
-            urls.append(urljoin(final_url, href.group(1).decode("ascii", "ignore")))
+            url = urljoin(final_url, href.group(1).decode("ascii", "ignore"))
+            ranked.append((_rank(tag), url))
+    # `/favicon.ico` at rank 2, and the Apple convention last, for sites that declare nothing.
+    ranked.append((2, urljoin(root, "/favicon.ico")))
+    ranked.append((0, urljoin(root, "/apple-touch-icon.png")))
+    urls: list[str] = []
+    for _, url in sorted(ranked, key=lambda pair: -pair[0]):
+        if url not in urls:
+            urls.append(url)
     return urls
 
 
 def fetch_icon(http: httpx.Client, domain: str) -> tuple[str, bytes]:
-    """The icon of a site, or IconError. The type comes from the bytes."""
+    """The icon of a site, or IconError. The type comes from the bytes, never from a header."""
     last = IconError("no candidate")
     for url in _candidates(http, domain):
         try:
-            body, _ = get(http, url, MAX_ICON_BYTES)
+            body, _ = get(http, url, MAX_SOURCE_BYTES)
             mime = sniff(body)
             if mime is None:
                 raise IconError("not an image we serve")
+            if mime == "image/x-icon" and len(body) > MAX_ICON_BYTES:
+                trimmed = trim_ico(body)
+                if trimmed is None:
+                    raise IconError("icon too large and not trimmable")
+                body = trimmed
+            if len(body) > MAX_ICON_BYTES:
+                raise IconError("too large")
             return mime, body
         except (IconError, httpx.HTTPError, UnicodeError) as exc:
             last = exc if isinstance(exc, IconError) else IconError(type(exc).__name__)

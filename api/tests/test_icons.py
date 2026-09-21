@@ -15,6 +15,7 @@ from serenity.agent.icons import (
     is_public,
     run_icons,
     sniff,
+    trim_ico,
 )
 from serenity.agent.killswitch import KILL_SWITCH
 from serenity.crypto import contexts
@@ -136,6 +137,96 @@ def test_the_home_page_is_read_when_there_is_no_favicon_ico() -> None:
                 200, text='<html><head><link rel="shortcut icon" href="/img/i.png"></head></html>'
             ),
             f"https://{PUBLIC}/img/i.png": httpx.Response(200, content=PNG),
+        }
+    )
+    with _client(site) as http:
+        assert fetch_icon(http, PUBLIC) == ("image/png", PNG)
+
+
+def _ico(sizes: list[tuple[int, int]]) -> bytes:
+    """An ICO carrying several images: (width, payload length) for each."""
+    count = len(sizes)
+    offset = 6 + 16 * count
+    directory, images = b"", b""
+    for width, length in sizes:
+        # In a real directory, 256 is written as 0; the filler byte follows the same rule.
+        payload = bytes([width % 256]) * length
+        directory += (
+            bytes([width % 256, width % 256, 0, 0])
+            + (1).to_bytes(2, "little")
+            + (32).to_bytes(2, "little")
+            + len(payload).to_bytes(4, "little")
+            + offset.to_bytes(4, "little")
+        )
+        images += payload
+        offset += len(payload)
+    return b"\x00\x00\x01\x00" + count.to_bytes(2, "little") + directory + images
+
+
+def test_a_fat_ico_is_trimmed_to_the_largest_size_that_fits() -> None:
+    # La Poste ships 279 KiB this way, for a 36 px tile.
+    source = _ico([(16, 100), (48, 9000), (256, 300 * 1024)])
+    trimmed = trim_ico(source)
+    assert trimmed is not None
+    assert len(trimmed) == 22 + 9000 < MAX_ICON_BYTES
+    assert trimmed[:4] == b"\x00\x00\x01\x00"
+    assert int.from_bytes(trimmed[4:6], "little") == 1
+    assert trimmed[6] == 48
+    # The offset is rewritten to just after the one-entry directory, and the bytes are copied.
+    assert int.from_bytes(trimmed[18:22], "little") == 22
+    assert trimmed[22:] == bytes([48]) * 9000
+
+
+def test_a_broken_ico_is_refused_rather_than_guessed() -> None:
+    assert trim_ico(b"\x00\x00\x01\x00") is None
+    assert trim_ico(b"not an ico at all") is None
+    # An entry pointing past the end of the file.
+    lying = bytearray(_ico([(32, 50)]))
+    lying[18:22] = (9999).to_bytes(4, "little")
+    assert trim_ico(bytes(lying)) is None
+    # Every size too big to keep.
+    assert trim_ico(_ico([(256, 300 * 1024)])) is None
+
+
+def test_a_home_page_over_the_cap_is_read_anyway_up_to_it() -> None:
+    """La Poste weighs megabytes and keeps its icon in /ecom/: cutting the page must not
+    throw away the head, which is where the declaration is."""
+    head = '<html><head><link rel="icon" href="/ecom/favicon.ico">'
+    site = FakeSite(
+        {
+            f"https://{PUBLIC}/": httpx.Response(200, text=head + "x" * (400 * 1024)),
+            f"https://{PUBLIC}/ecom/favicon.ico": httpx.Response(200, content=PNG),
+        }
+    )
+    with _client(site) as http:
+        assert fetch_icon(http, PUBLIC) == ("image/png", PNG)
+
+
+def test_a_real_logo_is_preferred_to_a_16_px_blur() -> None:
+    apple = PNG + b"apple"
+    site = FakeSite(
+        {
+            f"https://{PUBLIC}/": httpx.Response(
+                200,
+                text=(
+                    '<html><head><link rel="icon" sizes="16x16" href="/small.png">'
+                    '<link rel="apple-touch-icon" sizes="180x180" href="/apple.png">'
+                ),
+            ),
+            f"https://{PUBLIC}/small.png": httpx.Response(200, content=PNG),
+            f"https://{PUBLIC}/apple.png": httpx.Response(200, content=apple),
+            f"https://{PUBLIC}/favicon.ico": httpx.Response(200, content=PNG),
+        }
+    )
+    with _client(site) as http:
+        assert fetch_icon(http, PUBLIC) == ("image/png", apple)
+
+
+def test_the_apple_convention_is_tried_when_nothing_is_declared() -> None:
+    site = FakeSite(
+        {
+            f"https://{PUBLIC}/": httpx.Response(200, text="<html></html>"),
+            f"https://{PUBLIC}/apple-touch-icon.png": httpx.Response(200, content=PNG),
         }
     )
     with _client(site) as http:

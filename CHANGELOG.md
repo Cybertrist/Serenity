@@ -17,6 +17,13 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- **L'agent cherche le logo du site, pas seulement `/favicon.ico`.** Les sites qui comptent ne
+  le laissent plus à l'adresse historique : La Poste le range dans `/ecom/`, impots.gouv.fr dans
+  `/libraries/dsfr/`, Grindr sur un CDN. Tous le déclarent dans l'en-tête de leur page d'accueil,
+  que l'agent lit maintenant jusqu'à 256 Kio au lieu de la jeter quand elle est trop grosse, et
+  il préfère le logo carré haute définition au petit carré flou. Les fichiers ICO qui empilent
+  toutes les tailles sont réduits à une seule : les 279 Kio de La Poste deviennent 9,6 Kio.
+  Banc d'essai de onze sites, tous servis. ADR-020.
 - **Les entrées confiées à l'agent ont leur vraie favicon.** L'agent va la chercher une fois
   par jour, et la range chiffrée avec la clé d'agent : une base volée ne dit toujours pas
   quelles marques vivent dans ton coffre, et l'api sert un bloc qu'elle ne sait pas lire. Le
