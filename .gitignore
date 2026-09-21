@@ -60,3 +60,7 @@ Thumbs.db
 
 # --- Claude Code local settings ---
 .claude/settings.local.json
+
+# --- Brand logo pack, rebuilt by web/scripts/build-logos.mjs ---
+web/public/logos/
+web/src/features/vault/logos.generated.ts

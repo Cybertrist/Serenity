@@ -28,6 +28,10 @@ export default defineConfig({
         // App shell only. The service worker never sees keys, and never caches the API:
         // the encrypted vault cache lives in IndexedDB, written by the app itself.
         globPatterns: ["**/*.{js,css,html,woff2,svg,png,wasm}"],
+        // 3455 brand logos have no business in the service worker: they would weigh the
+        // install down, and caching only the ones you use would write your vault's sites to
+        // disk. They are fetched on demand, so offline they fall back to the monogram.
+        globIgnores: ["logos/**"],
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [],

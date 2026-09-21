@@ -11,7 +11,13 @@
     "test": "vitest",
     "build": "tsc --noEmit && vite build",
     "dev": "vite",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "logos": "node scripts/build-logos.mjs",
+    "prelint": "npm run logos",
+    "pretypecheck": "npm run logos",
+    "pretest": "npm run logos",
+    "prebuild": "npm run logos",
+    "predev": "npm run logos"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
@@ -30,6 +36,7 @@
     "eslint": "^10.10.0",
     "globals": "^17.12.0",
     "prettier": "^3.9.8",
+    "simple-icons": "^16.32.0",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.70.0",

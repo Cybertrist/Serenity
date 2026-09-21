@@ -17,6 +17,15 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- **Le logo du site sur chaque entrée.** À la place du bouclier ou du robot, chaque ligne du
+  coffre et de l'onglet Codes porte le logo de son site, et à défaut sa première lettre sur une
+  couleur qui ne change jamais. Les logos sont embarqués dans Serenity (3455 marques) : le
+  navigateur déduit la marque du domaine qu'il a déjà en mémoire, personne d'autre n'apprend rien,
+  et nginx ne journalise pas cette route. La marque de zone reste en tête de zone et dans la
+  fiche d'une entrée. Pour les sites absents du pack, `SERENITY_FAVICONS_DISTANTES=true` laisse le
+  navigateur aller chercher la favicon sur le site lui-même : c'est coupé par défaut, parce que ça
+  ouvre `img-src` dans la CSP et que chaque site apprend alors ton adresse IP. ADR-019,
+  `docs/07-interface.md`.
 - **La veille arrête de tout redemander.** L'onglet Fuites relançait un scan complet à chaque
   ouverture : une requête à Pwned Passwords par entrée, environ 100 ko de réponse chacune. Sur
   500 comptes, cela faisait 500 requêtes et 50 Mo par visite. Les contrôles qui ne coûtent rien

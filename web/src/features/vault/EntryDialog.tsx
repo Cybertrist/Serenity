@@ -34,7 +34,7 @@ import { errorText } from "../account/screens/wording";
 import { EntryEditor } from "./EntryEditor";
 import { PolicyEditor } from "./PolicyEditor";
 import { TotpCode } from "./TotpCode";
-import { zoneChip } from "./zone";
+import { EntryMark } from "./EntryMark";
 
 function FieldRow({
   label,
@@ -84,7 +84,6 @@ export function EntryDialog({ entry, onClose }: { entry: VaultEntry | null; onCl
   const policy = policies.data?.find((p) => p.item_id === item.id);
   const openRotation = rotations.data?.find((r) => r.item_id === item.id);
   const due = daysUntil(policy?.next_due_at);
-  const chip = zoneChip(item.zone);
   // The password the site may have taken, when a rollback could not put things back.
   const pending = session.keyring ? decryptPending(session.keyring, item) : null;
 
@@ -173,7 +172,7 @@ export function EntryDialog({ entry, onClose }: { entry: VaultEntry | null; onCl
         subtitle={entry.domain ?? "sans adresse"}
         header={
           <>
-            <Chip icon={chip.icon} tone={chip.tone} size={44} duotone />
+            <EntryMark name={data.name} domain={entry.domain} size={44} />
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               <h2 className="m-0 truncate text-title">{data.name}</h2>
               <div className="flex flex-wrap items-center gap-2">

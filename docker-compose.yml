@@ -141,6 +141,9 @@ services:
     <<: *hardening
     build:
       context: ./web
+      # Distant favicons: off by default. Turning it on opens img-src in the CSP (ADR-019).
+      args:
+        FAVICONS_DISTANTES: ${SERENITY_FAVICONS_DISTANTES:-false}
     image: serenity-web:local
     # nginx master needs to switch to its worker user.
     cap_drop: [ALL]

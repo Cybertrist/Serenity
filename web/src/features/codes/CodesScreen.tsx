@@ -9,9 +9,10 @@ import { useMemo, useState } from "react";
 import { useEntries, type VaultEntry } from "../../app/hooks/useEntries";
 import { Header } from "../../app/shell/Header";
 import { useShell } from "../../app/shell/context";
-import { Button, Card, Chip, EmptyState, LIST, LIST_ITEM, Note } from "../../design";
+import { Button, Card, EmptyState, LIST, LIST_ITEM, Note } from "../../design";
 import { plural } from "../../lib/format";
 import { TotpCode } from "../vault/TotpCode";
+import { EntryMark } from "../vault/EntryMark";
 import { zoneChip } from "../vault/zone";
 
 /**
@@ -32,7 +33,7 @@ function CodeRow({
     <div
       className={`flex min-h-[60px] w-full items-center gap-3 px-4 py-2 ${first ? "" : "border-t border-line"}`}
     >
-      <Chip icon={chip.icon} tone={chip.tone} />
+      <EntryMark name={entry.entry.name} domain={entry.domain} />
       <button
         type="button"
         onClick={onOpen}

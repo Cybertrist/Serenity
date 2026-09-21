@@ -18,6 +18,7 @@ import { Button, Card, Chip, EmptyState, LIST, LIST_ITEM, Note, Pill, Row } from
 import { Header } from "../../app/shell/Header";
 import { useShell } from "../../app/shell/context";
 import { daysUntil, plural } from "../../lib/format";
+import { EntryMark } from "./EntryMark";
 import { zoneChip } from "./zone";
 
 function EntryList({
@@ -32,23 +33,20 @@ function EntryList({
   return (
     <Card padded={false}>
       <motion.div variants={LIST} initial="initial" animate="animate">
-        {entries.map((e, i) => {
-          const chip = zoneChip(e.item.zone);
-          return (
-            <motion.div key={e.item.id} variants={LIST_ITEM}>
-              <Row
-                first={i === 0}
-                chip={<Chip icon={chip.icon} tone={chip.tone} />}
-                title={e.entry.name}
-                caption={e.entry.username || e.domain || "sans identifiant"}
-                trailing={trailing(e)}
-                onClick={() => {
-                  onOpen(e);
-                }}
-              />
-            </motion.div>
-          );
-        })}
+        {entries.map((e, i) => (
+          <motion.div key={e.item.id} variants={LIST_ITEM}>
+            <Row
+              first={i === 0}
+              chip={<EntryMark name={e.entry.name} domain={e.domain} />}
+              title={e.entry.name}
+              caption={e.entry.username || e.domain || "sans identifiant"}
+              trailing={trailing(e)}
+              onClick={() => {
+                onOpen(e);
+              }}
+            />
+          </motion.div>
+        ))}
       </motion.div>
     </Card>
   );

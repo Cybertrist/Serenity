@@ -38,6 +38,7 @@ Nommage : `ADR-NNN-titre-court.md`.
 - [ADR-016 : Sauvegardes restic, clés incluses, exercice de restauration](ADR-016-sauvegardes.md)
 - [ADR-017 : Identité française, bleu de France, blanc, rouge Marianne](ADR-017-identite-francaise.md)
 - [ADR-018 : Scan local complet, question au réseau une fois par jour](ADR-018-veille-incrementale.md)
+- [ADR-019 : Le logo du site sur chaque entrée, sans rien dire du coffre](ADR-019-logos-des-entrees.md)
 
 ## Archives
 

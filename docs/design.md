@@ -268,6 +268,13 @@ Phosphor Icons (`@phosphor-icons/react`, noms en `…Icon`) : **duotone** pour l
 boutons. 24 px en navigation, 20 px en liste, 40 px pour les écrans vides. Une icône de liste est
 posée dans une **pastille** (`<Chip>`), teintée du fond doux de son état. **Aucun emoji.**
 
+Une exception, une seule : dans le coffre et dans l'onglet Codes, la pastille d'une ligne porte
+le **logo du site** et sa couleur de marque (`<EntryMark>`), parce que c'est ce qui permet de
+retrouver un compte dans une liste. La couleur de marque est corrigée quand elle disparaît sur
+son fond, et à défaut de logo la ligne porte la première lettre du site sur une teinte stable.
+La marque de zone reste en tête de zone et dans la fiche
+([ADR-019](decisions/ADR-019-logos-des-entrees.md)).
+
 ## Mouvement
 
 Motion (`motion/react`). **Tout vient de `web/src/design/motion.ts`** : aucun écran n'invente sa

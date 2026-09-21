@@ -13,9 +13,9 @@ min(92vw, 92vh, 980px)), qui devient le plein écran sous 768 px, et s'ouvre par
 | **Connexion** | Nouvel appareil, ou tous les 60 jours : identifiant et mot de passe maître, puis le code TOTP à six cases |
 | **Déverrouillage** | Au quotidien : mot de passe maître seul (fonctionne hors ligne) |
 | **Récupération** | Kit + code, nouveau mot de passe maître, **nouveau kit** |
-| **Coffre** | Les deux zones, chacune avec une phrase qui dit qui peut la lire (côte à côte dès que le carré dépasse 620 px), recherche, ajout avec générateur |
+| **Coffre** | Les deux zones, chacune avec une phrase qui dit qui peut la lire (côte à côte dès que le carré dépasse 620 px), **le logo du site sur chaque ligne**, recherche, ajout avec générateur |
 | **Fiche** (dialogue centré) | Copier l'identifiant, afficher / copier le mot de passe (effacé du presse-papiers après 30 s), code TOTP en direct, rotation ou rappel, **arbitrage quand une rotation a laissé deux mots de passe**, historique, **Confier à l'agent / Reprendre**, modifier, supprimer (les trois derniers avec confirmation) |
-| **Codes** | Tous les codes à deux facteurs du coffre sur un écran : code en direct, anneau des secondes restantes, copie en un geste, recherche. Chaque ligne porte la marque de sa zone, et un mot dit lesquels le serveur peut calculer aussi |
+| **Codes** | Tous les codes à deux facteurs du coffre sur un écran : code en direct, anneau des secondes restantes, copie en un geste, recherche. Chaque ligne porte le logo de son site, et un mot dit lesquels le serveur peut calculer aussi |
 | **Fuites** | Veille lancée à l'ouverture de l'onglet, une alerte par carte, « Ouvrir l'entrée » et « Mettre de côté » |
 | **Journal** (dans les réglages) | Filtres Tout / Agent / Toi / Système, regroupé par jour ; l'écran Agent y renvoie |
 | **Agent** | Kill switch (avec confirmation), rotations à approuver ou refuser, prochaines rotations, garde-fous |
@@ -76,6 +76,36 @@ min(92vw, 92vh, 980px)), qui devient le plein écran sous 768 px, et s'ouvre par
   de titre, les trois étapes de la création de compte, la cascade de déverrouillage
   ([ADR-017](decisions/ADR-017-identite-francaise.md)).
 - **Charte** respectée : voir [`design.md`](design.md).
+
+### Le logo d'une entrée
+
+Chaque ligne du coffre porte le logo de son site, à la place du bouclier ou du robot d'avant. La
+marque de zone n'a pas disparu : elle reste en tête de chaque zone, et la fiche d'une entrée dit
+« Protégé par toi » ou « Confié à l'agent » en toutes lettres.
+
+Trois sources, dans cet ordre ([ADR-019](decisions/ADR-019-logos-des-entrees.md)) :
+
+1. **Le pack embarqué**, 3455 marques dessinées dans l'image web à la construction. Le navigateur
+   déduit la marque du domaine qu'il a déjà en mémoire, puis demande un fichier à Serenity.
+   Aucun domaine n'est envoyé nulle part, et nginx ne journalise pas cette route.
+2. **La favicon du site**, seulement si tu l'as activée (voir plus bas). Coupée par défaut.
+3. **Le monogramme** : la première lettre, sur une couleur stable tirée du domaine. C'est ce que
+   voient les sites que le pack ne connaît pas, dont beaucoup de services français : Crédit
+   Agricole, Ameli, Doctolib, Leboncoin, ainsi qu'Amazon et LinkedIn, retirés du pack pour des
+   raisons de marque.
+
+Pour activer la favicon distante, dans `.env` sur la VM :
+
+```
+SERENITY_FAVICONS_DISTANTES=true
+```
+
+puis `make up`. Ce que ça change, et c'est le seul réglage de Serenity qui retire une protection :
+chaque site apprend ton adresse IP et l'heure à laquelle tu ouvres ton coffre, et la CSP passe à
+`img-src 'self' data: blob: https:`, ce qui permettrait à un script injecté dans la page de faire
+sortir des données dans l'URL d'une image. C'est pour ça que le réglage vit dans `.env` et pas
+dans les réglages de l'appli : la CSP est posée par nginx au chargement de la page, une case à
+cocher dans l'interface ne pourrait pas la commander.
 
 ## Comment tester
 
