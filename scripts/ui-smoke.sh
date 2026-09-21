@@ -14,6 +14,9 @@ cleanup() {
 trap cleanup EXIT
 cleanup
 mkdir -p "$SHOTS"
+# Drop the captures of the previous run: inserting a screen renumbers every file after it, and
+# the stale names would sit next to the fresh ones, hours older and easy to read as current.
+find "$SHOTS" -maxdepth 1 -name '*.png' -delete
 
 docker network create "$NET" >/dev/null
 # ma-banque.test is the site the icon pass pretends to fetch: the address is public (so the
