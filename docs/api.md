@@ -96,6 +96,7 @@ chiffrés (voir [`crypto.md`](crypto.md)).
 | `GET /api/watch/emails` | session |  | `EmailsOut` | Adresses surveillées (HIBP) |
 | `POST /api/watch/emails` | déverrouillé | `EmailIn` | `EmailsOut` | Ajouter une adresse surveillée |
 | `DELETE /api/watch/emails/{email_id}` | déverrouillé |  | `EmailsOut` | Retirer une adresse surveillée |
+| `GET /api/watch/plan` | session |  | `PlanOut` | Les entrées dont le mot de passe reste à vérifier sur le réseau |
 | `POST /api/watch/report` | déverrouillé | `ReportIn` | `SummaryOut` | Résultat d'un scan du navigateur (identifiants + types) |
 
 ## Schémas
@@ -122,6 +123,7 @@ chiffrés (voir [`crypto.md`](crypto.md)).
 - **NewPasswordIn** : `kdf`, `auth_key`, `uk_by_mk`
 - **NotificationOut** : `id`, `kind`, `breach_id`, `item_id`, `created_at`, `read_at`
 - **PasswordChangeIn** : `current_auth_key`, `totp`, `new`
+- **PlanOut** : `items`, `last_scan_at`, `recheck_hours`
 - **PolicyIn** : `frequency_days`, `mode`, `changed_at`
 - **PolicyOut** : `item_id`, `frequency_days`, `mode`, `changed_at`, `next_due_at`
 - **PreloginIn** : `username`
@@ -129,7 +131,7 @@ chiffrés (voir [`crypto.md`](crypto.md)).
 - **RecoverStartIn** : `username`, `recovery_auth_key`, `totp`
 - **RecoverStartOut** : `user_id`, `ticket`, `uk_by_rk`, `agent_key`
 - **RecoveryKitIn** : `current_auth_key`, `totp`, `recovery_auth_key`, `uk_by_rk`
-- **ReportIn** : `scanned`, `checked`, `alerts`
+- **ReportIn** : `scanned`, `checked`, `alerts`, `pwned_scanned`
 - **ResolveIn** : `keep`
 - **RevisionOut** : `revision`, `zone`, `block`, `created_at`
 - **RotationOut** : `id`, `item_id`, `status`, `trigger`, `mode`, `requested_at`, `decided_at`, `finished_at`, `error`

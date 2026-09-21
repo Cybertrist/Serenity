@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from sqlmodel import col, select
 
 from serenity import audit
+from serenity.agent import rotations
 from serenity.auth.validation import InvalidInputError
 from serenity.auth.validation import user_id as check_uuid
 from serenity.deps import DbDep, SessionDep, SettingsDep, UnlockedDep
@@ -45,17 +46,28 @@ class ReportIn(BaseModel):
 
     `checked` lists the kinds this scan really verified (e.g. without Pwned Passwords when it
     was unreachable): only those alerts can be opened or resolved.
+
+    `pwned_scanned` is the subset of `scanned` this scan really asked Pwned Passwords about.
+    The local checks always cover the whole vault, the network one is spread over time
+    (GET /api/watch/plan). Absent means the whole scan was asked, as before.
     """
 
     scanned: list[str] = Field(max_length=MAX_SCAN)
     checked: list[AlertKind] = Field(default_factory=lambda: list(ALL_KINDS))
     alerts: list[AlertIn] = Field(max_length=MAX_SCAN * len(ITEM_BREACH_KINDS))
+    pwned_scanned: list[str] | None = Field(default=None, max_length=MAX_SCAN)
 
 
 class SummaryOut(BaseModel):
     new: int
     open: int
     resolved: int
+
+
+class PlanOut(BaseModel):
+    items: list[str]
+    last_scan_at: datetime | None
+    recheck_hours: int
 
 
 class BreachOut(BaseModel):
@@ -89,16 +101,32 @@ class EmailsOut(BaseModel):
 
 @router.post("/watch/report")
 def post_report(body: ReportIn, row: UnlockedDep, db: DbDep) -> SummaryOut:
+    now = utcnow()
     try:
         scanned = [check_uuid(i) for i in body.scanned]
         alerts = [Alert(check_uuid(a.item_id), BreachKind(a.kind)) for a in body.alerts]
         kinds = tuple(BreachKind(k) for k in dict.fromkeys(body.checked))
+        scope = (
+            {check_uuid(i) for i in body.pwned_scanned} if body.pwned_scanned is not None else None
+        )
         summary = service.record_item_scan(
-            db, row.user_id, scanned, alerts, "client", utcnow(), kinds=kinds
+            db, row.user_id, scanned, alerts, "client", now, kinds=kinds, pwned_scope=scope
         )
     except (InvalidInputError, service.InvalidReportError) as exc:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc)) from None
+    # A password found exposed must not wait for the agent's hourly pass (docs/05-veille.md).
+    if summary.new:
+        rotations.schedule_after_report(db, row.user_id, now)
     return SummaryOut(new=summary.new, open=summary.open, resolved=summary.resolved)
+
+
+@router.get("/watch/plan")
+def get_plan(row: SessionDep, db: DbDep, settings: SettingsDep) -> PlanOut:
+    """What still has to be asked of Pwned Passwords: never checked, changed, or over a day old."""
+    plan = service.scan_plan(db, row.user_id, utcnow(), settings.watch_recheck_hours)
+    return PlanOut(
+        items=plan.items, last_scan_at=plan.last_scan_at, recheck_hours=settings.watch_recheck_hours
+    )
 
 
 @router.get("/breaches")

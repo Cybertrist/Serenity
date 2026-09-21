@@ -49,3 +49,19 @@ export class PwnedPasswords {
     return (await this.range(digest.slice(0, 5))).get(digest.slice(5)) ?? 0;
   }
 }
+
+/**
+ * One instance for the whole unlocked session, so the prefix cache survives from one scan to
+ * the next: two entries sharing a prefix cost one request, and re-opening the tab costs none.
+ * Holds no secret (prefixes and public answers), and is dropped when the vault locks.
+ */
+let shared: PwnedPasswords | null = null;
+
+export function sharedPwned(): PwnedPasswords {
+  shared ??= new PwnedPasswords();
+  return shared;
+}
+
+export function forgetPwned(): void {
+  shared = null;
+}
