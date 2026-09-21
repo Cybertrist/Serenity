@@ -60,6 +60,15 @@ vit dans `.env`, pas dans l'interface : la CSP est décidée par nginx au charge
 une case à cocher dans l'application ne peut ni la durcir ni la relâcher. Un interrupteur qui ne
 commande rien serait un mensonge d'interface.
 
+## Ce que la favicon distante ne couvre pas
+
+Le navigateur ne peut tenter qu'une adresse, `https://<domaine>/favicon.ico`, parce qu'il n'a pas
+le droit de lire le HTML d'un autre site. Les sites qui rangent leur icône ailleurs et la
+déclarent dans leur page d'accueil ne donnent donc rien : La Poste, Grindr et impots.gouv.fr en
+sont trois exemples mesurés. L'agent, lui, lit la page d'accueil et suit la déclaration, donc
+confier l'entrée à l'agent reste le chemin qui couvre le plus de sites
+([ADR-020](ADR-020-icones-de-la-zone-agent.md)).
+
 ## Alternatives écartées
 
 - **Un seul fichier contenant tout le pack**, pour que le serveur ne voie même pas quel logo est

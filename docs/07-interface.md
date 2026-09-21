@@ -104,7 +104,15 @@ Pour activer la favicon distante, dans `.env` sur la VM :
 SERENITY_FAVICONS_DISTANTES=true
 ```
 
-puis `make up`. Ce que ça change, et c'est le seul réglage de Serenity qui retire une protection :
+puis `make up`. Attention à ce que ça couvre vraiment : le navigateur ne peut tenter qu'une seule
+adresse, `https://<domaine>/favicon.ico`. Un site qui range son icône ailleurs et la déclare dans
+le HTML de sa page d'accueil ne donnera rien, parce qu'un navigateur n'a pas le droit de lire le
+HTML d'un autre site. Mesuré le 21 septembre 2026 : Amazon, Ameli, Doctolib, Leboncoin et le
+Crédit Agricole donnent leur icône ; La Poste (elle est dans `/ecom/`), Grindr (sur un CDN) et
+impots.gouv.fr (dans `/libraries/dsfr/`) ne donnent rien. Pour ceux-là, confier l'entrée à
+l'agent marche : lui lit la page d'accueil et suit la déclaration.
+
+Ce que le réglage change par ailleurs, et c'est le seul de Serenity qui retire une protection :
 chaque site apprend ton adresse IP et l'heure à laquelle tu ouvres ton coffre, et la CSP passe à
 `img-src 'self' data: blob: https:`, ce qui permettrait à un script injecté dans la page de faire
 sortir des données dans l'URL d'une image. C'est pour ça que le réglage vit dans `.env` et pas
