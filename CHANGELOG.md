@@ -7,6 +7,14 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Sécurité
+
+- **Les clés de développement exposées sont mortes.** Les deux clés du serveur (`server.key`,
+  `totp.key`) avaient traîné en clair pendant la mise en place de septembre. Le coffre de test a
+  été détruit, les clés regénérées, et le dépôt de sauvegarde effacé avec elles : il contenait
+  des instantanés des anciennes. Compte de test et kit de récupération refaits à neuf. Le risque
+  qui bloquait l'arrivée de vrais comptes est levé (`docs/10-securite.md`, issue #27).
+
 ### Ajouté
 
 - **La veille arrête de tout redemander.** L'onglet Fuites relançait un scan complet à chaque
