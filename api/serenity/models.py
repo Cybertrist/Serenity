@@ -214,6 +214,21 @@ class Breach(SQLModel, table=True):
     resolved_at: datetime | None = _ts(default=None)
 
 
+class ItemScan(SQLModel, table=True):
+    """When an entry was last checked against Pwned Passwords, and at which revision.
+
+    Only the network check is tracked: the local checks (reused, weak, old) cost nothing and run
+    on the whole vault every time. Holds no secret, and nothing the server did not already know.
+    """
+
+    __tablename__ = "item_scan"
+
+    item_id: str = Field(primary_key=True, foreign_key="item.id", ondelete="CASCADE")
+    user_id: str = Field(foreign_key="user.id", index=True, ondelete="CASCADE")
+    pwned_revision: int
+    pwned_checked_at: datetime = _ts(default_factory=utcnow)
+
+
 class Notification(SQLModel, table=True):
     """In-app notification (ADR-005). No text: the client renders it, so no entry name is stored."""
 

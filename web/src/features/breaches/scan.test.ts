@@ -72,6 +72,48 @@ describe("scan in the browser", () => {
     expect(found).toEqual(new Set(["0:weak", "0:pwned_password", "1:reused", "2:reused", "3:old"]));
   });
 
+  it("asks the network only about the entries in the plan, but checks everything locally", async () => {
+    const urls: string[] = [];
+    const shared = "x7Kq-m2Pz-9Lw4-rT8v";
+    const { state, keyring } = vault([
+      ["personal", { v: 1, type: "login", name: "A", password: LEAKED }],
+      ["personal", { v: 1, type: "login", name: "B", password: shared }],
+      ["agent", { v: 1, type: "login", name: "C", password: shared }],
+    ]);
+    const ids = state.active().map((i) => i.id);
+    const only = ids.slice(1, 2);
+    const result = await scanVault(state, keyring, fakePwned(urls), new Date(), new Set(only));
+    // Every entry was looked at locally, one single request went out.
+    expect(result.scanned).toEqual(ids);
+    expect(result.pwned_scanned).toEqual(only);
+    expect(urls).toHaveLength(1);
+    const found = new Set(result.alerts.map((a) => `${String(ids.indexOf(a.item_id))}:${a.kind}`));
+    // A and B share nothing, B and C do: reuse is still seen, and A is not asked about.
+    expect(found).toEqual(new Set(["0:weak", "1:reused", "2:reused"]));
+  });
+
+  it("asks about nothing when the plan is empty", async () => {
+    const urls: string[] = [];
+    const { state, keyring } = vault([
+      ["personal", { v: 1, type: "login", name: "A", password: LEAKED }],
+    ]);
+    const result = await scanVault(state, keyring, fakePwned(urls), new Date(), new Set());
+    expect(urls).toEqual([]);
+    expect(result.pwned_scanned).toEqual([]);
+    expect(result.alerts.map((a) => a.kind)).toEqual(["weak"]);
+  });
+
+  it("reuses the prefix cache across scans", async () => {
+    const urls: string[] = [];
+    const pwned = fakePwned(urls);
+    const { state, keyring } = vault([
+      ["personal", { v: 1, type: "login", name: "A", password: LEAKED }],
+    ]);
+    await scanVault(state, keyring, pwned);
+    await scanVault(state, keyring, pwned);
+    expect(urls).toHaveLength(1);
+  });
+
   it("sends only 5-character prefixes to Pwned Passwords", async () => {
     const urls: string[] = [];
     const secret = "mot-de-passe-de-test-tres-long-42";

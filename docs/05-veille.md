@@ -24,12 +24,48 @@ Serenity vérifie tes mots de passe et te prévient.
 - **Notifications** : chaque nouvelle alerte crée une notification dans l'appli
   (`GET /api/notifications`). Elle ne contient aucun texte : l'appli écrit « Netflix : mot de
   passe exposé » elle-même, avec le nom qu'elle seule peut déchiffrer.
+- **Une fuite sur une entrée confiée à l'agent ne patiente pas.** Dès que le rapport du
+  navigateur ouvre une alerte « mot de passe exposé », le serveur programme la rotation dans la
+  foulée, sans attendre le passage horaire de l'agent. Le kill switch est vérifié avant, comme
+  toujours, et une entrée personnelle n'est jamais concernée : elle est seulement signalée.
+
+### À quelle fréquence
+
+Le scan du navigateur a deux moitiés, et une seule coûte quelque chose.
+
+| Vérification | Où | Quand |
+|---|---|---|
+| Réutilisé, faible, ancien | en mémoire, dans le navigateur | à chaque ouverture de l'onglet Fuites |
+| Mot de passe exposé | requête à Pwned Passwords | au plus une fois par jour et par entrée |
+
+Les contrôles locaux ne coûtent rien et « réutilisé » ne se voit qu'en comparant toutes les
+entrées entre elles : ils portent donc toujours sur tout le coffre. La question posée à Pwned
+Passwords, elle, vaut environ 100 ko de réponse par entrée, à cause du bourrage qui protège ta
+vie privée. Sur 500 entrées, la reposer à chaque ouverture de l'onglet voudrait dire 500
+requêtes et 50 Mo.
+
+Le serveur retient donc, pour chaque entrée, **quand elle a été posée et pour quelle
+révision** (table `item_scan` : un identifiant, un numéro de révision, une date, rien d'autre
+qu'il ne sache déjà). `GET /api/watch/plan` répond ce qui reste à demander :
+
+- une entrée **jamais vérifiée**, donc une entrée que tu viens d'ajouter ;
+- une entrée dont **le mot de passe a changé** depuis (la révision a bougé) ;
+- une entrée vérifiée il y a **plus de 24 heures** (`SERENITY_WATCH_RECHECK_HOURS`).
+
+Un nouveau compte est donc vérifié tout de suite, et rouvrir l'onglet dix fois dans la journée
+ne renvoie rien sur le réseau. Le bouton « Vérifier maintenant » ignore le plan et repose la
+question pour tout le coffre.
+
+Le rapport transporte pour cela **deux listes** : `scanned`, tout ce que le scan a regardé, et
+`pwned_scanned`, ce qu'il a vraiment demandé au réseau. Sans cette distinction, une alerte
+« mot de passe exposé » serait fermée par un scan qui n'a jamais posé la question.
 
 ### Routes
 
 | Route | Accès | Rôle |
 |---|---|---|
 | `POST /api/watch/report` | déverrouillé | Résultat d'un scan du navigateur (identifiants + types) |
+| `GET /api/watch/plan` | session | Les entrées dont le mot de passe reste à vérifier sur le réseau |
 | `GET /api/breaches?status=open\|all` | session | Alertes |
 | `POST /api/breaches/{id}/dismiss` | déverrouillé | Mettre une alerte de côté |
 | `GET/POST/DELETE /api/watch/emails` | session / déverrouillé | Adresses surveillées (20 au plus) |
@@ -48,13 +84,18 @@ Serenity vérifie tes mots de passe et te prévient.
   mot de passe personnel ne sort jamais.
 - **Réutilisation : seul le navigateur en décide**. L'agent ne voit pas ta zone personnelle ;
   s'il jugeait la réutilisation, il fermerait à tort une alerte trouvée par ton navigateur.
+- **Le serveur ne peut pas faire ce scan à ta place.** Il ne sait pas déchiffrer ta zone
+  personnelle, c'est tout le principe du double coffre. Il vérifie la zone agent toutes les 6 h,
+  le reste ne peut se faire que dans un navigateur déverrouillé. Le plan est sa façon de dire à
+  ce navigateur ce qui reste à faire, sans jamais voir un mot de passe.
 - **Kill switch** : l'agent le vérifie avant chaque compte et chaque adresse. S'il est
   enclenché, la veille ne part pas, et c'est noté au journal. Son bouton est dans l'écran Agent.
 - **Mêmes règles des deux côtés** : `shared/test-vectors/watch.json` est vérifié par Python et
   par TypeScript.
 - **Seul l'agent sort sur Internet** (réseau `egress`). La clé HIBP n'est donnée qu'à lui ;
   l'api sait seulement si elle est configurée.
-- Voir [ADR-010](decisions/ADR-010-veille.md).
+- Voir [ADR-010](decisions/ADR-010-veille.md) et
+  [ADR-018](decisions/ADR-018-veille-incrementale.md).
 
 ## Comment tester
 
@@ -86,6 +127,11 @@ client le simule sans Pwned Passwords (le conteneur `api` n'a pas Internet) :
 ```bash
 make client c=scan
 ```
+
+Pour voir la cadence à l'oeuvre : ouvre l'onglet **Fuites** avec la console réseau du
+navigateur. Le premier passage envoie une requête par entrée du plan vers
+`api.pwnedpasswords.com`. Rouvre l'onglet : plus aucune. Change le mot de passe d'une entrée,
+rouvre : elle seule repart. Le bouton « Vérifier maintenant » repose la question pour tout.
 
 Adresses e-mail : ajoute `HIBP_API_KEY=` dans `.env` (clé payante sur haveibeenpwned.com), puis
 `make up`. Sans clé, les adresses sont enregistrées mais pas vérifiées.
