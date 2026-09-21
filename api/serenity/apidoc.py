@@ -52,6 +52,7 @@ ROLES = {
         "Fréquence et mode de rotation (rappels en zone personnelle)"
     ),
     "POST /api/watch/report": "Résultat d'un scan du navigateur (identifiants + types)",
+    "GET /api/watch/plan": "Les entrées dont le mot de passe reste à vérifier sur le réseau",
     "GET /api/breaches": "Alertes de la veille",
     "POST /api/breaches/{breach_id}/dismiss": "Mettre une alerte de côté",
     "GET /api/watch/emails": "Adresses surveillées (HIBP)",

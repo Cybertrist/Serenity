@@ -120,6 +120,47 @@ def _schedule(
     return rotation
 
 
+def _schedule_exposed(
+    session: Session, report: ScheduleReport, now: datetime, user_id: str | None = None
+) -> None:
+    """Agent-zone entries with an open exposed-password alert get a rotation, at most one."""
+    query = select(Breach).where(
+        Breach.kind == BreachKind.PWNED_PASSWORD, Breach.status == BreachStatus.OPEN
+    )
+    if user_id is not None:
+        query = query.where(Breach.user_id == user_id)
+    for breach in session.exec(query).all():
+        if report.skipped or killswitch.is_engaged(session):
+            report.skipped = True
+            break
+        item = session.get(Item, breach.item_id) if breach.item_id else None
+        if item is None or item.zone != Zone.AGENT or item.deleted_at is not None:
+            continue
+        if _open_rotation(session, item.id) is None:
+            item_policy = session.get(RotationPolicy, item.id)
+            mode = item_policy.mode if item_policy else PolicyMode.APPROVAL
+            _schedule(session, item, mode, "breach", now)
+            report.scheduled += 1
+
+
+def schedule_after_report(session: Session, user_id: str, now: datetime) -> ScheduleReport:
+    """Called right after a browser scan opened new alerts, so a fresh leak does not wait for
+    the hourly pass. Reads policies and writes rotations: no server key, no decryption."""
+    report = ScheduleReport()
+    _schedule_exposed(session, report, now, user_id)
+    if report.skipped:
+        audit.record(
+            session,
+            Actor.AGENT,
+            "agent.schedule",
+            user_id=user_id,
+            outcome="skipped",
+            details={"reason": "kill_switch"},
+        )
+    session.commit()
+    return report
+
+
 def run_schedule(session: Session, now: datetime) -> ScheduleReport:
     """Hourly: due policies -> rotations (agent zone) or reminders (personal zone);
     exposed agent-zone passwords -> rotations. The kill switch is checked before each action."""
@@ -161,23 +202,7 @@ def run_schedule(session: Session, now: datetime) -> ScheduleReport:
                 target_id=item.id,
             )
             report.reminders += 1
-    exposed = session.exec(
-        select(Breach).where(
-            Breach.kind == BreachKind.PWNED_PASSWORD, Breach.status == BreachStatus.OPEN
-        )
-    ).all()
-    for breach in exposed:
-        if report.skipped or killswitch.is_engaged(session):
-            report.skipped = True
-            break
-        item = session.get(Item, breach.item_id) if breach.item_id else None
-        if item is None or item.zone != Zone.AGENT or item.deleted_at is not None:
-            continue
-        if _open_rotation(session, item.id) is None:
-            item_policy = session.get(RotationPolicy, item.id)
-            mode = item_policy.mode if item_policy else PolicyMode.APPROVAL
-            _schedule(session, item, mode, "breach", now)
-            report.scheduled += 1
+    _schedule_exposed(session, report, now)
     if report.skipped:
         audit.record(
             session,
