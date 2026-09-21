@@ -83,11 +83,14 @@ Chaque ligne du coffre porte le logo de son site, à la place du bouclier ou du 
 marque de zone n'a pas disparu : elle reste en tête de chaque zone, et la fiche d'une entrée dit
 « Protégé par toi » ou « Confié à l'agent » en toutes lettres.
 
-Trois sources, dans cet ordre ([ADR-019](decisions/ADR-019-logos-des-entrees.md)) :
+Quatre sources, dans cet ordre ([ADR-019](decisions/ADR-019-logos-des-entrees.md)) :
 
-1. **Le pack embarqué**, 3455 marques dessinées dans l'image web à la construction. Le navigateur
+1. **Le pack embarqué**, 3457 marques dessinées dans l'image web à la construction. Le navigateur
    déduit la marque du domaine qu'il a déjà en mémoire, puis demande un fichier à Serenity.
-   Aucun domaine n'est envoyé nulle part, et nginx ne journalise pas cette route.
+   Aucun domaine n'est envoyé nulle part, et nginx ne journalise pas cette route. Le pack vient
+   de simple-icons, qui ignore beaucoup de marques françaises : celles qu'on ajoute à la main
+   vivent dans `web/assets/logos/`, un SVG et une couleur par marque, et le script de
+   construction les recopie dans le pack ([ADR-021](decisions/ADR-021-logos-ajoutes-a-la-main.md)).
 2. **La vraie favicon, pour les entrées confiées à l'agent.** C'est l'agent qui va la chercher,
    une fois par jour, et qui la range chiffrée avec AK : l'api sert un bloc qu'elle ne sait pas
    lire, ton navigateur l'ouvre. La zone personnelle n'est jamais concernée

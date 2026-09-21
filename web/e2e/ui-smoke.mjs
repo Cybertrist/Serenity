@@ -108,6 +108,10 @@ await add(
   "JBSWY3DPEHPK3PXP",
 );
 await add("Spotify", "tristanj", "x7Kq-m2Pz-9Lw4-rT8v", "https://open.spotify.com");
+// Two marks simple-icons does not carry, kept by hand in web/assets/logos (ADR-021). They
+// stay in the personal zone: nothing is fetched for them, the pack answers on its own.
+await add("La Poste", "tristan.j", "R4m!7pQw2#Lz9", "https://www.laposte.fr");
+await add("Cinéville", "tristanj", "T8v-w3Nq-5Kp2", "https://www.cineville.fr");
 await shot("05-coffre");
 await page.getByRole("button", { name: /Netflix/ }).click();
 await page.getByRole("dialog").waitFor();

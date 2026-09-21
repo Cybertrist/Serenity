@@ -17,6 +17,17 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- **La Poste et Cinéville ont leur logo.** simple-icons couvre 3455 marques, surtout
+  anglophones, et ignore les marques françaises du quotidien. Ces deux-là n'avaient donc qu'un
+  monogramme en zone personnelle, et pour Cinéville une favicon de 32 pixels, floue, en zone
+  agent. Comme une entrée peut passer d'une zone à l'autre, le logo devait venir du pack, seul
+  chemin qui sert les deux. Les marques ajoutées à la main vivent maintenant dans
+  `web/assets/logos/`, commitées, et sont recopiées dans le pack après sa régénération : un
+  fichier déposé directement dans le dossier généré était effacé au build suivant. Les deux
+  formes sont mesurées et non redessinées : l'oiseau découpé du fichier officiel de La Poste,
+  le C de Cinéville suivi dans le canal alpha de leur logotype. Un test lit le disque et
+  refuse une couleur sans fichier ou un fichier sans couleur, ce que rien ne vérifiait.
+  ADR-021, `web/assets/logos/README.md`.
 - **L'agent cherche le logo du site, pas seulement `/favicon.ico`.** Les sites qui comptent ne
   le laissent plus à l'adresse historique : La Poste le range dans `/ecom/`, impots.gouv.fr dans
   `/libraries/dsfr/`, Grindr sur un CDN. Tous le déclarent dans l'en-tête de leur page d'accueil,

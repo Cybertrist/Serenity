@@ -9,13 +9,14 @@
  * already holds, in the browser (see logos.ts).
  */
 
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as icons from "simple-icons";
 
 const web = dirname(dirname(fileURLToPath(import.meta.url)));
 const outDir = join(web, "public", "logos");
+const localDir = join(web, "assets", "logos");
 const table = join(web, "src", "features", "vault", "logos.generated.ts");
 const version = JSON.parse(
   readFileSync(join(web, "node_modules", "simple-icons", "package.json"), "utf8"),
@@ -27,7 +28,15 @@ const PATH = / d="([^"]+)"/;
 rmSync(outDir, { recursive: true, force: true });
 mkdirSync(outDir, { recursive: true });
 
-const colours = [];
+/** Writes one brand into the pack, in the single shape the CSS mask can draw. */
+function write(slug, path) {
+  writeFileSync(
+    join(outDir, `${slug}.svg`),
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="${path}"/></svg>\n`,
+  );
+}
+
+const colours = new Map();
 for (const icon of Object.values(icons)) {
   if (typeof icon !== "object" || icon === null || !("slug" in icon)) continue;
   const { slug, hex, svg } = icon;
@@ -35,12 +44,31 @@ for (const icon of Object.values(icons)) {
   if (!/^[a-z0-9]+$/.test(slug) || !/^[0-9A-F]{6}$/.test(hex)) continue;
   const path = PATH.exec(svg)?.[1];
   if (path === undefined || path.includes("<")) continue;
-  writeFileSync(
-    join(outDir, `${slug}.svg`),
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="${path}"/></svg>\n`,
-  );
-  // Quoted: a slug may start with a digit ("1password"), which is not an identifier.
-  colours.push(`  "${slug}": "${hex}",`);
+  write(slug, path);
+  colours.set(slug, hex);
+}
+const fromIcons = colours.size;
+
+// Marks simple-icons does not carry, kept by hand in assets/logos and copied in after the
+// regeneration above, which wipes the directory. A malformed file stops the build: a hole
+// in the pack would only show up as a missing logo, long after the fact.
+const declared = JSON.parse(readFileSync(join(localDir, "colours.json"), "utf8"));
+const files = readdirSync(localDir).filter((name) => name.endsWith(".svg"));
+for (const name of files) {
+  const slug = name.slice(0, -4);
+  if (!(slug in declared)) throw new Error(`logos: ${name} has no colour in colours.json`);
+}
+for (const [slug, hex] of Object.entries(declared)) {
+  if (!/^[a-z0-9]+$/.test(slug)) throw new Error(`logos: "${slug}" is not a usable slug`);
+  if (!/^[0-9A-F]{6}$/.test(hex)) throw new Error(`logos: ${slug} has a bad colour "${hex}"`);
+  if (!files.includes(`${slug}.svg`)) throw new Error(`logos: ${slug}.svg is missing`);
+  const svg = readFileSync(join(localDir, `${slug}.svg`), "utf8");
+  if (!svg.includes('viewBox="0 0 24 24"')) throw new Error(`logos: ${slug} is not a 24 box`);
+  if (svg.split("<path").length !== 2) throw new Error(`logos: ${slug} needs exactly one path`);
+  const path = PATH.exec(svg)?.[1];
+  if (path === undefined || path.includes("<")) throw new Error(`logos: ${slug} has no shape`);
+  write(slug, path);
+  colours.set(slug, hex);
 }
 
 writeFileSync(
@@ -50,10 +78,14 @@ writeFileSync(
     "",
     "/** Brand colour of every logo in public/logos, by slug. */",
     "export const LOGO_COLOURS: Readonly<Record<string, string>> = {",
-    ...colours,
+    // Quoted: a slug may start with a digit ("1password"), which is not an identifier.
+    ...[...colours].map(([slug, hex]) => `  "${slug}": "${hex}",`),
     "};",
     "",
   ].join("\n"),
 );
 
-console.log(`logos: ${String(colours.length)} brands from simple-icons ${version}`);
+console.log(
+  `logos: ${String(colours.size)} brands, ${String(fromIcons)} from simple-icons ${version}, ` +
+    `${String(files.length)} from assets/logos`,
+);
