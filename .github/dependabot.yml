@@ -11,10 +11,25 @@ updates:
     groups:
       dev-dependencies:
         dependency-type: development
+    ignore:
+      # typescript-eslint 8.x declares the peer typescript ">=4.8.4 <6.1.0", and no published
+      # version supports TypeScript 7 yet. A major bump here only breaks "npm ci" (PR #42).
+      # Drop this line once typescript-eslint ships TypeScript 7 support.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
   - package-ecosystem: docker
     directories: [/api, /web]
     schedule: { interval: weekly }
     labels: [infra]
+    ignore:
+      # The api image follows requires-python in api/pyproject.toml (">=3.12,<3.13"). Bumping
+      # the base image alone makes "pip install -e ." refuse the package (PR #35). A Python
+      # feature release is 3.12 -> 3.14, a semver minor, hence both types here. Patches
+      # (3.12.14 -> 3.12.15) still come through. Moving to a newer Python is a deliberate
+      # choice, made in pyproject.toml first.
+      - dependency-name: python
+        update-types:
+          [version-update:semver-major, version-update:semver-minor]
   - package-ecosystem: docker-compose
     directory: /
     schedule: { interval: weekly }

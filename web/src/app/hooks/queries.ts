@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { agentStatus, policies, rotations } from "../../features/agent/api";
 import type { BreachRecord } from "../../features/breaches/scan";
+import { scanPlan } from "../../features/breaches/scan";
 import { useSession } from "../session";
 
 export function useBreaches() {
@@ -9,6 +10,16 @@ export function useBreaches() {
   return useQuery({
     queryKey: ["breaches"],
     queryFn: () => api.get<BreachRecord[]>("/api/breaches"),
+    enabled: phase === "unlocked" && !offline,
+  });
+}
+
+/** When the server last saw an entry checked against Pwned Passwords, on any device. */
+export function useScanPlan() {
+  const { api, phase, offline } = useSession();
+  return useQuery({
+    queryKey: ["scan-plan"],
+    queryFn: () => scanPlan(api),
     enabled: phase === "unlocked" && !offline,
   });
 }
