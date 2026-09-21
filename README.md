@@ -64,6 +64,8 @@ Au 20 septembre 2026, avant la `v0.1.0`.
 
 <img src="docs/img/sections/s05.png" alt="05 Installation" width="100%">
 
+<img src="docs/img/blocs/01.png" alt="Terminal bash : installation" width="100%">
+
 ```bash
 git clone git@github.com:Cybertrist/Serenity.git
 cd Serenity
