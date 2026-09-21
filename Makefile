@@ -110,7 +110,8 @@ rotation-demo: dev-image ## The agent rotating a password on the demo site (real
 	scripts/rotation-demo.sh
 
 ui-smoke: dev-image ## Walk every screen in Chromium (production web image, strict CSP); screenshots in web/e2e/shots
-	$(COMPOSE) build web
+	@# Pinned, not read from .env: this test walks the strict policy, whatever the operator runs.
+	$(COMPOSE) build --build-arg FAVICONS_DISTANTES=false web
 	scripts/ui-smoke.sh web/e2e/shots
 
 brand: ## Rebuild the icons and the social banner from the mark (Chromium in Docker)
