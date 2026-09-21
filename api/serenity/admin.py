@@ -80,8 +80,12 @@ def watch_now() -> int:
     return 0
 
 
-def icons_now() -> int:
-    """Fetch the missing site icons of the agent zone, now (ADR-020)."""
+def icons_now(force: bool = False) -> int:
+    """Fetch the missing site icons of the agent zone, now (ADR-020).
+
+    `--force` ignores the waiting time and asks every site again: what you want right after
+    fixing something, and not what a daily job should ever do by itself.
+    """
     settings = get_settings()
     server_key = read_key_file(settings.server_key_file)
     drop_privileges()
@@ -90,7 +94,8 @@ def icons_now() -> int:
     with httpx.Client(
         timeout=icons.TIMEOUT_SECONDS, headers={"user-agent": icons.ICON_USER_AGENT}
     ) as http:
-        report = icons.run_icons(engine, server_key, http, utcnow(), settings.icons_refresh_days)
+        days = 0 if force else settings.icons_refresh_days
+        report = icons.run_icons(engine, server_key, http, utcnow(), days)
     if report.skipped:
         print("Kill switch actif : aucune icône récupérée.")
         return 0
@@ -188,7 +193,12 @@ def main(argv: list[str] | None = None) -> int:
     reset.add_argument("username")
     sub.add_parser("watch-now", help="run the agent-zone watch now (agent container)")
     sub.add_parser("schedule-now", help="run the rotation due-date check now")
-    sub.add_parser("icons-now", help="fetch the missing site icons of the agent zone")
+    icons_parser = sub.add_parser(
+        "icons-now", help="fetch the missing site icons of the agent zone"
+    )
+    icons_parser.add_argument(
+        "--force", action="store_true", help="ask every site again, whatever the waiting time"
+    )
     sub.add_parser("rotate-now", help="execute the rotations that are waiting")
     look = sub.add_parser("inspect", help="list the form fields of a page (writing a recipe)")
     look.add_argument("url")
@@ -198,7 +208,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "schedule-now":
         return schedule_now()
     if args.command == "icons-now":
-        return icons_now()
+        return icons_now(force=args.force)
     if args.command == "rotate-now":
         return rotate_now()
     if args.command == "inspect":

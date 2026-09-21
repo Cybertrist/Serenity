@@ -73,6 +73,7 @@ L'agent (conteneur `agent`) a maintenant ses règles, ses garde-fous et son éch
 ```bash
 make test        # Python : toute la suite, dont allowlist, rotation, kill switch, zone personnelle
 make icons-now   # une passe d'icônes tout de suite (zone agent), au lieu d'attendre le tour quotidien
+make icons-now FORCE=1  # et en redemandant à tous les sites, sans attendre le délai
 make e2e         # dont politique -> échéance -> refus -> kill switch -> approbation
 make api-doc     # régénère docs/api.md (la CI vérifie qu'il est à jour)
 ```

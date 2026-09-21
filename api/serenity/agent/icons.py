@@ -281,6 +281,16 @@ def store(
     session.commit()
 
 
+def _window(row: ItemIcon, refresh_days: int) -> int:
+    """How long before asking this site again.
+
+    A site that gave an icon is left alone for a month. One that gave nothing is asked again
+    much sooner: it may have been down for an afternoon, or Serenity may have been the one at
+    fault, and a whole month without a logo is a long punishment for that.
+    """
+    return refresh_days if row.block else max(1, refresh_days // 10)
+
+
 def refresh_user(
     session: Session,
     user: User,
@@ -295,14 +305,13 @@ def refresh_user(
     if key_row is None:
         return 0, 0
     ak = open_agent_key(user, key_row, server_key)
-    stale = now - timedelta(days=refresh_days)
     fetched = failed = 0
     for scanned in agent_entries(session, user, ak):
         # Checked before every fetch, not only once per run (CLAUDE.md rule 7).
         if killswitch.is_engaged(session):
             break
         row = session.get(ItemIcon, scanned.item_id)
-        if row is not None and row.attempted_at > stale:
+        if row is not None and row.attempted_at > now - timedelta(days=_window(row, refresh_days)):
             continue
         domain = domain_of(scanned.entry)
         if domain is None:

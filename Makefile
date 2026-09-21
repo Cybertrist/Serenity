@@ -56,8 +56,8 @@ watch-now: ## Run the agent-zone breach watch now (instead of waiting for the 6-
 schedule-now: ## Run the rotation due-date check now (instead of waiting for the hourly run)
 	$(COMPOSE) exec agent python -m serenity.admin schedule-now
 
-icons-now: ## Fetch the missing site icons of the agent zone now (instead of the daily run)
-	$(COMPOSE) exec agent python -m serenity.admin icons-now
+icons-now: ## Fetch the missing site icons of the agent zone now (make icons-now FORCE=1 to retry them all)
+	$(COMPOSE) exec agent python -m serenity.admin icons-now $(if $(FORCE),--force,)
 
 recipe-inspect: ## List the form fields of a page, to write a site recipe: make recipe-inspect URL=https://...
 	@test -n "$(URL)" || { echo "usage: make recipe-inspect URL=https://exemple.fr/connexion"; exit 1; }

@@ -23,7 +23,9 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
   que l'agent lit maintenant jusqu'à 256 Kio au lieu de la jeter quand elle est trop grosse, et
   il préfère le logo carré haute définition au petit carré flou. Les fichiers ICO qui empilent
   toutes les tailles sont réduits à une seule : les 279 Kio de La Poste deviennent 9,6 Kio.
-  Banc d'essai de onze sites, tous servis. ADR-020.
+  Banc d'essai de onze sites, tous servis. Un site qui ne donne rien est redemandé au bout de
+  trois jours et non de trente, et `make icons-now FORCE=1` redemande à tout le monde tout de
+  suite : une panne d'une après-midi ne doit pas coûter un mois de monogramme. ADR-020.
 - **Les entrées confiées à l'agent ont leur vraie favicon.** L'agent va la chercher une fois
   par jour, et la range chiffrée avec la clé d'agent : une base volée ne dit toujours pas
   quelles marques vivent dans ton coffre, et l'api sert un bloc qu'elle ne sait pas lire. Le

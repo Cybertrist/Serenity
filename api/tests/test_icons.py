@@ -1,5 +1,6 @@
 """Site icons: what the agent fetches, what it refuses to fetch, and what the api may serve."""
 
+from datetime import timedelta
 from typing import Any
 
 import httpx
@@ -293,6 +294,37 @@ def test_a_site_that_gives_nothing_is_not_asked_again(
     with _client(silent) as http:
         assert run_icons(_engine(client), agent_ready, http, NOW).failed == 0
     assert len(silent.urls) == asked
+
+
+def test_a_site_that_gave_nothing_is_retried_sooner_than_one_that_worked(
+    account: Account, keys: Keyring, client: TestClient, agent_ready: bytes
+) -> None:
+    """A site down for an afternoon, or a bug in Serenity, must not cost a whole month."""
+    _two_entries(account, keys)
+    silent = FakeSite({})
+    with _client(silent) as http:
+        assert run_icons(_engine(client), agent_ready, http, NOW).failed == 1
+    # Four days later the site is asked again: the window for a failure is a tenth of the
+    # refresh time, 3 days out of 30, and never less than one.
+    with _client(_site()) as http:
+        assert (
+            run_icons(_engine(client), agent_ready, http, NOW + timedelta(days=4), 30).fetched == 1
+        )
+    # And once it worked, the month applies.
+    with _client(_site()) as http:
+        assert (
+            run_icons(_engine(client), agent_ready, http, NOW + timedelta(days=10), 30).fetched == 0
+        )
+
+
+def test_force_asks_every_site_again(
+    account: Account, keys: Keyring, client: TestClient, agent_ready: bytes
+) -> None:
+    _two_entries(account, keys)
+    with _client(_site()) as http:
+        assert run_icons(_engine(client), agent_ready, http, NOW).fetched == 1
+    with _client(_site()) as http:
+        assert run_icons(_engine(client), agent_ready, http, NOW, 0).fetched == 1
 
 
 def test_the_journal_counts_without_naming_a_site(

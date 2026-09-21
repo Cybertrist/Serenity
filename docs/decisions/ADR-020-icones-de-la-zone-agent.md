@@ -107,4 +107,7 @@ Deux détails qui décident de tout :
   filtre sur la zone.
 - `make icons-now` déclenche une passe tout de suite, sans attendre.
 - Une entrée dont le site ne donne rien garde une ligne sans bloc : c'est la trace de la
-  tentative, et c'est elle qui évite de redemander à chaque passage.
+  tentative, et c'est elle qui évite de redemander à chaque passage. Cette trace vaut un
+  dixième du délai normal, trois jours au lieu de trente : un site en panne une après-midi, ou
+  un bug de Serenity corrigé entre-temps, ne doit pas coûter un mois de monogramme.
+  `make icons-now FORCE=1` redemande à tout le monde tout de suite.
