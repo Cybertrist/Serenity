@@ -11,7 +11,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import { useEffect, useRef } from "react";
-import { useBreaches } from "../../app/hooks/queries";
+import { useBreaches, useScanPlan } from "../../app/hooks/queries";
 import { useEntries } from "../../app/hooks/useEntries";
 import { useScan } from "../../app/hooks/useScan";
 import { useSession } from "../../app/session";
@@ -47,11 +47,14 @@ export function BreachesScreen() {
   const toast = useToast();
   const queryClient = useQueryClient();
   const breaches = useBreaches();
+  const plan = useScanPlan();
   const { byId } = useEntries();
   const { scan, scanning, lastScan } = useScan();
   const started = useRef(false);
 
-  // A scan runs once when the tab opens with an unlocked vault.
+  // A scan runs once when the tab opens with an unlocked vault. The local checks cover
+  // everything; the network ones only cover what the server says is due, so re-opening the
+  // tab the same day costs nothing (docs/05-veille.md).
   useEffect(() => {
     if (started.current || session.offline) return;
     started.current = true;
@@ -76,7 +79,7 @@ export function BreachesScreen() {
             icon={ArrowsClockwiseIcon}
             label="Vérifier maintenant"
             disabled={scanning || session.offline}
-            onClick={() => void scan()}
+            onClick={() => void scan({ full: true })}
             className={scanning ? "animate-spin" : ""}
           />
         }
@@ -100,7 +103,9 @@ export function BreachesScreen() {
                 ? "Vérification en cours…"
                 : lastScan
                   ? `Vérifié ${relative(lastScan.toISOString())}`
-                  : "Pas encore vérifié sur cet appareil"}
+                  : plan.data?.last_scan_at
+                    ? `Vérifié ${relative(plan.data.last_scan_at)}`
+                    : "Pas encore vérifié"}
             </span>
           </span>
         </Card>

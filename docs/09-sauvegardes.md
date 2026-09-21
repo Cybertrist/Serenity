@@ -54,7 +54,11 @@ make restore-check     # restaure la dernière sauvegarde réelle dans un dossie
 ```
 
 `make backup-check` ne touche ni à ta base, ni à tes clés, ni à ton dépôt : tout se passe dans
-un dossier temporaire supprimé à la fin.
+un dossier temporaire supprimé à la fin, et il tourne sous ton compte.
+
+Les deux autres demandent le mot de passe sudo : le mot de passe restic est un fichier
+`root:root 0400`, et les clés du coffre aussi. C'est la même élévation que la tâche nocturne,
+qui tourne en root.
 
 ### Installer la tâche nocturne (sur la VM, une seule fois)
 

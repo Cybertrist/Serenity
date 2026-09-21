@@ -75,26 +75,29 @@ l'agent. La zone personnelle, elle, ne s'ouvre que dans un navigateur déverroui
 
 Aucun de ces points n'est un oubli. Ils sont connus, et certains ne seront jamais corrigés.
 
-1. **Les clés de développement ont été exposées** pendant la mise en place et n'ont pas encore
-   été renouvelées (issue #27). C'est le seul point bloquant avant d'y mettre de vrais comptes.
-2. **Pas d'audit externe.** Le point suivant par ordre d'importance.
-3. **Le dépôt de sauvegarde est local** à la VM : il meurt avec elle. Il faut le déporter.
-4. **Rien ne surveille la tâche nocturne** : un échec se voit dans `journalctl`, pas dans
+1. **Pas d'audit externe.** Le point le plus important de cette liste.
+2. **Le dépôt de sauvegarde est local** à la VM : il meurt avec elle. Il faut le déporter.
+3. **Rien ne surveille la tâche nocturne** : un échec se voit dans `journalctl`, pas dans
    l'appli.
-5. **Le serveur lit la zone agent.** Par conception, entrée par entrée, avec confirmation.
-6. **Le presse-papiers** est lisible par les autres applications pendant 30 secondes.
-7. **Pas de défense contre le hameçonnage** tant qu'il n'y a pas d'extension navigateur : rien
+4. **Le serveur lit la zone agent.** Par conception, entrée par entrée, avec confirmation.
+5. **Le presse-papiers** est lisible par les autres applications pendant 30 secondes.
+6. **Pas de défense contre le hameçonnage** tant qu'il n'y a pas d'extension navigateur : rien
    ne vérifie que le site où tu colles un mot de passe est le bon.
-8. **Une extension malveillante dans ton navigateur** voit ce que tu vois. La zone personnelle
+7. **Une extension malveillante dans ton navigateur** voit ce que tu vois. La zone personnelle
    est déchiffrée là.
-9. **Mono-utilisateur** : l'inscription se ferme dès qu'un compte existe. Le modèle de données
+8. **Mono-utilisateur** : l'inscription se ferme dès qu'un compte existe. Le modèle de données
    sait faire plusieurs comptes, rien d'autre ne le sait.
-10. **Le plafond de rotations** porte sur les approbations, pas sur les exécutions.
+9. **Le plafond de rotations** porte sur les approbations, pas sur les exécutions.
+
+Les clés de développement exposées pendant la mise en place ont été renouvelées le 2026-09-20 :
+coffre de test détruit, `server.key` et `totp.key` regénérées, dépôt de sauvegarde effacé avec
+elles, compte et kit de récupération refaits. Plus rien de ce qui a traîné ne sert à quoi que ce
+soit.
 
 ## Avant d'y mettre de vrais comptes
 
-- [ ] Renouveler `server.key` et `totp.key`, et remplacer le kit de récupération du compte de
-      test (issue #27).
+- [x] Renouveler `server.key` et `totp.key`, et remplacer le kit de récupération du compte de
+      test (issue #27). Fait le 2026-09-20.
 - [ ] Déporter le dépôt restic hors de la VM, et vérifier que la restauration marche depuis
       l'extérieur.
 - [ ] Faire relire la conception par quelqu'un d'extérieur, `crypto.md` en premier.

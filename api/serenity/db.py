@@ -77,6 +77,9 @@ MIGRATIONS: list[Migration] = [
     # rotation_policy and rotation are new tables, created by create_all.
     lambda session: None,
     _v6_pending_rotation,
+    # item_scan is a new table, created by create_all. An empty table means "never checked",
+    # which is exactly what the plan needs: everything gets scanned once after the upgrade.
+    lambda session: None,
 ]
 
 
