@@ -100,7 +100,7 @@ Pas de dépendance hors de cette liste sans me demander.
 Vaut pour tout ce que tu écris : documentation, interface, commentaires de code, messages de
 commit, descriptions de PR, et tes réponses dans le terminal.
 
-1. **Jamais de tiret long `—` ni de tiret moyen `–`.** Ni dans un titre, ni dans un tableau, ni
+1. **Jamais de tiret cadratin (`U+2014`) ni de tiret demi-cadratin (`U+2013`).** Ni dans un titre, ni dans un tableau, ni
    au milieu d'une phrase. C'est la signature la plus reconnaissable d'un texte écrit par une IA,
    et je ne veux pas la voir dans ce projet.
 2. **Pas d'incise au tiret.** Une virgule, un deux-points, une parenthèse ou deux phrases font
