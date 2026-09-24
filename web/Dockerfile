@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # --- Build the PWA ---
-FROM node:22.20.0-slim AS build
+FROM node:26.8.2-slim AS build
 WORKDIR /web
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
