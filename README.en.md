@@ -5,7 +5,7 @@
   <img src="docs/langues/en-on.png" alt="English, page shown" width="150" />
 </p>
 
-<img src="docs/img/banniere.png" alt="Serenity, your password vault hosted at home. An agent watches for breaches and rotates the ones you trust it with." width="100%">
+<img src="docs/img/en/banniere.png" alt="Serenity, your password vault hosted at home. An agent watches for breaches and rotates the ones you trust it with." width="100%">
 
 [![CI](https://github.com/Cybertrist/Serenity/actions/workflows/ci.yml/badge.svg)](https://github.com/Cybertrist/Serenity/actions/workflows/ci.yml)
 

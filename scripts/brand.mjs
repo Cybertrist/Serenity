@@ -30,8 +30,8 @@ for (const [svg, size, out] of JOBS) {
 const banner = await browser.newPage({ viewport: { width: 1280, height: 640 } });
 await banner.goto("file:///repo/scripts/banniere.html");
 await banner.evaluate(() => document.fonts.ready);
-writeFileSync("/repo/docs/img/banniere.png", await banner.screenshot());
-console.log("docs/img/banniere.png <- scripts/banniere.html (1280x640)");
+writeFileSync("/repo/docs/img/social-preview.png", await banner.screenshot());
+console.log("docs/img/social-preview.png <- scripts/banniere.html (1280x640)");
 await banner.close();
 
 await browser.close();

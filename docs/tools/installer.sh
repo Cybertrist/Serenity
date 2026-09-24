@@ -8,6 +8,7 @@ mkdir -p "$DEST/sections" "$DEST/schemas"
 n=0
 pose () { [ -f "$1" ] || { echo "  manquant : $1"; return; }; cp "$1" "$DEST/$2"; n=$((n+1)); }
 
+pose "png$SUF/f-serenity.png"     banniere.png
 for i in 01 02 03 04 05 06; do pose "sec$SUF/r-serenity-$i.png" "sections/s$i.png"; done
 pose "flow$SUF/sere-agent.png"    schemas/agent.png
 pose "grid$SUF/sere-v1.png"       schemas/v1.png

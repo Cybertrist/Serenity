@@ -89,9 +89,12 @@ Le cadenas de l'appli (`design/Lock.tsx`) reprend **exactement** cette géométr
 le dessin d'origine.
 
 Les PNG d'icône ne se retouchent pas à la main : ils se **regénèrent** depuis les deux SVG par
-`make brand` (Chromium dans Docker), qui produit aussi la bannière du dépôt
-(`docs/img/banniere.png`, dessinée par `scripts/banniere.html`). Changer la marque, c'est
+`make brand` (Chromium dans Docker), qui produit aussi l'aperçu social
+(`docs/img/social-preview.png`, dessiné par `scripts/banniere.html`). Changer la marque, c'est
 changer le SVG puis relancer la commande.
+
+La bannière en tête du README est à part : elle suit le gabarit commun aux autres projets,
+avec le logo `docs/logo.png`, et se refait par `docs/tools/figures.sh`.
 
 ## Bleu, blanc, rouge
 
