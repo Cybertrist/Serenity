@@ -28,7 +28,7 @@ ban serenity "#4D8EF7" "#E8434B" "#050A18" \
 "$(t 'Ton coffre de mots de passe, chez toi. Un agent surveille' 'Your password vault, hosted at home. An agent watches')" \
 "$(t 'les fuites, et change ceux que tu lui confies.' 'for breaches, and rotates the ones you trust it with.')" \
 "$(P "$(t 'ZÉRO CONNAISSANCE' 'ZERO KNOWLEDGE')" 'LIBSODIUM' "$(t 'AUTO-HÉBERGÉ' 'SELF-HOSTED')" 'AGPL V3')" \
-"$(t 'SÉCURITÉ' 'SECURITY')" ""
+"$(C 'WEB' 'MOBILE' "$(t 'SÉCURITÉ' 'SECURITY')")" ""
 
 # --------------------------------------------------- the section banners
 rep serenity "$AC" \
