@@ -14,7 +14,7 @@ dependencies = [
     "pydantic-settings>=2.15,<3",
     "pynacl>=1.6.2,<2",
     "pyotp>=2.10,<3",
-    "sqlmodel>=0.0.42,<0.1",
+    "sqlmodel>=0.0.46,<0.1",
     "uvicorn>=0.53,<1",
 ]
 
