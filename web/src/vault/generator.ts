@@ -8,7 +8,11 @@ const DIGITS = "0123456789";
 const SYMBOLS = "!#$%&*+-=?@^_~.,:;";
 const AMBIGUOUS = /[Il1O0o]/g;
 
-export const WORDS: readonly string[] = wordlistText.split("\n").filter((w) => w.length > 0);
+// CRLF too, and trimmed: a Windows checkout must not leave "\r" inside the passphrases.
+export const WORDS: readonly string[] = wordlistText
+  .split(/\r?\n/)
+  .map((w) => w.trim())
+  .filter((w) => w.length > 0);
 
 export interface PasswordOptions {
   length: number;

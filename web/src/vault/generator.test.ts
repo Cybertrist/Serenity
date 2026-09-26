@@ -18,6 +18,10 @@ describe("generator", () => {
     expect(new Set(WORDS).size).toBe(7776);
   });
 
+  it("keeps no whitespace inside the words", () => {
+    expect(WORDS.filter((w) => /\s/.test(w))).toEqual([]);
+  });
+
   it("generates passwords with every chosen class", () => {
     for (let i = 0; i < 200; i++) {
       const p = generatePassword({ ...DEFAULT_PASSWORD, length: 8 });
