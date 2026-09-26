@@ -1,11 +1,12 @@
 # Charte graphique
 
 Le code est dans `web/src/design/`. Les écrans sont décrits dans
-[`07-interface.md`](07-interface.md).
+[`07-interface.md`](07-interface.md). La refonte de septembre 2026 est expliquée dans
+[ADR-019](decisions/ADR-019-refonte-interface.md).
 
 ## Intention
 
-Calme, doux, moderne. On doit sentir que tout est sous contrôle sans être noyé d'informations.
+Calme, net, haut de gamme. On doit sentir que tout est sous contrôle sans être noyé d'informations.
 **Une information principale par carte. Beaucoup d'air.**
 
 Trois règles qui priment sur le reste :
@@ -16,25 +17,39 @@ Trois règles qui priment sur le reste :
 2. **Tout s'explique sur place.** Chaque écran a un sous-titre qui dit à quoi il sert, chaque
    zone dit qui peut la lire, chaque action irréversible dit ce qu'elle va faire **avant** de la
    faire.
-3. **L'appli est un objet, pas une page.** Elle tient dans un carré posé au centre de l'écran ;
-   le même code sert le téléphone, où le carré devient le plein écran.
+3. **L'appli est un objet, pas une page.** Elle est posée au centre de l'écran, avec ses bords
+   et son ombre ; le même code sert le téléphone, où l'objet devient le plein écran.
 
 ## Mise en page
 
-L'appli vit dans **un carré centré** : côté = `min(92vw, 92vh, 980px)`. Sous **768 px**, il prend
-tout l'écran (`AppFrame`, `web/src/app/shell/`).
+Sous **768 px** de fenêtre, l'appli prend tout l'écran. Au-dessus, c'est un objet posé :
+`min(96vw, 1240px)` de large, `min(94dvh, 900px)` de haut, coins arrondis de 26 px et une ombre
+longue (`AppFrame`, `web/src/app/shell/`).
+
+Tout, à l'intérieur, se règle sur **la place réellement disponible dans l'objet**, pas sur la
+fenêtre : container queries de Tailwind v4 (`@container` sur l'objet, variantes `@[620px]:…`).
+Deux formes en sortent :
 
 ```
-┌──────────────────────────┐
-│ SERENITY          🔔  ⚙  │  barre de titre : la marque, les notifications, les réglages
-├──────────────────────────┤
-│  Titre de l'écran        │
-│  une phrase qui explique │  contenu, seul à défiler
-│  …                    (+)│  l'ajout flotte en bas à droite
-├──────────────────────────┤
-│ Coffre Codes Fuites Agent│  quatre onglets, pas plus
-└──────────────────────────┘
+Étroit (téléphone)                 Large (tablette, ordinateur, dès 900 px d'objet)
+┌──────────────────────────┐       ┌────────────┬─────────────────────────────────┐
+│ SERENITY    guide, cloche│       │ SERENITY   │  Titre de l'écran               │
+├──────────────────────────┤       │            │  une phrase qui explique        │
+│ Titre de l'écran         │       │ > Coffre   │                                 │
+│ une phrase qui explique  │       │   Codes    │  contenu, seul à défiler        │
+│ …                     (+)│       │   Fuites   │                                 │
+├──────────────────────────┤       │   Agent    │                                 │
+│ Coffre Codes Fuites Agent│       │            │                    (+ Ajouter)  │
+└──────────────────────────┘       │ Guide ...  │                                 │
+                                   └────────────┴─────────────────────────────────┘
 ```
+
+- **Étroit** : une barre de titre (la marque, le guide, les notifications, les réglages), le
+  contenu, et **les quatre onglets en bas**, à portée de pouce.
+- **Large** : les onglets deviennent **une barre latérale** de 244 px, avec la marque en haut et
+  le guide, les notifications et les réglages en bas. La barre de titre disparaît : l'écran
+  récupère toute sa hauteur. Le contenu tient dans une colonne de 880 px au plus, calée sur un
+  seul axe à gauche : titre, recherche, cartes et listes partent de la même ligne.
 
 **Quatre onglets, et pas un de plus.** La règle disait trois ; **Codes** l'a fait changer, et
 seulement parce qu'il fait un travail que les autres ne font pas : attraper un chiffre en deux
@@ -43,40 +58,37 @@ Toute proposition d'un cinquième onglet devra démontrer la même chose.
 
 Le journal n'en fait pas partie : c'est un registre qu'on consulte, pas un endroit où l'on
 travaille. Il vit dans les réglages, et l'écran Agent y renvoie.
-« Verrouiller maintenant » n'est pas non plus dans la barre de titre : c'est une action de
+« Verrouiller maintenant » n'est pas non plus dans la navigation : c'est une action de
 réglage, pas une action de tous les jours (le verrouillage automatique s'en charge).
 
-**Rien ne sort du carré.** Les dialogues (fiche, éditeur, réglages, guide, notifications,
-confirmations) et les messages éphémères se posent **dans** le carré, jamais par-dessus la
+**Rien ne sort de l'objet.** Les dialogues (fiche, éditeur, réglages, guide, notifications,
+confirmations) et les messages éphémères se posent **dans** l'objet, jamais par-dessus la
 fenêtre : ils atterrissent dans deux emplacements dédiés (`toast-slot`, `dialog-slot`), et le
-voile assombri s'arrête au bord de l'objet. Sur un téléphone, le carré est l'écran, donc ça
-revient au même ; sur un ordinateur, l'appli reste un objet posé, même quand elle pose une
-question. Sans carré (les écrans d'entrée), un dialogue retombe sur la fenêtre.
+voile assombri s'arrête au bord de la zone de contenu. Sans objet (les écrans d'entrée), un
+dialogue retombe sur la fenêtre.
 
-**L'ajout d'une entrée flotte** en bas à droite du carré, au-dessus du contenu qui défile et à
-l'écart des messages éphémères : c'est la seule action qu'on lance depuis n'importe où dans le
-coffre, elle ne dispute donc pas sa place au titre.
+**L'ajout d'une entrée flotte** en bas à droite, au-dessus du contenu qui défile : c'est la
+seule action qu'on lance depuis n'importe où dans le coffre. Rond avec un « + » sur un
+téléphone, il devient un bouton « Ajouter » dès que l'objet a la place de le dire.
 
-À l'intérieur, **rien ne se règle sur la fenêtre** : on utilise les container queries de
-Tailwind v4 (`@container` sur le carré, variantes `@[620px]:…`), pour que les composants
-réagissent à la place réellement disponible.
-
-| Dans le carré | < 620 px de côté | ≥ 620 px |
-|---|---|---|
-| Titre d'écran | 20 px | 26 px |
-| Onglets | icône au-dessus du mot | icône à côté du mot |
-| Code à deux facteurs | code, anneau, copie | idem, avec plus d'air autour du nom |
-| Zones du coffre | l'une sous l'autre | côte à côte |
-| Bouton d'ajout | icône seule | bouton « Ajouter » |
+| Dans l'objet | Étroit | ≥ 620 px | ≥ 900 px |
+|---|---|---|---|
+| Titre d'écran | 22 px | 28 px | 28 px |
+| Navigation | onglets en bas | onglets en bas | barre latérale |
+| Zones du coffre | l'une sous l'autre | l'une sous l'autre, puis côte à côte dès 760 px | côte à côte |
+| Bouton d'ajout | icône seule | bouton « Ajouter » | bouton « Ajouter » |
+| Réglages | sections en onglets défilants | idem, puis colonne à gauche dès 760 px | colonne à gauche |
 
 ## La marque
 
 Le logo est un **cadenas plein**, blanc (`--color-mark`, `#F2F4F8`), anse épaisse **détachée du
 corps** (le trait pochoir), **serrure rouge Marianne**. Le logotype « SEREN**I**TY » est
-composé en **Black Ops One**, la police des titres d'écran, le « I » **en rouge**. Marque et
-titres sont donc dessinés dans les mêmes lettres. Posé sur le pavé **bleu de France** de
+composé en **Black Ops One**, le « I » **en rouge**. Posé sur le pavé **bleu de France** de
 l'icône, le tout donne le drapeau en un seul objet, sans rayures : un fond bleu, un cadenas
 blanc, une serrure rouge.
+
+Black Ops One ne sert **qu'au logotype**. Les titres d'écran, qui la portaient aussi, sont
+passés en Inter : un titre en pochoir sur chaque écran faisait jeu vidéo, pas coffre-fort.
 
 Ce qui reste en fichier, c'est la forme du cadenas (`web/public/`) :
 
@@ -103,13 +115,13 @@ chacune un métier, et le drapeau entier n'apparaît qu'à trois endroits où il
 
 | Couleur | Jeton | Son métier |
 |---|---|---|
-| **Bleu de France** | `accent` | Tout ce qui agit : bouton principal, onglet actif, interrupteur, choix sélectionné, couleur de l'agent |
+| **Bleu de France** | `accent` | Tout ce qui agit : bouton principal, onglet actif, interrupteur, couleur de l'agent |
 | **Blanc** | `mark` | La marque : le cadenas et le logotype. Sur papier, il passe à l'encre |
 | **Rouge Marianne** | `crit` | Ce qui alerte : erreurs, suppressions, compteurs de fuites, et la serrure du logo |
 
 Le drapeau **en entier** (`tricolore`, trois bandes à arêtes franches) sert trois fois :
 
-1. **Le filet sous la barre de titre**, l'en-tête de l'objet, comme un papier à en-tête.
+1. **Le filet en tête de l'objet**, 3 px sur toute sa largeur, comme un papier à en-tête.
 2. **Les trois étapes de la création de compte** : une bande par étape franchie, le drapeau est
    complet quand le coffre l'est. Une procédure à un autre nombre d'étapes retombe sur le bleu :
    le drapeau ne veut dire quelque chose que s'il est entier.
@@ -127,17 +139,18 @@ Création du compte, connexion, code, déverrouillage, récupération : un seul 
 (`features/account/screens/AuthShell.tsx`) : le logotype, **une carte**, et les actions
 secondaires dessous. Rien d'autre : c'est la première chose qu'un inconnu voit du coffre.
 
-- **La carte** porte le titre, une phrase d'explication, les champs et l'action principale, avec
-  les mêmes composants que l'intérieur de l'appli (`Field`, `Button`, `Note`). Pas de langage
-  visuel séparé pour l'entrée.
+- **La carte** flotte (`bg-raised`, ombre longue), sans contour, sur une seule lueur bleue très
+  douce derrière elle. Elle porte le titre, une phrase d'explication, les champs et l'action
+  principale, avec les mêmes composants que l'intérieur de l'appli (`Field`, `Button`, `Note`).
 - **Une procédure se compte** : `Étape 2 sur 3` et une barre en trois segments, en haut de la
   carte, en **bleu, blanc, rouge**, une bande par étape franchie. Le passage d'une étape à l'autre
-  fait glisser la carte de 24 px.
+  fait glisser le contenu de 16 px.
 - **Les actions secondaires sont de vrais boutons** sous la carte (« Changer de compte »,
   « Utiliser mon kit de récupération », « Retour à la connexion »), jamais des liens en petit.
-- **Le code à six chiffres** est en six cases, la case active cerclée de bleu. Le vrai champ
-  est transparent par-dessus : collage, clavier numérique et remplissage automatique des codes
-  marchent toujours.
+- **Le code à six chiffres** est en six cases. La case à remplir porte l'anneau bleu, **et
+  seulement quand le champ a le focus** : un anneau sur un champ inactif ferait croire qu'il
+  écoute. Le vrai champ est transparent par-dessus : collage, clavier numérique et remplissage
+  automatique des codes marchent toujours.
 
 ## L'ouverture : la pluie chiffrée
 
@@ -150,8 +163,7 @@ Le coffre a répondu oui : **une cascade de données chiffrées tombe du haut de
   chute de données, pas un mur de blanc. Sur papier, la bande blanche passe à l'encre
   (`--color-mark`) : une tête blanche sur fond clair ne serait rien.
 - **Le front de la pluie est la ligne de révélation** : au-dessus, l'écran de déverrouillage a
-  déjà disparu ; en dessous, il tient encore. Le bord est fondu sur 70 px, pour que la pluie
-  ait l'air de manger l'écran plutôt que d'y poser un rectangle.
+  déjà disparu ; en dessous, il tient encore. Le bord est fondu sur 70 px.
 - **La pluie ne s'arrête jamais** : quand plus rien n'est ajouté en tête, les traînées finissent
   de tomber et sortent par le bas. Une pluie qui se fige puis s'efface ressemble à un bug.
 - Le canevas est effacé **par composition** (`destination-out`), jamais repeint en noir : le
@@ -160,61 +172,56 @@ Le coffre a répondu oui : **une cascade de données chiffrées tombe du haut de
 **L'ordre compte** : le front couvre l'écran en 900 ms, les traînées finissent de sortir par le
 bas vers 1,56 s, et **c'est seulement là** que le coffre est monté, derrière un rideau resté
 opaque. Le rideau ne se lève qu'une fois le coffre réellement en place (`lift`), pendant que
-celui-ci **arrive de loin** (`scale 0,78 → 1`, 620 ms). Sans cette attente, on voyait le coffre
-apparaître sous une pluie encore en cours.
+l'objet se pose (`scale 0,985 → 1`, 450 ms).
 
 `App` garde **trois emplacements fixes** (décor, écran, pluie) et n'en déplace aucun : sans
 cela, React démonte la pluie avec l'écran de déverrouillage et la remonte au-dessus du coffre,
 et l'animation se joue deux fois.
 
-## Le fond
+## Profondeur : des surfaces, pas des filets
 
-**Noir pur, et rien d'autre.** Pas de lumière qui dérive, pas de grille, pas de données en
-arrière-plan : le carré se détache seul, par son contour. Ce qui bouge dans Serenity bouge
-*dans* l'interface, jamais derrière elle.
+L'ancienne interface délimitait tout par un filet blanc à 28 % : sur fond noir, chaque carte,
+chaque champ, chaque zone avait son contour, et l'ensemble ressemblait à une maquette fil de
+fer. La profondeur vient maintenant de **quatre niveaux de fond**, chacun un peu plus clair que
+le précédent, et d'une ombre douce :
 
-## Couleurs du thème sombre (par défaut sur un système sombre)
+| Niveau | Jeton | Sombre | Clair | Ce qui s'y pose |
+|---|---|---|---|---|
+| 0 | `bg` | `#05070B` | `#E9ECF2` | La page, derrière l'objet |
+| 1 | `surface` | `#0B0E14` | `#F6F7FA` | L'objet, et le fond des champs |
+| 2 | `raised` | `#131722` | `#FFFFFF` | Les cartes, l'onglet actif de la barre latérale |
+| 3 | `float` | `#191E2B` | `#FFFFFF` | Ce qui flotte : dialogues, messages éphémères |
 
-Définies dans `web/src/design/theme.css` (`@theme` de Tailwind v4) :
+Une carte (`shadow-card`) a une ombre d'un pixel et, en sombre, **un liseré de lumière sur son
+bord haut** (`--color-sheen`), comme un objet éclairé d'en haut. Ce qui flotte a une ombre longue
+(`shadow-float`). L'objet entier a la sienne (`shadow-frame`), avec un halo bleu très large.
 
-| Jeton | Valeur | Usage |
-|---|---|---|
-| `bg` | `#000000` | **Noir pur**, derrière tout : le carré doit se détacher comme un objet |
-| `surface` | `#13161D` | Cartes, fond du carré |
-| `raised` | `#1B1F2A` | Dialogues, messages éphémères |
-| `line` | `rgba(255,255,255,0.28)` | Bordures franches : sur un fond noir, c'est ce qui délimite |
-| `hover` | `rgba(255,255,255,0.04)` | Survol d'une ligne ou d'un bouton discret |
-| `text` / `muted` | `#ECEEF2` / `#99A0AD` | Texte principal / secondaire |
-| `mark` | `#F2F4F8` | Le blanc du logo : le cadenas et le logotype, rien d'autre |
-| `accent` / `accent-soft` | `#5B8DEF` / 16 % | **Avec parcimonie** : bouton principal, onglet actif, kill switch |
-| `ok` / `warn` / `crit` | `#6BD49A` / `#EDC64B` / `#F76D72` | États, chacun avec son fond doux à 12 % |
-| `bleu` / `blanc` / `rouge` | `#3B7DD8` / `#F2F4F8` / `#E8434B` | Le drapeau, **et seulement là où il sert** (`tricolore`) |
-| `glow` / `glow-strong` | accent à 18 % / 50 % | Le halo sous le carré, l'ombre sous le bouton d'ajout |
+Les filets restent là où un bord doit se lire :
 
-Le bleu est **le même partout** : bouton principal, onglet actif, choix sélectionné, robot de la
-zone agent. Le rouge du logo est celui des alertes : c'est la même couleur, pas un quatrième
-jeton.
+- `line` (blanc 7 %) : les séparateurs de liste, qui commencent **après** l'icône, comme sur un
+  téléphone, et la bordure de la barre latérale.
+- `line-strong` (blanc 20 %, encre 34 % en clair) : **le bord des champs**, qui doit atteindre
+  3:1 contre son fond. Au focus, il devient un anneau bleu de 2 px autour de toute la boîte,
+  boutons compris (`INPUT_BOX`).
 
-## Couleurs du thème clair
+## Couleurs
 
-Même grille de jetons, redéfinie sous `[data-theme="light"]`. Rien dans les composants ne code
-une couleur en dur : un écran qui écrit `#5B8DEF` ou `white/45` casse le thème clair.
+Définies dans `web/src/design/theme.css` (`@theme` de Tailwind v4), redéfinies en clair sous
+`[data-theme="light"]`. Rien dans les composants ne code une couleur en dur.
 
-| Jeton | Sombre | Clair | Pourquoi |
+| Jeton | Sombre | Clair | Usage |
 |---|---|---|---|
-| `bg` | `#000000` | `#EBEEF3` | Un papier légèrement bleuté plutôt qu'un blanc d'écran : le carré blanc s'y pose |
-| `surface` / `raised` | `#13161D` / `#1B1F2A` | `#FFFFFF` / `#F2F4F8` | Le carré est la feuille, les dialogues sont légèrement en retrait |
-| `line` | blanc 28 % | encre 14 % | Sur du clair, une bordure franche devient une balafre |
-| `accent` | `#5B8DEF` | `#0055A4` | **Le bleu du drapeau tient 7:1 sur papier** : inutile d'y toucher. Sur noir, il est ouvert |
-| `crit` | `#F76D72` | `#C9191E` | Le rouge Marianne, dans la coupe qui tient sur chaque fond |
-| `mark` | `#F2F4F8` | `#0F1626` | **Le cadenas passe à l'encre** : un cadenas blanc sur du papier blanc n'est plus un cadenas |
-| `blanc` | `#F2F4F8` | `#C9D3E2` | Sur papier, la bande blanche du drapeau doit être dessinée, sinon le filet paraît cassé |
-| `frame` | blanc 45 % | encre 18 % | Le contour du carré |
-| `rain-trail` | blanc | encre | La cascade tombe en encre sur le papier, têtes bleue et rouge inchangées |
+| `text` / `muted` | `#EEF1F6` / `#9AA3B3` | `#0E1525` / `#566074` | Texte principal / secondaire |
+| `accent` / `accent-strong` | `#6B9CF7` / `#4F86F0` | `#0055A4` / `#004A90` | Ce qui agit ; la version forte au survol |
+| `accent-soft` | accent à 12 % | accent à 9 % | Fond de l'onglet actif, des notes de l'agent |
+| `ok` / `warn` / `crit` | `#6FD9A0` / `#F0CB57` / `#FF7B80` | `#136640` / `#6E5300` / `#B3141A` | États, chacun avec son fond doux à 11 % |
+| `track` | blanc 22 % | encre 30 % | Le rail d'un interrupteur éteint, les étapes non franchies |
+| `mark` | `#F2F4F8` | `#0E1525` | **Le cadenas passe à l'encre** en clair |
+| `bleu` / `blanc` / `rouge` | `#3B7DD8` / `#F2F4F8` / `#E8434B` | `#0055A4` / `#C9D3E2` / `#E1000F` | Le drapeau, **et seulement là où il sert** |
 
-Le logotype n'est plus une image : `<Wordmark>` le compose en texte, dans la police des titres.
-Il prend donc `--color-mark` comme tout le reste de la marque, blanc sur noir et encre sur
-papier, sans deux fichiers à tenir à jour.
+Les couleurs d'état du thème clair ont été assombries pour tenir 4,5:1 même posées sur leur
+propre fond doux, à l'intérieur d'un dialogue. Le bleu est **le même partout** : bouton
+principal, onglet actif, choix sélectionné, robot de la zone agent.
 
 ## Choisir son thème
 
@@ -233,85 +240,112 @@ et il suit en direct : le basculement automatique du soir change l'appli sans la
 
 ## Typographie
 
-**Les titres d'écran sont dans le pochoir du logotype** : capitales, interlettrage large,
-centrées sous la marque, et dessinées dans la même famille de lettres que « SEREN**I**TY ».
-C'est Black Ops One, la seule police à fentes de l'appli, et elle ne sert **qu'à ça** : trois
-mots par écran, jamais une phrase. Le reste est en **Chakra Petch** (toute l'interface) et
-JetBrains Mono (codes, clés, heures du journal). Les trois sont servies localement
-(`web/public/fonts/`, licence OFL).
+**Inter** porte toute l'interface, en variable (un seul fichier, toutes les graisses), avec ses
+variantes de lecture : chiffres ouverts, « l » à empattement (`cv05`, `cv11`, `ss03`). Un mot de
+passe ou un identifiant se lit sans hésiter entre « l », « I » et « 1 ». **JetBrains Mono** sert
+aux secrets, aux clés et aux codes. **Black Ops One** ne sert plus qu'au logotype. Les trois sont
+servies localement (`web/public/fonts/`, licence OFL).
 
-Chakra Petch a été choisie contre Geist, qui tenait ce rôle avant : ses lettres droites et ses
-angles coupés prolongent le pochoir du titre sans crier, là où Geist était neutre. Elle n'est
-pas variable, donc l'appli n'embarque que les trois graisses dont elle se sert (400, 500, 600). **Quatre tailles** : `text-display` 26 px (titre d'écran sur
-ordinateur seulement), `text-title` 20 px semi-gras, `text-body` 15 px, `text-caption` 13 px.
+Les titres sont **calés à gauche, en casse normale**, en 650 avec un interlettrage resserré : le
+ton d'un outil sérieux, pas d'une affiche. Les chiffres qui bougent (codes, compteurs, échéances)
+sont tabulaires (`tabular`) : ils ne dansent pas quand ils changent.
+
+| Jeton | Taille | Graisse | Usage |
+|---|---|---|---|
+| `text-display` | 28 px | 650 | Titre d'écran, dès 620 px d'objet |
+| `text-title` | 22 px | 650 | Titre d'écran sur téléphone, nom d'une entrée ouverte |
+| `text-heading` | 17 px | 600 | Titre de section, de carte d'état, de dialogue |
+| `text-body` | 15 px | 400 à 600 | Le texte courant |
+| `text-caption` | 13 px | 400 à 500 | Le texte secondaire |
+| `text-micro` | 11 px | 600 | Onglets du bas, pastilles, compteurs |
 
 ## Formes
 
-Rayons : cartes et dialogues 20 px (`rounded-card`), boutons et champs 14 px (`rounded-control`),
-pastilles 12 px (`rounded-chip`), pills en arrondi total. Pas d'ombre lourde sauf sous un
-dialogue ou un message éphémère, qui flottent vraiment. Grille de 4 px, cartes en 16 px de marge.
+Rayons : cartes 18 px (`rounded-card`), dialogues et carte d'entrée 24 px (`rounded-sheet`),
+boutons et champs 12 px (`rounded-control`), pastilles 10 px (`rounded-chip`), pills en arrondi
+total. Grille de 4 px, cartes en 16 px de marge (20 px dès 620 px).
 
-## Les deux zones, en un glyphe
+**Les choix exclusifs** (`Segmented`) sont un rail unique où un curseur surélevé glisse d'un choix
+à l'autre, comme sur iOS. **Les interrupteurs** (`Toggle`) font 50 × 30 dans une zone tactile de
+44 px, le bouton glisse par transformation.
 
-C'est le modèle du produit, donc il a sa marque, portée par l'entrée **et** par le titre de sa
-zone (`features/vault/zone.ts`) :
+## Les entrées : un monogramme, et la zone dans le titre
+
+Chaque entrée a **son monogramme** (`features/vault/EntryMark.tsx`) : la première lettre de son
+nom, sur une tuile discrète. Pas de favicon : aller le chercher dirait à un tiers quels comptes
+sont dans le coffre.
+
+La zone est le modèle du produit, donc elle garde sa marque (`features/vault/zone.ts`) :
 
 | Zone | Marque | Pourquoi |
 |---|---|---|
 | **Protégé par toi** | bouclier **vert** | C'est la zone la plus sûre : seuls tes appareils déverrouillés la lisent |
 | **Confié à l'agent** | robot **bleu** | Le bleu est la couleur de l'agent partout dans l'appli ; ici, il te dit que le serveur peut lire |
 
-Le vert n'est donc jamais « le statut est bon » sur une entrée : il dit « personne d'autre que
-toi ». Et le bleu ne dit pas « attention » : il dit « l'agent s'en occupe ».
+Dans le coffre, cette marque est **dans le titre de la zone, une fois**, et pas répétée sur chaque
+ligne : l'ancien écran alignait le même bouclier vert sur toutes les entrées. Là où les deux
+zones se mélangent (Codes, la fiche d'une entrée), le monogramme porte **un petit badge** de sa
+zone dans le coin.
+
+## La carte d'état
+
+Coffre, Fuites et Agent s'ouvrent sur la même carte (`<StatusCard>`) : une icône dans un carré
+teinté, un titre qui dit où on en est, une phrase, et au plus une action. Un lavis de la couleur
+d'état part de l'icône et s'efface vers la droite : le ton se sent avant de se lire.
+
+**Elle ne rassure jamais sans savoir.** Hors ligne, ou quand le serveur n'a pas répondu, elle ne
+dit ni « Tout va bien » ni « L'agent est actif » : elle dit « Alertes indisponibles » ou « État
+de l'agent inconnu », en gris.
 
 ## Icônes
 
-Phosphor Icons (`@phosphor-icons/react`, noms en `…Icon`) : **duotone** pour la navigation, les
-états et les écrans vides, **fill** pour l'onglet actif, **regular** dans les listes et les
-boutons. 24 px en navigation, 20 px en liste, 40 px pour les écrans vides. Une icône de liste est
-posée dans une **pastille** (`<Chip>`), teintée du fond doux de son état. **Aucun emoji.**
+Phosphor Icons (`@phosphor-icons/react`, noms en `…Icon`) : **regular** dans la navigation et les
+listes, **fill** pour l'onglet actif, **duotone** dans les pastilles d'état, **bold** dans les
+boutons. 22 px en navigation, 20 px en liste, 19 px dans un bouton. **Aucun emoji.**
 
 ## Mouvement
 
 Motion (`motion/react`). **Tout vient de `web/src/design/motion.ts`** : aucun écran n'invente sa
-propre durée. Transformations et opacité uniquement (accélérées par le GPU), jamais `width`,
-`top` ni `left`.
+propre durée. Transformations et opacité uniquement, jamais `width`, `top` ni `left`.
+**Rien ne tourne en 3D et rien ne boucle** : un coffre qui gigote n'a pas l'air calme.
 
 | Jeton | Ce que c'est | Où |
 |---|---|---|
 | `EASE_OUT` | `cubic-bezier(.22,1,.36,1)` | Tout ce qui apparaît |
 | `EASE_IN_OUT` | `cubic-bezier(.65,0,.35,1)` | Un mouvement qu'on suit du début à la fin |
-| `SPRING` | 420 / 34 | Ce que le doigt a poussé : boutons, onglets, interrupteurs |
-| `SOFT_SPRING` | 260 / 30 | Les grandes surfaces : le carré qui arrive |
+| `SPRING` | 520 / 38 | Ce que le doigt a poussé : onglets, interrupteurs, choix |
+| `SOFT_SPRING` | 300 / 32 | Les grandes surfaces |
 | `PART_SPRING` | 240 / 15 | L'anse du cadenas de la marque, quand elle s'ouvre |
-| `MODAL_SPRING` | 380 / 32 | Les dialogues |
-| `PERSPECTIVE` | 1600 px | **Une seule caméra** pour toute l'appli |
+| `MODAL_SPRING` | 460 / 36 | Les dialogues |
 
-Les variantes nommées portent l'orchestration : `FRAME` (le carré sort de la serrure : il arrive
-trop près, `scale 1,16 → 1`, puis ses parties en cascade), `SCREEN` (changement d'onglet), `DIALOG` (un dialogue se pose,
-`rotateX 8° → 0`), `LIST` + `LIST_ITEM` (35 ms entre deux lignes). Les gestes partagés sont
-`PRESS` (0,975) et `LIFT` (−1 px).
-
-Micro-interactions : les boutons se soulèvent au survol et s'enfoncent au clic, les lignes de
-liste glissent de 3 px, l'icône de l'onglet choisi fait un bond, les listes se chargent en
-squelettes plutôt qu'en roues.
+Les variantes nommées : `FRAME` (l'objet se pose), `SCREEN` (changement d'onglet : fondu et
+8 px de montée), `DIALOG` (un dialogue monte de 10 px et se pose), `LIST` + `LIST_ITEM` (30 ms
+entre deux lignes, 6 px de montée). Un seul geste partagé : `PRESS` (0,98) quand on appuie.
 
 `prefers-reduced-motion` est respecté partout (`MotionConfig reducedMotion="user"`, règle CSS,
-et les composants 3D retombent sur un simple fondu).
+et les composants animés retombent sur un simple fondu).
 
 ## Ton
 
-Phrases courtes, tutoiement, rassurant : « Tout va bien. », « 2 comptes à surveiller »,
-« Rotation dans 12 jours ». **Un seul message éphémère à la fois**, en **bas du carré** : il ne
-doit jamais masquer un titre. Il porte une icône de son état et se ferme d'un clic.
+Phrases courtes, tutoiement, rassurant : « Tout va bien », « 2 comptes à surveiller »,
+« Rotation dans 12 jours ». **Un seul message éphémère à la fois** : au-dessus du bouton d'ajout
+sur un téléphone, en bas au centre sur un grand écran. Il ne masque jamais un titre ni le bouton
+d'ajout, porte une icône de son état et se ferme d'un clic.
 
 ## Écrans vides
 
-Un cadre en pointillés, une icône duotone, **un titre**, une phrase qui dit quoi faire, et le
-bouton qui le fait (`<EmptyState>`). Jamais une icône seule au milieu du vide.
+Un fond doux, une icône dans un cercle, **un titre**, une phrase qui dit quoi faire, et le
+bouton qui le fait (`<EmptyState>`). Compact : une zone vide ne pousse jamais le reste de
+l'écran hors de vue.
 
 ## Accessibilité
 
-Contraste AA, zones tactiles de 44 px au moins, navigation au clavier (focus visible bleu),
-`aria-label` sur chaque bouton-icône, dialogues en `role="dialog"` avec focus piégé et fermés par
-Échap, `aria-live` sur les messages éphémères.
+- Contraste AA partout, vérifié à partir des jetons, états doux et dialogues compris.
+- Zones tactiles de 44 px au moins : boutons, onglets, choix exclusifs, interrupteurs, curseurs.
+- Focus toujours visible : anneau bleu de 2 px, autour de la boîte entière pour un champ.
+- `aria-label` sur chaque bouton-icône ; la cloche dit combien de notifications attendent.
+- Dialogues en `role="dialog"`, titre et sous-titre reliés (`aria-labelledby`,
+  `aria-describedby`), focus piégé, fermés par Échap. **Les dialogues s'empilent** : Échap ne
+  ferme que celui du dessus, jamais les réglages sous une confirmation.
+- `aria-live` sur les messages éphémères, et plus sur les codes à deux facteurs : un lecteur
+  d'écran relisait tous les codes toutes les 30 s.

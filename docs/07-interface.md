@@ -3,9 +3,10 @@
 ## Quoi
 
 L'appli web installable (PWA), en React, qui fait **toute la cryptographie de la zone
-personnelle dans ton navigateur**. Elle tient dans **un carré centré** (côté =
-min(92vw, 92vh, 980px)), qui devient le plein écran sous 768 px, et s'ouvre par **un cadenas**
-(voir [`design.md`](design.md)).
+personnelle dans ton navigateur**. Sur un téléphone, elle prend tout l'écran, onglets en bas.
+Sur un grand écran, c'est un objet posé au centre (jusqu'à 1240 × 900 px), avec une barre
+latérale à la place des onglets. Elle s'ouvre par **un cadenas** (voir [`design.md`](design.md)
+et [ADR-019](decisions/ADR-019-refonte-interface.md)).
 
 | Écran | Contenu |
 |---|---|
@@ -13,9 +14,9 @@ min(92vw, 92vh, 980px)), qui devient le plein écran sous 768 px, et s'ouvre par
 | **Connexion** | Nouvel appareil, ou tous les 60 jours : identifiant et mot de passe maître, puis le code TOTP à six cases |
 | **Déverrouillage** | Au quotidien : mot de passe maître seul (fonctionne hors ligne) |
 | **Récupération** | Kit + code, nouveau mot de passe maître, **nouveau kit** |
-| **Coffre** | Les deux zones, chacune avec une phrase qui dit qui peut la lire (côte à côte dès que le carré dépasse 620 px), recherche, ajout avec générateur |
+| **Coffre** | Les deux zones, chacune avec une phrase qui dit qui peut la lire (côte à côte dès que l'appli dépasse 760 px de large), une carte d'état qui ne dit « Tout va bien » que quand la veille a répondu, recherche, ajout avec générateur |
 | **Fiche** (dialogue centré) | Copier l'identifiant, afficher / copier le mot de passe (effacé du presse-papiers après 30 s), code TOTP en direct, rotation ou rappel, **arbitrage quand une rotation a laissé deux mots de passe**, historique, **Confier à l'agent / Reprendre**, modifier, supprimer (les trois derniers avec confirmation) |
-| **Codes** | Tous les codes à deux facteurs du coffre sur un écran : code en direct, anneau des secondes restantes, copie en un geste, recherche. Chaque ligne porte la marque de sa zone, et un mot dit lesquels le serveur peut calculer aussi |
+| **Codes** | Tous les codes à deux facteurs du coffre sur un écran : code en direct, anneau des secondes restantes, copie en un geste, recherche. Chaque ligne porte le monogramme de l'entrée et le badge de sa zone, et un mot dit lesquels le serveur peut calculer aussi |
 | **Fuites** | Veille lancée à l'ouverture de l'onglet, une alerte par carte, « Ouvrir l'entrée » et « Mettre de côté » |
 | **Journal** (dans les réglages) | Filtres Tout / Agent / Toi / Système, regroupé par jour ; l'écran Agent y renvoie |
 | **Agent** | Kill switch (avec confirmation), rotations à approuver ou refuser, prochaines rotations, garde-fous |
@@ -38,7 +39,7 @@ min(92vw, 92vh, 980px)), qui devient le plein écran sous 768 px, et s'ouvre par
 </p>
 
 <p>
-  <img src="img/bureau-coffre.png" alt="Le carré sur ordinateur" width="430">
+  <img src="img/bureau-coffre.png" alt="Le coffre sur ordinateur, avec la barre latérale" width="430">
 </p>
 
 <p>
@@ -106,5 +107,5 @@ moindre erreur JavaScript ou violation de CSP, et tourne aussi en CI (captures d
    réglages.
 6. Hors ligne : verrouille, coupe le réseau (mode avion), rouvre l'appli installée,
    déverrouille : le coffre s'affiche en lecture seule.
-7. Sur ordinateur, redimensionne la fenêtre : le carré suit, et sous 768 px il devient le plein
-   écran. Au déverrouillage, la cascade de données doit se jouer **une seule fois**.
+7. Sur ordinateur, redimensionne la fenêtre : l'appli suit, la barre latérale laisse la place
+   aux onglets du bas quand elle devient étroite, et sous 768 px elle prend tout l'écran. Au déverrouillage, la cascade de données doit se jouer **une seule fois**.
