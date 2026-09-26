@@ -197,6 +197,17 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Modifié
 
+- **L'interface est refaite.** Fini les filets blancs autour de chaque carte, les titres en
+  pochoir et les écrans qui pivotaient en 3D. La profondeur vient maintenant des surfaces (quatre
+  niveaux de fond, des ombres douces), le texte passe en Inter, les titres sont calés à gauche, et
+  le mouvement se limite à des fondus courts. Sur un grand écran, l'appli s'élargit et les onglets
+  deviennent une barre latérale ; sur un téléphone, rien ne bouge de place. Chaque entrée a son
+  monogramme, et la marque de zone n'est plus répétée sur chaque ligne. La marque, le drapeau et
+  les quatre onglets restent. ADR-019, `docs/design.md`.
+- **Accessibilité** : focus visible dans tous les champs (mot de passe maître compris),
+  contrastes du thème clair relevés à 4,5:1 sur les fonds d'état, cibles tactiles de 44 px pour
+  les choix et les interrupteurs, cloche qui annonce le nombre de notifications non lues.
+
 - **Tailscale n'est plus présenté comme un prérequis.** La règle qui compte est que Serenity ne
   s'expose jamais sur Internet et n'écoute rien en dehors de `127.0.0.1` ; la façon de l'atteindre
   depuis un téléphone est un choix d'hébergement. La page infrastructure compare quatre chemins
@@ -223,6 +234,27 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
   et une fermeture au clic.
 
 ### Corrigé
+
+- Web : le verrouillage automatique tient compte de l'heure réelle. Un téléphone mis en veille
+  ou une appli passée en arrière-plan plus de 15 min retrouve le coffre verrouillé, au lieu de
+  compter sur un minuteur que le navigateur avait gelé. Les clés sont effacées tout de suite, sans
+  attendre un rendu.
+- Web : le presse-papiers est vraiment vidé. L'effacement après 30 s échouait quand l'appli
+  n'avait plus le focus, c'est-à-dire presque toujours ; il est retenté au retour, et fait aussi
+  au verrouillage. Le kit de récupération copié suit la même règle.
+- Web : un appareil déconnecté à distance (ou après un changement de mot de passe maître) revient
+  à la connexion au lieu de garder le coffre ouvert, et son cache hors ligne est effacé.
+- Web : une API arrêtée derrière nginx (page 502) bascule en lecture seule hors ligne au lieu
+  d'afficher « Unexpected token ». Le mode hors ligne se lève quand le réseau revient.
+- Web : Échap ne ferme plus deux dialogues empilés d'un coup, et un dialogue ne vole plus le focus
+  du champ en cours de saisie à chaque événement du serveur.
+- Web : la fiche d'une entrée n'affiche plus le mot de passe ni l'historique de la précédente.
+- Web : « Tout va bien » et « L'agent est actif » ne s'affichent plus hors ligne ni quand le
+  serveur n'a pas répondu.
+- Web : les phrases de passe générées sous Windows ne contiennent plus de retour chariot
+  invisible.
+- Web : import Google sans mot de passe rogné, import Bitwarden plus strict et plafonné à 5 Mo,
+  une entrée illisible ne fait plus échouer tout le scan de la veille, et elle est signalée.
 
 - Sécurité : nginx transmettait à l'api l'en-tête `X-Forwarded-For` reçu du client, complété.
   Un client pouvait donc y glisser l'adresse de son choix. nginx n'envoie plus que l'adresse
