@@ -7,6 +7,7 @@ Every guard is code: zone (agent only), kill switch, allowlist, daily limit.
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
+from sqlalchemy import or_
 from sqlmodel import Session, col, func, select
 
 from serenity import audit
@@ -34,6 +35,10 @@ REMINDER_DUE = "reminder.due"
 
 class RotationRefusedError(ValueError):
     """A guard refused the action. The message is safe to show."""
+
+
+class RotationNotFoundError(RotationRefusedError):
+    """No such rotation for this user (a 404, not a refusal)."""
 
 
 @dataclass
@@ -120,6 +125,22 @@ def _schedule(
     return rotation
 
 
+def _breach_answered(session: Session, item_id: str, breach: Breach) -> bool:
+    """A leak gets one rotation. Once that rotation has ended (done, refused, failed, cancelled),
+    the alert staying open must not start another one every hour: a new rotation only comes
+    with a new sighting (an alert reopened later starts a new `first_seen_at`)."""
+    return (
+        session.exec(
+            select(Rotation.id).where(
+                Rotation.item_id == item_id,
+                Rotation.trigger == "breach",
+                col(Rotation.requested_at) >= breach.first_seen_at,
+            )
+        ).first()
+        is not None
+    )
+
+
 def _schedule_exposed(
     session: Session, report: ScheduleReport, now: datetime, user_id: str | None = None
 ) -> None:
@@ -136,7 +157,9 @@ def _schedule_exposed(
         item = session.get(Item, breach.item_id) if breach.item_id else None
         if item is None or item.zone != Zone.AGENT or item.deleted_at is not None:
             continue
-        if _open_rotation(session, item.id) is None:
+        if _open_rotation(session, item.id) is None and not _breach_answered(
+            session, item.id, breach
+        ):
             item_policy = session.get(RotationPolicy, item.id)
             mode = item_policy.mode if item_policy else PolicyMode.APPROVAL
             _schedule(session, item, mode, "breach", now)
@@ -219,6 +242,8 @@ def run_schedule(session: Session, now: datetime) -> ScheduleReport:
 
 
 def _rotations_today(session: Session, user_id: str, now: datetime) -> int:
+    """Approved or started in the last 24 hours. An autonomous rotation has no decision date:
+    it counts from the moment the executor started it."""
     since = now - timedelta(days=1)
     count = session.exec(
         select(func.count())
@@ -228,7 +253,7 @@ def _rotations_today(session: Session, user_id: str, now: datetime) -> int:
             col(Rotation.status).in_(
                 (RotationStatus.APPROVED, RotationStatus.IN_PROGRESS, RotationStatus.SUCCEEDED)
             ),
-            col(Rotation.decided_at) > since,
+            or_(col(Rotation.decided_at) > since, col(Rotation.started_at) > since),
         )
     ).one()
     return int(count)
@@ -237,7 +262,7 @@ def _rotations_today(session: Session, user_id: str, now: datetime) -> int:
 def _decidable(session: Session, user_id: str, rotation_id: int) -> tuple[Rotation, Item]:
     rotation = session.get(Rotation, rotation_id)
     if rotation is None or rotation.user_id != user_id:
-        raise RotationRefusedError("rotation introuvable")
+        raise RotationNotFoundError("rotation introuvable")
     if rotation.status != RotationStatus.SCHEDULED:
         raise RotationRefusedError("cette rotation n'attend plus de décision")
     item = session.get(Item, rotation.item_id)

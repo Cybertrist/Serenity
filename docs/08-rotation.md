@@ -28,6 +28,20 @@ Conforme à [`crypto.md`](crypto.md) §7.12 et à la règle 6 : **le coffre est 
    n'a pas bougé. Si le retour arrière échoue lui aussi, le bloc est **gardé** et l'entrée est
    signalée (`rotation.manual`) : la fiche affiche alors **les deux mots de passe** avec un bouton
    par choix. Tu essaies de te connecter, tu dis lequel marche, l'autre est jeté.
+7. Réponse perdue au changement (délai dépassé, erreur 5xx) : le site a peut-être pris le
+   nouveau mot de passe avant de ne plus répondre. L'agent demande au site : si l'ancien passe
+   encore, retour arrière propre ; si c'est le nouveau, la rotation va au bout ; si aucun ne
+   passe, le bloc est **gardé** et tu tranches, comme au point 6.
+
+Autour de la transaction :
+
+- Chaque rotation est **prise** par une seule requête SQL (`UPDATE ... WHERE status IN ...`) :
+  deux passages qui la voient en attente ne la jouent pas deux fois.
+- Une erreur imprévue (entrée illisible, réponse du rotateur qui n'est pas du JSON) met la
+  rotation **en échec** avec une ligne dans le journal, sans rien jeter du coffre, et le lot
+  continue avec la suivante.
+- Au démarrage, l'agent passe en échec les rotations restées « en cours » : un arrêt les a
+  coupées, personne ne les finira. Le bloc en attente, s'il existe, reste pour que tu tranches.
 
 ### Ce qui est isolé de quoi
 
@@ -192,8 +206,9 @@ hors ligne à partir du secret déjà présent dans l'entrée.
 - **Un seul site a une recette** : le site de démo. Une rotation approuvée sur un site sans
   recette **le dit** : l'écran Agent l'affiche sous « Approuvées, en attente de l'exécuteur ».
 - La reprise d'une entrée en zone personnelle est **refusée** pendant une rotation (§7.12).
-- Le plafond `SERENITY_MAX_ROTATIONS_PER_DAY` porte sur les approbations, pas sur les
-  exécutions : une rotation approuvée hier peut s'exécuter aujourd'hui.
+- Le plafond `SERENITY_MAX_ROTATIONS_PER_DAY` porte sur les approbations **et** sur les
+  exécutions des dernières 24 heures : une rotation approuvée hier qui démarre aujourd'hui compte
+  pour aujourd'hui, et une rotation autonome aussi.
 - Les sauvegardes restic sont en place ([09 : Sauvegardes](09-sauvegardes.md)), la revue de
   sécurité est écrite ([10 : Sécurité](10-securite.md)) et les clés de développement ont été
   renouvelées ; il reste la `v0.1.0` (issue #27).

@@ -535,3 +535,14 @@ def test_no_arbitration_while_the_agent_holds_the_pending_slot(
     with pytest.raises(ApiError) as exc:
         account.api.resolve(item_id, "current")
     assert exc.value.status == 409
+
+
+def test_an_unreadable_answer_from_the_executor_is_a_rotation_error() -> None:
+    """A proxy error page with a 200 must not escape as a ValueError: that used to leave the
+    rotation IN_PROGRESS for ever."""
+    site = rotator(lambda request: httpx.Response(200, text="<html>oups</html>"))
+    with pytest.raises(RotationError, match="illisible"):
+        site.login(Credentials("tristan", "x"))
+    listed = rotator(lambda request: httpx.Response(200, json=["ok"]))
+    with pytest.raises(RotationError, match="illisible"):
+        listed.login(Credentials("tristan", "x"))

@@ -64,6 +64,8 @@ class RotationOut(BaseModel):
 
 
 def _refused(exc: rotations.RotationRefusedError) -> HTTPException:
+    if isinstance(exc, rotations.RotationNotFoundError):
+        return HTTPException(status.HTTP_404_NOT_FOUND, str(exc))
     return HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc))
 
 

@@ -4,7 +4,10 @@
     2. the old password is kept;
     3. the site change is verified by logging in again with the new password;
     4. on any failure: roll back (restore the old password on the site if it changed,
-       discard the pending one), and report.
+       discard the pending one), and report;
+    5. when the site's answer to the change is lost (timeout, server error), ask the site which
+       password it takes before deciding anything: the pending block is the only copy of the
+       new one, and is kept whenever the site may have taken it.
 
 Everything here is independent from the site: a V3 executor plugs a Playwright SiteRotator.
 """
@@ -29,7 +32,7 @@ class Step(StrEnum):
 # Allowed transitions: anything else is a bug and raises.
 TRANSITIONS: dict[Step, frozenset[Step]] = {
     Step.READY: frozenset({Step.PENDING_SAVED, Step.FAILED}),
-    Step.PENDING_SAVED: frozenset({Step.SITE_CHANGED, Step.ROLLED_BACK}),
+    Step.PENDING_SAVED: frozenset({Step.SITE_CHANGED, Step.ROLLED_BACK, Step.FAILED}),
     Step.SITE_CHANGED: frozenset({Step.VERIFIED, Step.ROLLED_BACK, Step.FAILED}),
     Step.VERIFIED: frozenset({Step.COMMITTED, Step.ROLLED_BACK, Step.FAILED}),
     Step.COMMITTED: frozenset(),
@@ -113,15 +116,42 @@ class RotationRun:
         self._move(Step.PENDING_SAVED)
         try:
             rotator.login(current)
+        except RotationError as exc:
+            # Refused before any change was asked for: the site still has the old password.
+            self.error = str(exc)
+            return self._rollback(rotator, vault, current, new, site_changed=False)
+        try:
             rotator.change_password(current, new_password)
         except RotationError as exc:
             self.error = str(exc)
-            return self._rollback(rotator, vault, current, new, site_changed=False)
+            return self._unclear_change(rotator, vault, current, new)
         self._move(Step.SITE_CHANGED)
         if not rotator.verify(new):
             self.error = "la reconnexion avec le nouveau mot de passe a échoué"
             return self._rollback(rotator, vault, current, new, site_changed=True)
         self._move(Step.VERIFIED)
+        return self._commit(vault)
+
+    def _unclear_change(
+        self, rotator: SiteRotator, vault: VaultPort, current: Credentials, new: Credentials
+    ) -> Step:
+        """The change failed, or its answer was lost. A timeout or a 5xx says nothing about
+        what the site did: it may have saved the new password before failing to answer."""
+        if rotator.verify(current):
+            # The old password still opens the site: it did not change. A clean rollback.
+            return self._rollback(rotator, vault, current, new, site_changed=False)
+        if rotator.verify(new):
+            # The site took the new password after all: finish the rotation.
+            self.error = None
+            self._move(Step.SITE_CHANGED)
+            self._move(Step.VERIFIED)
+            return self._commit(vault)
+        # Neither opens it (site down, or a lockout): only a human can tell. Keep both.
+        self.error = f"{self.error} ; ni l'ancien ni le nouveau mot de passe ne sont confirmés"
+        self._move(Step.FAILED)
+        return self.step
+
+    def _commit(self, vault: VaultPort) -> Step:
         try:
             vault.commit_pending()
         except Exception as exc:

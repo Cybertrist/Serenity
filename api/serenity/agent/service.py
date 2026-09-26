@@ -17,7 +17,7 @@ from sqlalchemy import Engine
 from sqlmodel import Session
 
 from serenity import audit
-from serenity.agent.executor import run_rotations
+from serenity.agent.executor import recover_interrupted, run_rotations
 from serenity.agent.rotations import run_schedule
 from serenity.agent.watch import run_watch
 from serenity.config import Settings
@@ -72,6 +72,10 @@ class Agent:
         with Session(self._engine) as session:
             info = publish_server_key(session, self._server_key, utcnow())
             audit.record(session, Actor.AGENT, "agent.start", details={"key_id": info["key_id"]})
+            # Only one agent runs: a rotation still in progress was cut off by the last stop.
+            interrupted = recover_interrupted(session, utcnow())
+        if interrupted:
+            logger.warning("%d interrupted rotation(s) marked as failed", interrupted)
         logger.info("agent started, server key id %s", info["key_id"])
         return info
 

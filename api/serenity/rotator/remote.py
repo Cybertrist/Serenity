@@ -73,7 +73,13 @@ class RemoteSiteRotator:
                 client.close()
         if response.status_code != 200:
             raise RotationError(f"rotateur: réponse {response.status_code}")
-        data = response.json()
+        try:
+            data = response.json()
+        except ValueError:
+            data = None
+        if not isinstance(data, dict):
+            # A proxy error page, a truncated body: nothing that says what the site did.
+            raise RotationError("rotateur: réponse illisible")
         self.history.append(path)
         if not data.get("ok"):
             raise RotationError(str(data.get("error") or "échec sur le site"))

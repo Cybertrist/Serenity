@@ -18,6 +18,7 @@ from serenity.models import (
     AuditLog,
     Breach,
     BreachKind,
+    BreachStatus,
     Item,
     Notification,
     PolicyMode,
@@ -26,6 +27,7 @@ from serenity.models import (
     RotationStatus,
 )
 from serenity.rotator.base import Credentials, RotationError, RotationRun, Step
+from serenity.watcher.service import _upsert
 from tests.conftest import Account
 
 NOW = datetime(2026, 9, 18, 12, 0, tzinfo=UTC)
@@ -458,3 +460,46 @@ def test_the_kill_switch_is_read_from_the_database_every_time(
         assert killswitch.is_engaged(agent) is False  # the row now sits in this session
         killswitch.set_engaged(app, True, account.user_id, datetime.now(UTC))
         assert killswitch.is_engaged(agent) is True
+
+
+def test_a_refused_leak_rotation_is_not_asked_again_every_hour(
+    account: Account, keys: Keyring, client: TestClient
+) -> None:
+    _, agent = _items(account, keys)
+    with Session(_engine(client)) as db:
+        db.add(
+            Breach(
+                user_id=account.user_id,
+                kind=BreachKind.PWNED_PASSWORD,
+                subject=agent["id"],
+                item_id=agent["id"],
+                source="agent",
+                first_seen_at=datetime.now(UTC) - timedelta(minutes=5),
+            )
+        )
+        db.commit()
+        assert rotations.run_schedule(db, datetime.now(UTC)).scheduled == 1
+    rotation_id = account.api.call("GET", "/api/agent/rotations")[0]["id"]
+    account.api.call("POST", f"/api/agent/rotations/{rotation_id}/refuse")
+    with Session(_engine(client)) as db:
+        # The alert is still open, but it already had its answer.
+        assert rotations.run_schedule(db, datetime.now(UTC) + timedelta(hours=1)).scheduled == 0
+        # Seen again later (reopened after being resolved): a new sighting, a new rotation.
+        breach = db.exec(select(Breach)).one()
+        breach.status = BreachStatus.RESOLVED
+        db.add(breach)
+        db.commit()
+        item = db.get(Item, agent["id"])
+        later = datetime.now(UTC) + timedelta(hours=2)
+        assert _upsert(
+            db, account.user_id, BreachKind.PWNED_PASSWORD, agent["id"], "agent", later, item
+        )
+        db.commit()
+        assert rotations.run_schedule(db, later).scheduled == 1
+
+
+def test_an_unknown_rotation_is_a_404(account: Account) -> None:
+    for verb in ("approve", "refuse"):
+        with pytest.raises(ApiError) as exc:
+            account.api.call("POST", f"/api/agent/rotations/999999/{verb}")
+        assert exc.value.status == 404

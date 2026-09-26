@@ -224,6 +224,25 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Corrigé
 
+- Agent : une rotation autonome réussie **ne repoussait pas l'échéance**. Elle revenait donc à
+  chaque passage horaire. La date du dernier changement et la prochaine échéance sont mises à
+  jour à la fin de la rotation ; après un échec, l'échéance passe au lendemain.
+- Agent : le **plafond de rotations par jour** ne s'appliquait pas aux rotations autonomes. Il
+  compte maintenant les rotations démarrées sur les dernières 24 heures, et l'exécuteur s'arrête
+  au plafond (la rotation attend le lendemain et le dit).
+- Agent : une **alerte de fuite** restée ouverte relançait une rotation toutes les heures après
+  un succès, un refus ou un échec. Une fuite n'appelle qu'une rotation, et l'alerte est close
+  quand la rotation réussit.
+- Agent : une erreur imprévue (réponse du rotateur qui n'est pas du JSON, entrée illisible)
+  pouvait laisser une rotation **« en cours » pour toujours**, ou arrêter tout le lot. Elle passe
+  en échec avec une ligne dans le journal, le lot continue, et au démarrage l'agent clôt les
+  rotations coupées par un arrêt. Le bloc en attente n'est jamais jeté quand le site a pu changer.
+- Agent : une **réponse perdue** au changement de mot de passe (délai, erreur 5xx) était traitée
+  comme un refus net, et le bloc en attente, seule copie du nouveau mot de passe, était jeté.
+  L'agent demande maintenant au site lequel des deux mots de passe il accepte.
+- Agent : deux passages pouvaient **jouer la même rotation**. Elle est prise par une seule
+  requête SQL conditionnelle.
+- Agent : approuver ou refuser une rotation inconnue répond `404`, plus `422`.
 - Coffre : le **bloc en attente** d'une rotation ne faisait pas avancer le numéro de
   changement. Un appareil qui synchronise avec `since=` ne le voyait donc jamais, même après un
   retour arrière raté, et ne pouvait pas te proposer les deux mots de passe. Le poser et le

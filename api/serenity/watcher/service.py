@@ -68,6 +68,8 @@ def _upsert(
             session.add(breach)
             return False
         breach.status, breach.resolved_at, breach.item_revision = BreachStatus.OPEN, None, revision
+        # A reopened alert is a new sighting: the agent answers it with a new rotation.
+        breach.first_seen_at = now
     else:
         breach = Breach(
             user_id=user_id,

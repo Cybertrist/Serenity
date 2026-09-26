@@ -27,6 +27,15 @@ L'agent (conteneur `agent`) a maintenant ses règles, ses garde-fous et son éch
   l'agent ([08 : Rotation](08-rotation.md)). Sans jeton d'exécuteur configuré, ou sans recette
   pour ce site, elle attend, et l'écran Agent dit laquelle des deux raisons.
 - **Refuser** : pas de rotation maintenant, la prochaine échéance est repoussée d'une période.
+- **Après une rotation réussie**, la date du dernier changement devient celle du jour et la
+  prochaine échéance tombe une période plus tard. L'alerte « mot de passe exposé » qui l'avait
+  déclenchée est close. **Après un échec**, l'échéance passe au lendemain : un site qui refuse
+  n'est pas relancé toutes les heures.
+- **Une fuite, une rotation.** Tant que l'alerte reste ouverte, l'agent ne reprogramme pas de
+  rotation si celle qu'il a déjà proposée pour cette fuite est finie (faite, refusée, en échec).
+  Une alerte qui se rouvre plus tard compte comme une nouvelle fuite.
+- **Reprendre** une entrée en zone personnelle annule ses rotations en attente, avec une ligne
+  dans le journal.
 
 ## Pourquoi
 
@@ -35,7 +44,11 @@ L'agent (conteneur `agent`) a maintenant ses règles, ses garde-fous et son éch
   rotation refuse une entrée personnelle ; une entrée reprise ne peut plus être approuvée.
   Pour la zone personnelle, le mode autonome est refusé : rappels seulement.
 - **Kill switch** : l'enclencher est toujours possible (même coffre verrouillé) ; le relâcher
-  demande ton mot de passe maître. Tout est journalisé.
+  demande ton mot de passe maître. Tout est journalisé. L'agent le relit en base avant chaque
+  action : l'enclencher pendant un lot arrête le lot à la rotation suivante.
+- **Plafond quotidien** (`SERENITY_MAX_ROTATIONS_PER_DAY`, 3 par défaut) : il compte les
+  rotations approuvées et celles que l'exécuteur a démarrées sur les dernières 24 heures, les
+  autonomes comprises. Au plafond, une rotation attend le lendemain et le dit.
 - **Allowlist vérifiée par le code, jamais par un LLM** : chaque adresse de l'entrée doit être
   sur un domaine autorisé ou un de ses sous-domaines (`netflix.com` couvre `www.netflix.com`,
   pas `netflix.com.evil.example`). L'api ne peut pas lire les adresses de la zone agent : le
