@@ -44,4 +44,14 @@ describe("import Google", () => {
     expect(() => parseGoogleExport("a,b,c\n1,2,3\n")).toThrow(ImportError);
     expect(() => parseGoogleExport("")).toThrow(ImportError);
   });
+
+  it("garde les espaces du mot de passe", () => {
+    const { entries } = parseGoogleExport("name,username,password\nForum, tristan ,  a b  \n");
+    expect(entries[0]).toMatchObject({ username: "tristan", password: "  a b  " });
+  });
+
+  it("refuse un fichier avec trop d'entrées", () => {
+    const rows = Array.from({ length: 5001 }, (_, n) => `site${String(n)},u,p`).join("\n");
+    expect(() => parseGoogleExport(`name,username,password\n${rows}\n`)).toThrow(ImportError);
+  });
 });

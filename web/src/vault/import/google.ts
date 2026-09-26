@@ -6,7 +6,7 @@
  * what decides: name, url, username, password, note.
  */
 import type { Entry } from "../../crypto/items";
-import { ImportError, type ImportResult } from "./bitwarden";
+import { checkImportCount, checkImportSize, ImportError, type ImportResult } from "./bitwarden";
 
 const MAX_NAME = 200;
 
@@ -66,14 +66,16 @@ export function parseCsv(text: string): string[][] {
 
 /** A Google row carries no type: everything is a login, even when the password is empty. */
 function convert(columns: Map<string, number>, row: string[]): Entry | null {
-  const at = (key: string): string => {
+  const raw = (key: string): string => {
     const index = columns.get(key);
-    return index === undefined ? "" : (row[index] ?? "").trim();
+    return index === undefined ? "" : (row[index] ?? "");
   };
+  const at = (key: string): string => raw(key).trim();
   const url = at("url");
   const name = (at("name") || url || "Sans nom").slice(0, MAX_NAME);
   const username = at("username");
-  const password = at("password");
+  // Never trimmed: a space at either end can be part of the password.
+  const password = raw("password");
   const note = at("note");
   if (!username && !password && !note && !url) return null;
   return {
@@ -90,6 +92,7 @@ function convert(columns: Map<string, number>, row: string[]): Entry | null {
 }
 
 export function parseGoogleExport(csv: string): ImportResult {
+  checkImportSize(csv);
   const rows = parseCsv(csv);
   const header = rows.shift();
   if (!header) throw new ImportError("Ce fichier est vide.");
@@ -109,6 +112,7 @@ export function parseGoogleExport(csv: string): ImportResult {
         "« username » et « password ».",
     );
   }
+  checkImportCount(rows.length);
   const entries: Entry[] = [];
   let skipped = 0;
   for (const row of rows) {
