@@ -11,6 +11,7 @@ from serenity.auth.hashing import DummyHash
 from serenity.config import Settings, get_settings
 from serenity.db import create_db_engine, init_db
 from serenity.models import Actor
+from serenity.origin import OriginCheck
 from serenity.routes import agent, auth, crypto, events, health, logs, notifications, vault, watch
 
 
@@ -46,4 +47,5 @@ def create_app(settings: Settings | None = None, totp_key: bytes | None = None) 
     app.include_router(agent.router)
     app.include_router(events.router)
     app.add_exception_handler(vault.ConflictResponse, vault.conflict_handler)
+    app.add_middleware(OriginCheck, public_url=settings.public_url)
     return app

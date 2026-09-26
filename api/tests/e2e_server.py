@@ -8,6 +8,7 @@ film that records the agent at work). POST /__test/reset empties
 every table except the settings (server key), so each test file starts from scratch.
 """
 
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -36,6 +37,9 @@ def build(tmp: Path) -> object:
         db_path=tmp / "serenity.sqlite",
         auth_hash_memlimit=8 * 1024 * 1024,
         auth_hash_opslimit=1,
+        # Where the browser of ui-smoke and of the film opens the app (nginx of the web image):
+        # state-changing requests must come from there.
+        public_url=os.environ.get("SERENITY_PUBLIC_URL", "http://127.0.0.1:8080"),
     )
     engine = create_db_engine(settings.db_path)
     init_db(engine)
