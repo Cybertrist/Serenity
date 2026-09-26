@@ -126,4 +126,28 @@ describe("scan in the browser", () => {
     expect(urls[0]).not.toContain(digest.slice(5));
     expect(urls[0]).not.toContain(secret);
   });
+
+  it("skips a block that does not decrypt and scans the rest", async () => {
+    const { state, keyring } = vault([
+      ["personal", { v: 1, type: "login", name: "A", password: LEAKED }],
+      ["personal", { v: 1, type: "login", name: "B", password: "x7Kq-m2Pz-9Lw4-rT8v" }],
+    ]);
+    const [broken, fine] = state.active();
+    if (!broken || !fine) throw new Error("fixture");
+    state.apply({ seq: 2, items: [{ ...broken, block: fine.block, seq: 2 }] });
+    const result = await scanVault(state, keyring, null);
+    expect(result.scanned).toEqual([fine.id]);
+  });
+
+  it("asks again after a failed request instead of caching the failure", async () => {
+    let calls = 0;
+    const pwned = new PwnedPasswords(() => {
+      calls += 1;
+      if (calls === 1) return Promise.reject(new TypeError("offline"));
+      return Promise.resolve(new Response(""));
+    });
+    await expect(pwned.occurrences(LEAKED)).rejects.toThrow("offline");
+    await expect(pwned.occurrences(LEAKED)).resolves.toBe(0);
+    expect(calls).toBe(2);
+  });
 });

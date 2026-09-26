@@ -50,8 +50,14 @@ export async function scanVault(
   const byPassword = new Map<string, string[]>();
   const toAsk: { id: string; password: string }[] = [];
   for (const item of state.active()) {
+    let entry;
+    try {
+      entry = decryptRecord(keyring, item);
+    } catch {
+      // A block that does not decrypt (tampered or foreign) is left out; the rest is scanned.
+      continue;
+    }
     scanned.push(item.id);
-    const entry = decryptRecord(keyring, item);
     const password = typeof entry.password === "string" ? entry.password : "";
     if (!password) continue;
     byPassword.set(password, [...(byPassword.get(password) ?? []), item.id]);

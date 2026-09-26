@@ -15,10 +15,13 @@ export function useEntries(): {
   entries: VaultEntry[];
   trash: VaultEntry[];
   byId: Map<string, VaultEntry>;
+  /** Blocks that did not decrypt (tampered or foreign): left out, but counted for the UI. */
+  unreadable: number;
 } {
   const { keyring, vault, version } = useSession();
   return useMemo(() => {
     const all: VaultEntry[] = [];
+    let unreadable = 0;
     if (keyring && !keyring.isWiped) {
       for (const item of vault.items.values()) {
         if (item.block === null) continue;
@@ -27,6 +30,7 @@ export function useEntries(): {
           all.push({ item, entry, domain: domainOf(entry.urls) });
         } catch {
           // A block that does not decrypt is skipped (tampered or foreign); the rest still shows.
+          unreadable += 1;
         }
       }
     }
@@ -35,6 +39,7 @@ export function useEntries(): {
       entries: all.filter((e) => e.item.deleted_at === null),
       trash: all.filter((e) => e.item.deleted_at !== null),
       byId: new Map(all.map((e) => [e.item.id, e])),
+      unreadable,
     };
     // `version` changes whenever the vault state is updated in place.
   }, [keyring, vault, version]);

@@ -21,8 +21,13 @@ export class PwnedPasswords {
   private range(prefix: string): Promise<Map<string, number>> {
     let pending = this.cache.get(prefix);
     if (!pending) {
-      pending = this.load(prefix);
-      this.cache.set(prefix, pending);
+      const loading = this.load(prefix);
+      this.cache.set(prefix, loading);
+      // A failure (network, 429) must not stick: the next call asks again.
+      loading.catch(() => {
+        if (this.cache.get(prefix) === loading) this.cache.delete(prefix);
+      });
+      pending = loading;
     }
     return pending;
   }
