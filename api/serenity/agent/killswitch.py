@@ -15,7 +15,9 @@ KILL_SWITCH = "kill_switch"
 
 
 def state(session: Session) -> dict[str, Any]:
-    row = session.get(Setting, KILL_SWITCH)
+    # Always from the database: a long-lived agent session would otherwise keep answering
+    # with the copy it loaded first, and never see the switch thrown from the app.
+    row = session.get(Setting, KILL_SWITCH, populate_existing=True)
     value: dict[str, Any] = dict(row.value) if row and row.value else {}
     return {"engaged": bool(value.get("engaged")), "changed_at": value.get("changed_at")}
 

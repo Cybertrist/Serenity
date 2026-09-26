@@ -446,3 +446,15 @@ def test_a_scan_that_finds_nothing_new_schedules_nothing(
     assert account.api.call("POST", "/api/watch/report", body)["new"] == 1
     with Session(_engine(client)) as db:
         assert db.exec(select(Rotation)).all() == []
+
+
+def test_the_kill_switch_is_read_from_the_database_every_time(
+    account: Account, client: TestClient
+) -> None:
+    """The agent keeps one session for a whole batch: the switch thrown from the app, in
+    another session, must stop it before the next action."""
+    with Session(_engine(client)) as agent, Session(_engine(client)) as app:
+        killswitch.set_engaged(agent, False, account.user_id, datetime.now(UTC))
+        assert killswitch.is_engaged(agent) is False  # the row now sits in this session
+        killswitch.set_engaged(app, True, account.user_id, datetime.now(UTC))
+        assert killswitch.is_engaged(agent) is True
