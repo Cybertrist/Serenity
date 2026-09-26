@@ -224,6 +224,10 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Corrigé
 
+- Notifications : interroger avec `since=` rendait les plus récentes d'abord, si bien qu'avec
+  une limite on sautait celles du milieu. Avec `since`, elles arrivent maintenant dans l'ordre.
+- Flux temps réel : chaque connexion ouverte lisait SQLite dans la boucle asynchrone et
+  bloquait les autres. La lecture passe dans un fil à part.
 - Journal : le filtre anti-secret nettoyait le message d'un log mais **pas la trace d'une
   exception**, qui pouvait porter ce que le code manipulait. La trace est maintenant formatée
   puis nettoyée avant d'être écrite.

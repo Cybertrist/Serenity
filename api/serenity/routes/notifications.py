@@ -29,11 +29,15 @@ def get_notifications(
     since: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
 ) -> list[NotificationOut]:
-    """Notifications newer than `since` (an id): what the Android app polls in V2."""
+    """Notifications newer than `since` (an id): what the Android app polls in V2.
+
+    Without `since`: the latest ones, newest first. With `since`: the next ones in order,
+    oldest first, so that polling with the last id received never skips any."""
+    order = col(Notification.id).asc() if since else col(Notification.id).desc()
     rows = db.exec(
         select(Notification)
         .where(Notification.user_id == row.user_id, col(Notification.id) > since)
-        .order_by(col(Notification.id).desc())
+        .order_by(order)
         .limit(limit)
     ).all()
     return [NotificationOut.model_validate(n, from_attributes=True) for n in rows]

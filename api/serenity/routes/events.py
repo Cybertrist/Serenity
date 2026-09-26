@@ -44,7 +44,8 @@ async def _stream(
     yield "retry: 3000\n\n"
     last_sent = time.monotonic()
     while time.monotonic() < deadline and not await request.is_disconnected():
-        for n in _pending(engine, user_id, after):
+        # SQLite is synchronous: off the event loop, or every open stream stalls the others.
+        for n in await asyncio.to_thread(_pending, engine, user_id, after):
             after = n.id or after
             data = {"id": n.id, "kind": n.kind, "item_id": n.item_id, "breach_id": n.breach_id}
             yield f"id: {n.id}\nevent: notification\ndata: {json.dumps(data)}\n\n"

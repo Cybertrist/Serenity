@@ -490,3 +490,18 @@ def test_an_entry_with_a_naive_change_date_is_watched(
     with Session(_engine(client)) as db:
         kinds = {b.kind for b in db.exec(select(Breach).where(Breach.item_id == item["id"]))}
     assert BreachKind.OLD in kinds
+
+
+def test_polling_with_since_returns_the_next_ones_in_order(
+    account: Account, client: TestClient
+) -> None:
+    """Polling keeps the last id it got: newest first with a limit would skip the middle."""
+    with Session(_engine(client)) as db:
+        for _ in range(3):
+            db.add(Notification(user_id=account.user_id, kind="breach.new"))
+        db.commit()
+    latest = account.api.call("GET", "/api/notifications")
+    ids = sorted(n["id"] for n in latest)
+    assert [n["id"] for n in latest] == ids[::-1]  # no `since`: newest first
+    page = account.api.call("GET", f"/api/notifications?since={ids[0]}&limit=1")
+    assert [n["id"] for n in page] == [ids[1]]
