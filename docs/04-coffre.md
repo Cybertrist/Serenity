@@ -13,7 +13,7 @@ sous forme de blocs illisibles pour lui (sauf la zone agent, pour le seul proces
 | Corbeille | Supprimer, restaurer | Effacement définitif après 30 jours |
 | Historique | Déchiffre les anciennes versions | Garde les 10 dernières versions chiffrées |
 | **Confier à l'agent** | Déchiffre avec UK, rechiffre avec AK, après confirmation | Change la zone, journalise |
-| **Reprendre** | Déchiffre avec AK, rechiffre avec UK, après confirmation | Change la zone, **efface l'historique « agent »**, journalise |
+| **Reprendre** | Déchiffre avec AK, rechiffre avec UK, après confirmation | Change la zone, **efface l'historique « agent »**, annule les rotations qui attendaient, journalise |
 | Générateur | Mots de passe et phrases de passe (liste EFF, 7 776 mots) | rien |
 | Codes TOTP des entrées | Calculés dans le navigateur (Web Crypto) | rien |
 | Verrouillage automatique | 15 min d'inactivité, fermeture de la page | Le niveau « déverrouillé » expire aussi |
@@ -29,7 +29,7 @@ sous forme de blocs illisibles pour lui (sauf la zone agent, pour le seul proces
 | `PUT /api/vault/items/{id}` | déverrouillé | Nouvelle révision (`409` si conflit) |
 | `DELETE /api/vault/items/{id}?base_revision=N` | déverrouillé | Mise à la corbeille |
 | `POST /api/vault/items/{id}/restore` | déverrouillé | Sortie de la corbeille |
-| `POST /api/vault/items/{id}/resolve` | déverrouillé | Trancher entre les deux mots de passe d'une rotation non annulable |
+| `POST /api/vault/items/{id}/resolve` | déverrouillé | Trancher entre les deux mots de passe d'une rotation non annulable (`409` tant qu'une rotation de l'entrée est approuvée ou en cours) |
 | `GET /api/vault/items/{id}/history` | session | 10 dernières versions chiffrées |
 | `POST /api/vault/items/{id}/delegate` | déverrouillé | Confier à l'agent (`confirm: true` obligatoire) |
 | `POST /api/vault/items/{id}/reclaim` | déverrouillé | Reprendre (`confirm: true` obligatoire) |
@@ -60,7 +60,12 @@ sous forme de blocs illisibles pour lui (sauf la zone agent, pour le seul proces
   nouveau mot de passe, peut-être gardé l'ancien, et lui seul le sait. La fiche affiche alors les
   deux, en clair, avec un bouton par mot de passe. Garder celui de l'agent le promeut en révision
   courante ; garder celui du coffre jette l'autre. L'agent, lui, ne devine jamais
-  ([`crypto.md`](crypto.md) §7.12, point 7).
+  ([`crypto.md`](crypto.md) §7.12, point 7). Poser ou retirer ce bloc fait avancer le numéro de
+  changement : tes appareils le voient à la synchronisation suivante, comme n'importe quelle
+  modification.
+- **Deux écritures en même temps, une seule gagne.** Le serveur n'écrit une nouvelle révision
+  que si l'entrée est encore à celle que tu avais : la vérification et l'écriture se font dans
+  la même requête SQL. L'autre reçoit un `409` avec la version à jour.
 - **Une entrée supprimée reste 30 jours** dans la corbeille ; ensuite le bloc est effacé et seule
   une trace vide reste, pour que tes autres appareils le sachent.
 - Voir [ADR-009](decisions/ADR-009-coffre.md) pour les choix d'implémentation.

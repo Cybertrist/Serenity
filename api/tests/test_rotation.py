@@ -9,6 +9,7 @@ from sqlmodel import Session, desc, select
 from serenity.agent.executor import NO_RECIPE, _pick_recipe, execute_rotation
 from serenity.agent.watch import open_agent_key
 from serenity.config import Settings
+from serenity.devclient import ApiError
 from serenity.models import (
     AgentKey,
     Item,
@@ -448,3 +449,89 @@ def test_the_transaction_never_touches_a_site_before_the_vault() -> None:
     step = run.execute(Site(), Vault(), Credentials("tristan", "avant"), "apres-la-rotation")
     assert step == Step.COMMITTED
     assert calls == ["save_pending", "login", "change_password", "verify", "commit_pending"]
+
+
+# --- what the other writers see ------------------------------------------------------------------
+
+
+def test_the_pending_block_reaches_devices_that_sync_since_a_seq(
+    account: Account, engine: Engine, agent_ready: bytes
+) -> None:
+    """A device syncs with `since=<seq>`: a pending block that does not move the seq is a
+    block no device ever sees, even after a rollback that failed."""
+    item_id, ak = agent_item(account, engine)
+    seq = account.api.sync()["seq"]
+    with Session(engine) as session:
+        item = session.get(Item, item_id)
+        assert item is not None
+        vault = AgentVault(session=session, item=item, ak=ak, now=utcnow())
+        vault.open()
+        vault.save_pending("celui-que-les-appareils-doivent-voir")
+    changed = account.api.sync(seq)
+    assert [i["id"] for i in changed["items"]] == [item_id]
+    assert changed["items"][0]["pending_block"] is not None
+
+    with Session(engine) as session:
+        item = session.get(Item, item_id)
+        assert item is not None
+        service.discard_pending(session, item, utcnow())
+    gone = account.api.sync(changed["seq"])
+    assert [i["id"] for i in gone["items"]] == [item_id]
+    assert gone["items"][0]["pending_block"] is None
+
+
+def test_two_writers_on_the_same_revision_cannot_both_win(
+    account: Account, engine: Engine, agent_ready: bytes
+) -> None:
+    """Both read revision r and both pass the check; only the first write may land."""
+    item_id, _ = agent_item(account, engine)
+    with Session(engine) as first, Session(engine) as second:
+        stale = second.get(Item, item_id)  # read now, written after the other writer
+        assert stale is not None
+        base = stale.revision
+        service.update_item(first, account.user_id, item_id, base, b"premier", utcnow())
+        with pytest.raises(ConflictError):
+            service.update_item(second, account.user_id, item_id, base, b"second", utcnow())
+    with Session(engine) as session:
+        item = session.get(Item, item_id)
+        assert item is not None
+        assert (item.revision, item.block) == (base + 1, b"premier")
+
+
+def test_the_change_sequence_never_hands_out_the_same_number_twice(
+    account: Account, engine: Engine
+) -> None:
+    with Session(engine) as first, Session(engine) as second:
+        # Both sessions hold the account row, as two concurrent requests would.
+        assert first.get(User, account.user_id) is not None
+        assert second.get(User, account.user_id) is not None
+        a = service._next_seq(first, account.user_id)
+        first.commit()
+        b = service._next_seq(second, account.user_id)
+        second.commit()
+    assert b == a + 1
+
+
+def test_no_arbitration_while_the_agent_holds_the_pending_slot(
+    account: Account, engine: Engine, agent_ready: bytes
+) -> None:
+    item_id, ak = agent_item(account, engine)
+    with Session(engine) as session:
+        item = session.get(Item, item_id)
+        assert item is not None
+        rotation = Rotation(
+            user_id=account.user_id,
+            item_id=item_id,
+            status=RotationStatus.IN_PROGRESS,
+            trigger="manual",
+            mode=PolicyMode.APPROVAL,
+            started_at=utcnow(),
+        )
+        session.add(rotation)
+        session.commit()
+        vault = AgentVault(session=session, item=item, ak=ak, now=utcnow())
+        vault.open()
+        vault.save_pending("le-site-est-peut-etre-en-train-de-le-prendre")
+    with pytest.raises(ApiError) as exc:
+        account.api.resolve(item_id, "current")
+    assert exc.value.status == 409

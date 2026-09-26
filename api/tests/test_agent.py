@@ -376,7 +376,14 @@ def test_reclaimed_entry_cannot_be_approved(
     account.api.move(keys, current, "personal")
     with pytest.raises(ApiError) as exc:
         account.api.call("POST", f"/api/agent/rotations/{rotation_id}/approve")
-    assert "plus confiée" in str(exc.value)
+    assert exc.value.status == 422
+    # The reclaim itself cancelled the waiting rotation, and said so in the journal.
+    with Session(_engine(client)) as db:
+        rotation = db.get(Rotation, rotation_id)
+        assert rotation is not None and rotation.status == RotationStatus.CANCELLED
+        actions = [a.action for a in db.exec(select(AuditLog))]
+    assert "agent.rotation.cancel" in actions
+    assert account.api.call("GET", "/api/agent/rotations") == []
 
 
 def test_events_stream_new_notifications(account: Account, client: TestClient) -> None:

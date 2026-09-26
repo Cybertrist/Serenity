@@ -5,11 +5,12 @@ Every write bumps the user's change sequence and writes an audit line (never the
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from typing import Any
 
-from sqlmodel import Session, col, delete, select
+from sqlmodel import Session, col, delete, select, update
 
 from serenity import audit
-from serenity.models import Actor, Item, ItemRevision, User, Zone
+from serenity.models import Actor, Item, ItemRevision, Rotation, RotationStatus, User, Zone
 from serenity.vault.errors import ConflictError, InvalidRequestError, NotFoundError
 
 HISTORY_LIMIT = 10
@@ -29,13 +30,47 @@ class SyncResult:
     items: list[Item]
 
 
+# A rotation of the entry that is running or about to run: the pending block is its business.
+BUSY_ROTATION_STATUSES = (RotationStatus.APPROVED, RotationStatus.IN_PROGRESS)
+# What a reclaim cancels: rotations that have not touched the site yet.
+CANCELLABLE_ROTATION_STATUSES = (RotationStatus.SCHEDULED, RotationStatus.APPROVED)
+
+STALE = "Entrée modifiée ailleurs entre-temps : recharge-la."
+
+
 def _next_seq(session: Session, user_id: str) -> int:
-    user = session.get(User, user_id)
-    if user is None:
+    """Increment in the database, not in Python: the api and the agent write concurrently,
+    and a read-modify-write would hand the same number to both."""
+    seq = session.exec(
+        update(User)
+        .where(col(User.id) == user_id)
+        .values(vault_seq=col(User.vault_seq) + 1)
+        .returning(col(User.vault_seq))
+        .execution_options(synchronize_session=False)
+    ).scalar_one_or_none()
+    if seq is None:
         raise NotFoundError("Compte introuvable.")
-    user.vault_seq += 1
-    session.add(user)
-    return user.vault_seq
+    cached = session.identity_map.get(session.identity_key(User, user_id))
+    if cached is not None:
+        session.expire(cached, ["vault_seq"])
+    return int(seq)
+
+
+def _write(
+    session: Session, item: Item, revision: int, message: str, /, *conditions: Any, **values: Any
+) -> None:
+    """UPDATE the item only if it is still at the revision this request read (plus
+    `conditions`). A concurrent writer that got there first turns this one into a conflict,
+    never into a silent overwrite."""
+    result = session.exec(
+        update(Item)
+        .where(col(Item.id) == item.id, col(Item.revision) == revision, *conditions)
+        .values(**values)
+        .execution_options(synchronize_session=False)
+    )
+    if result.rowcount != 1:
+        session.rollback()
+        raise ConflictError(message, item)
 
 
 def _get(session: Session, user_id: str, item_id: str) -> Item:
@@ -165,20 +200,73 @@ def change_zone(
                 col(ItemRevision.item_id) == item.id, col(ItemRevision.zone) == Zone.AGENT
             )
         )
+        cancelled = _cancel_rotations(session, item.id, now)
         session.commit()
+        for rotation_id in cancelled:
+            audit.record(
+                session,
+                Actor.USER,
+                "agent.rotation.cancel",
+                user_id=item.user_id,
+                target_type="item",
+                target_id=item.id,
+                details={"rotation_id": rotation_id, "reason": "reclaimed"},
+            )
+        session.refresh(item)
     return item
 
 
+def _cancel_rotations(session: Session, item_id: str, now: datetime) -> list[int]:
+    """A reclaimed entry is out of the agent's reach: its waiting rotations must not linger.
+
+    Each one is cancelled only if it is still waiting, in the same statement: a rotation the
+    agent claimed in the meantime is left to the agent, which will find a personal entry and
+    refuse to touch it."""
+    ids = session.exec(
+        select(Rotation.id).where(
+            Rotation.item_id == item_id,
+            col(Rotation.status).in_(CANCELLABLE_ROTATION_STATUSES),
+        )
+    ).all()
+    cancelled = []
+    for rotation_id in ids:
+        result = session.exec(
+            update(Rotation)
+            .where(
+                col(Rotation.id) == rotation_id,
+                col(Rotation.status).in_(CANCELLABLE_ROTATION_STATUSES),
+            )
+            .values(status=RotationStatus.CANCELLED, finished_at=now)
+            .execution_options(synchronize_session=False)
+        )
+        if result.rowcount == 1 and rotation_id is not None:
+            cancelled.append(rotation_id)
+    return cancelled
+
+
 def _replace(
-    session: Session, item: Item, zone: Zone, block: bytes, now: datetime, actor: Actor, action: str
+    session: Session,
+    item: Item,
+    zone: Zone,
+    block: bytes,
+    now: datetime,
+    actor: Actor,
+    action: str,
+    *,
+    clear_pending: bool = False,
 ) -> Item:
+    base = item.revision
     _archive(session, item, now)
-    item.zone = zone
-    item.revision += 1
-    item.block = block
-    item.updated_at = now
-    item.seq = _next_seq(session, item.user_id)
-    session.add(item)
+    values: dict[str, Any] = {
+        "zone": zone,
+        "revision": base + 1,
+        "block": block,
+        "updated_at": now,
+        "seq": _next_seq(session, item.user_id),
+    }
+    if clear_pending:
+        values.update(pending_block=None, pending_revision=None)
+    _write(session, item, base, STALE, **values)
     session.commit()
     audit.record(
         session,
@@ -202,11 +290,24 @@ def save_pending(session: Session, item: Item, block: bytes, now: datetime) -> I
         raise InvalidRequestError("Entrée dans la corbeille.")
     if item.zone != Zone.AGENT:
         raise InvalidRequestError("Zone personnelle : l'agent n'y touche pas.")
+    busy = "Une rotation est déjà en cours sur cette entrée."
     if item.pending_block is not None:
-        raise ConflictError("Une rotation est déjà en cours sur cette entrée.", item)
-    item.pending_block = block
-    item.pending_revision = item.revision + 1
-    session.add(item)
+        raise ConflictError(busy, item)
+    # Guarded like any other write: two rotations, or an edit landing at the same moment,
+    # must not both believe they hold the pending slot. The seq moves, so every device sees
+    # the block (and, if the rotation ends badly, can offer both passwords).
+    _write(
+        session,
+        item,
+        item.revision,
+        busy,
+        col(Item.pending_block).is_(None),
+        col(Item.zone) == Zone.AGENT,
+        col(Item.deleted_at).is_(None),
+        pending_block=block,
+        pending_revision=item.revision + 1,
+        seq=_next_seq(session, item.user_id),
+    )
     session.commit()
     audit.record(
         session,
@@ -232,10 +333,16 @@ def commit_pending(session: Session, item: Item, now: datetime) -> Item:
         raise InvalidRequestError("Aucun bloc en attente.")
     if item.pending_revision != item.revision + 1:
         raise ConflictError("Entrée modifiée pendant la rotation : bloc en attente périmé.", item)
-    block = item.pending_block
-    item.pending_block = None
-    item.pending_revision = None
-    return _replace(session, item, item.zone, block, now, Actor.AGENT, "vault.item.rotated")
+    return _replace(
+        session,
+        item,
+        item.zone,
+        item.pending_block,
+        now,
+        Actor.AGENT,
+        "vault.item.rotated",
+        clear_pending=True,
+    )
 
 
 def discard_pending(session: Session, item: Item, now: datetime) -> Item:
@@ -243,6 +350,8 @@ def discard_pending(session: Session, item: Item, now: datetime) -> Item:
     item.pending_block = None
     item.pending_revision = None
     item.updated_at = now
+    # Devices that saw the block must see it go away.
+    item.seq = _next_seq(session, item.user_id)
     session.add(item)
     session.commit()
     audit.record(
@@ -263,9 +372,7 @@ def trash_item(
     item = _get(session, user_id, item_id)
     _check_revision(item, base_revision)
     if item.deleted_at is None:
-        item.deleted_at = now
-        item.seq = _next_seq(session, user_id)
-        session.add(item)
+        _write(session, item, base_revision, STALE, deleted_at=now, seq=_next_seq(session, user_id))
         session.commit()
         audit.record(
             session,
@@ -291,6 +398,17 @@ def resolve_pending(session: Session, user_id: str, item_id: str, keep: str, now
         raise InvalidRequestError("Aucun bloc en attente sur cette entrée.")
     if keep not in ("current", "pending"):
         raise InvalidRequestError("Choix inconnu.")
+    busy = session.exec(
+        select(Rotation.id).where(
+            Rotation.item_id == item.id, col(Rotation.status).in_(BUSY_ROTATION_STATUSES)
+        )
+    ).first()
+    if busy is not None:
+        # The agent is about to use, or is using, the pending slot: arbitrating now would pull
+        # the block from under a rotation that may already have changed the site.
+        raise ConflictError(
+            "Rotation en cours sur cette entrée : réessaie quand elle sera finie.", item
+        )
     if keep == "current":
         item.pending_block = None
         item.pending_revision = None
@@ -311,10 +429,16 @@ def resolve_pending(session: Session, user_id: str, item_id: str, keep: str, now
         return item
     if item.pending_revision != item.revision + 1:
         raise ConflictError("Entrée modifiée depuis : le bloc en attente ne s'applique plus.", item)
-    block = item.pending_block
-    item.pending_block = None
-    item.pending_revision = None
-    return _replace(session, item, item.zone, block, now, Actor.USER, "vault.item.pending.resolved")
+    return _replace(
+        session,
+        item,
+        item.zone,
+        item.pending_block,
+        now,
+        Actor.USER,
+        "vault.item.pending.resolved",
+        clear_pending=True,
+    )
 
 
 def restore_item(session: Session, user_id: str, item_id: str, now: datetime) -> Item:
@@ -367,7 +491,8 @@ def purge_trash(session: Session, user_id: str, now: datetime) -> int:
 def changes_since(session: Session, user_id: str, since: int, now: datetime) -> SyncResult:
     """Every item changed after `since` (0 = everything), tombstones included."""
     purge_trash(session, user_id, now)
-    user = session.get(User, user_id)
+    # Fresh from the database: the seq moves by SQL, not through the object in this session.
+    user = session.get(User, user_id, populate_existing=True)
     if user is None:
         raise NotFoundError("Compte introuvable.")
     rows = session.exec(

@@ -224,6 +224,19 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Corrigé
 
+- Coffre : le **bloc en attente** d'une rotation ne faisait pas avancer le numéro de
+  changement. Un appareil qui synchronise avec `since=` ne le voyait donc jamais, même après un
+  retour arrière raté, et ne pouvait pas te proposer les deux mots de passe. Le poser et le
+  retirer comptent maintenant comme des modifications.
+- Coffre : deux écritures simultanées sur la même révision pouvaient **toutes les deux**
+  passer, la seconde écrasant la première, et deux requêtes pouvaient recevoir le même numéro
+  de changement. La révision est vérifiée dans la requête SQL qui écrit, et le numéro avance
+  en base.
+- Coffre : trancher entre les deux mots de passe pendant qu'une rotation de l'entrée tournait
+  retirait le bloc sous les pieds de l'agent. C'est refusé (`409`) tant que la rotation est
+  approuvée ou en cours.
+- Coffre : reprendre une entrée en zone personnelle laissait ses rotations **en attente**. Elles
+  sont annulées au moment de la reprise, avec une ligne dans le journal.
 - Agent : une rotation approuvée dont le site n'a **aucune recette** restait silencieuse pour
   toujours. Elle porte maintenant sa raison (« aucune recette pour ce site »), visible dans
   l'écran Agent sous « Approuvées, en attente de l'exécuteur », et le journal ne répète plus
