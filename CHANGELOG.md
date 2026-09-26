@@ -224,6 +224,9 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Corrigé
 
+- Sécurité : nginx transmettait à l'api l'en-tête `X-Forwarded-For` reçu du client, complété.
+  Un client pouvait donc y glisser l'adresse de son choix. nginx n'envoie plus que l'adresse
+  qu'il voit lui-même.
 - Sécurité : une requête qui modifie quelque chose (`POST`, `PUT`, `PATCH`, `DELETE`) est
   refusée (`403`) si son en-tête `Origin` existe et n'est pas l'adresse publique de Serenity
   (`SERENITY_PUBLIC_URL`). C'est un second verrou à côté du cookie `SameSite=Strict`. Sans
