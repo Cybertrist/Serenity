@@ -59,3 +59,22 @@ def test_log_filter_redacts_messages(caplog: pytest.LogCaptureFixture) -> None:
         logger.info("calling a site with password=%s", "hunter2")
     assert "hunter2" not in caplog.text
     assert REDACTED in caplog.text
+
+
+def test_log_filter_redacts_tracebacks(caplog: pytest.LogCaptureFixture) -> None:
+    logger = logging.getLogger("test.audit.exc")
+    logger.addFilter(SecretFilter())
+    with caplog.at_level(logging.INFO, logger="test.audit.exc"):
+        try:
+            raise ValueError("login refused, password=hunter2")
+        except ValueError:
+            logger.exception("site call failed")
+    assert "hunter2" not in caplog.text
+    assert "ValueError" in caplog.text and REDACTED in caplog.text
+
+
+def test_a_count_of_revoked_devices_stays_readable(db: Session) -> None:
+    """A key naming sessions is hidden whatever it holds: counts use another word."""
+    record(db, Actor.USER, "auth.password.change", details={"revoked_devices": 2})
+    assert db.exec(select(AuditLog)).one().details == {"revoked_devices": 2}
+    assert redact({"revoked_sessions": 2}) == {"revoked_sessions": REDACTED}

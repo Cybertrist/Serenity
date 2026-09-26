@@ -83,11 +83,22 @@ def record(
 
 
 class SecretFilter(logging.Filter):
-    """Logging filter that redacts secrets from every log record."""
+    """Logging filter that redacts secrets from every log record, traceback included."""
+
+    _formatter = logging.Formatter()
 
     def filter(self, record: logging.LogRecord) -> bool:
         record.msg = redact_text(record.getMessage())
         record.args = None
+        if record.exc_info:
+            # An exception message can carry what the code was handling: format the traceback
+            # here, redacted, so the handler never formats the raw one.
+            record.exc_text = redact_text(self._formatter.formatException(record.exc_info))
+            record.exc_info = None
+        elif record.exc_text:
+            record.exc_text = redact_text(record.exc_text)
+        if record.stack_info:
+            record.stack_info = redact_text(record.stack_info)
         return True
 
 

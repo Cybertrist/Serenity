@@ -52,7 +52,7 @@ def reset_totp(username: str) -> int:
             Actor.SYSTEM,
             "admin.totp.reset",
             user_id=user.id,
-            details={"revoked_sessions": revoked},
+            details={"revoked_devices": revoked},
         )
     print("Nouveau TOTP. Ajoute-le dans ton appli d'authentification (ne le colle nulle part) :")
     print(f"  Clé : {secret}")

@@ -224,6 +224,12 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Corrigé
 
+- Journal : le filtre anti-secret nettoyait le message d'un log mais **pas la trace d'une
+  exception**, qui pouvait porter ce que le code manipulait. La trace est maintenant formatée
+  puis nettoyée avant d'être écrite.
+- Journal : le nombre d'appareils déconnectés (changement de mot de passe, nouveau TOTP)
+  s'affichait `[REDACTED]`, masqué par le mot `session` de sa clé. La clé devient
+  `revoked_devices`.
 - Veille : une erreur imprévue chez un utilisateur (par exemple une entrée importée datée
   « 2024-01-01 », sans fuseau) **arrêtait la veille de tout le monde**. Une date sans fuseau est
   lue en UTC, et une erreur ne coûte plus que l'utilisateur concerné, avec une ligne dans le

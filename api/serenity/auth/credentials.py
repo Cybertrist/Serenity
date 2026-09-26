@@ -81,7 +81,7 @@ def change_password(
         Actor.USER,
         "auth.password.change",
         user_id=user.id,
-        details={"revoked_sessions": revoked},
+        details={"revoked_devices": revoked},
     )
     return revoked
 
@@ -209,7 +209,7 @@ def complete_recovery(
         Actor.USER,
         "auth.recover.complete",
         user_id=user.id,
-        details={"revoked_sessions": revoked},
+        details={"revoked_devices": revoked},
     )
     return open_session(session, settings, user, device, now)
 
