@@ -31,13 +31,13 @@ export function TotpCode({ value }: { value: string }) {
     };
   }, [value]);
   if (invalid) return <span className="text-caption text-crit">Clé TOTP illisible</span>;
-  if (!state) return <span className="font-mono text-title text-muted">··· ···</span>;
+  if (!state) return <span className="font-mono text-[21px] text-muted">··· ···</span>;
   const circumference = 2 * Math.PI * 15;
   const progress = state.remaining / state.period;
   const tone = state.remaining <= 5 ? "var(--color-warn)" : "var(--color-ok)";
   return (
-    <div className="flex items-center gap-2">
-      <span className="whitespace-nowrap font-mono text-title tracking-widest" aria-live="polite">
+    <div className="flex items-center gap-1.5">
+      <span className="tabular whitespace-nowrap font-mono text-[21px] font-medium tracking-[0.12em]">
         {state.code.slice(0, 3)} {state.code.slice(3)}
       </span>
       <svg
@@ -83,9 +83,14 @@ export function TotpCode({ value }: { value: string }) {
         icon={CopyIcon}
         label="Copier le code"
         onClick={() => {
-          void copySecret(state.code).then(() => {
-            toast("Code copié.");
-          });
+          copySecret(state.code).then(
+            () => {
+              toast("Code copié.");
+            },
+            () => {
+              toast("Copie refusée par le navigateur.", "crit");
+            },
+          );
         }}
       />
     </div>

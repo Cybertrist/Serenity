@@ -4,7 +4,8 @@ import { SPRING } from "../../design";
 
 /**
  * Adding an entry is the one thing you do from anywhere in the vault, so its button floats
- * over the screen rather than competing with the title.
+ * over the screen rather than competing with the title. Round on a phone, a labelled button
+ * once the app is wide enough to say what it does.
  */
 export function AddButton({ onClick }: { onClick: () => void }) {
   return (
@@ -13,23 +14,15 @@ export function AddButton({ onClick }: { onClick: () => void }) {
       aria-label="Ajouter une entrée"
       title="Ajouter une entrée"
       onClick={onClick}
-      initial={{ opacity: 0, scale: 0.6, y: 12 }}
+      initial={{ opacity: 0, scale: 0.8, y: 8 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.6 }}
-      whileHover={{ scale: 1.06 }}
-      whileTap={{ scale: 0.94 }}
+      exit={{ opacity: 0, scale: 0.8 }}
+      whileTap={{ scale: 0.95 }}
       transition={SPRING}
-      className="absolute bottom-5 right-5 z-20 flex h-14 w-14 items-center justify-center rounded-[20px] bg-accent text-on-accent shadow-[0_14px_36px_-10px_var(--color-glow-strong)]"
+      className="absolute bottom-4 right-4 z-20 flex h-14 w-14 items-center justify-center gap-2 rounded-2xl bg-accent text-on-accent shadow-[inset_0_1px_0_rgb(255_255_255/0.25),0_16px_40px_-12px_var(--color-glow-strong)] transition-colors duration-150 hover:bg-accent-strong @[620px]:bottom-6 @[620px]:right-6 @[620px]:h-12 @[620px]:w-auto @[620px]:rounded-control @[620px]:pl-4 @[620px]:pr-5"
     >
-      <motion.span
-        aria-hidden="true"
-        initial={false}
-        whileHover={{ rotate: 90 }}
-        transition={SPRING}
-        className="flex"
-      >
-        <PlusIcon size={26} weight="bold" />
-      </motion.span>
+      <PlusIcon size={22} weight="bold" aria-hidden="true" />
+      <span className="hidden text-body font-semibold @[620px]:inline">Ajouter</span>
     </motion.button>
   );
 }

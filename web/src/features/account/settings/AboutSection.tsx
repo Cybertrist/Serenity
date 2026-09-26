@@ -10,7 +10,7 @@ const SOURCE = "https://github.com/Cybertrist/Serenity";
 export function AboutSection() {
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-4 rounded-card border border-line bg-surface p-5">
+      <div className="flex items-center gap-4 rounded-card bg-surface p-5 shadow-[inset_0_0_0_1px_var(--color-line)]">
         <LockMark size={54} />
         <div className="flex flex-col gap-1">
           <p className="m-0 text-body font-medium">Serenity</p>
@@ -23,12 +23,12 @@ export function AboutSection() {
         href={SOURCE}
         target="_blank"
         rel="noreferrer noopener"
-        className="flex min-h-12 items-center gap-2 rounded-control border border-line bg-surface px-4 text-body font-medium text-accent transition-colors duration-150 hover:bg-hover"
+        className="flex min-h-12 items-center gap-2 rounded-control bg-accent-soft px-4 text-body font-medium text-accent transition-colors duration-150 hover:bg-hover"
       >
         <BookOpenTextIcon size={20} aria-hidden="true" />
         Code source
       </a>
-      <div className="flex flex-col gap-2 rounded-card border border-line bg-surface p-5">
+      <div className="flex flex-col gap-2 rounded-card bg-surface p-5 shadow-[inset_0_0_0_1px_var(--color-line)]">
         <p className="m-0 flex items-center gap-2 text-body font-medium">
           <ScalesIcon size={20} weight="duotone" aria-hidden="true" />
           Licence AGPL v3

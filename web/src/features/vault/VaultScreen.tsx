@@ -1,6 +1,8 @@
 import {
   CaretRightIcon,
   CloudSlashIcon,
+  LockKeyIcon,
+  WarningIcon,
   MagnifyingGlassIcon,
   PlusIcon,
   QuestionIcon,
@@ -14,11 +16,28 @@ import { useMemo, useState } from "react";
 import { useBreaches, usePolicies, useRotations } from "../../app/hooks/queries";
 import { useEntries, type VaultEntry } from "../../app/hooks/useEntries";
 import { useSession } from "../../app/session";
-import { Button, Card, Chip, EmptyState, LIST, LIST_ITEM, Note, Pill, Row } from "../../design";
+import {
+  Button,
+  Card,
+  Count,
+  EmptyState,
+  LIST,
+  LIST_ITEM,
+  Note,
+  Pill,
+  Row,
+  SearchField,
+  StatusCard,
+} from "../../design";
 import { Header } from "../../app/shell/Header";
 import { useShell } from "../../app/shell/context";
 import { daysUntil, plural } from "../../lib/format";
+import { EntryMark } from "./EntryMark";
 import { zoneChip } from "./zone";
+
+function Caret() {
+  return <CaretRightIcon size={18} className="shrink-0 text-muted" aria-hidden="true" />;
+}
 
 function EntryList({
   entries,
@@ -31,32 +50,29 @@ function EntryList({
 }) {
   return (
     <Card padded={false}>
-      <motion.div variants={LIST} initial="initial" animate="animate">
-        {entries.map((e, i) => {
-          const chip = zoneChip(e.item.zone);
-          return (
-            <motion.div key={e.item.id} variants={LIST_ITEM}>
-              <Row
-                first={i === 0}
-                chip={<Chip icon={chip.icon} tone={chip.tone} />}
-                title={e.entry.name}
-                caption={e.entry.username || e.domain || "sans identifiant"}
-                trailing={trailing(e)}
-                onClick={() => {
-                  onOpen(e);
-                }}
-              />
-            </motion.div>
-          );
-        })}
-      </motion.div>
+      <motion.ul variants={LIST} initial="initial" animate="animate" className="m-0 list-none p-0">
+        {entries.map((e, i) => (
+          <motion.li key={e.item.id} variants={LIST_ITEM}>
+            <Row
+              first={i === 0}
+              chip={<EntryMark name={e.entry.name} zone={e.item.zone} />}
+              title={e.entry.name}
+              caption={e.entry.username || e.domain || "sans identifiant"}
+              trailing={trailing(e)}
+              onClick={() => {
+                onOpen(e);
+              }}
+            />
+          </motion.li>
+        ))}
+      </motion.ul>
     </Card>
   );
 }
 
 /**
- * A zone and, in one sentence, who can read it. Both are always shown: it is the model, and
- * the header carries the same mark as its entries, so the glyph is its own legend.
+ * A zone and, in one sentence, who can read it. Both are always shown: it is the model. The
+ * glyph of the zone sits in the heading, once, rather than on every entry.
  */
 function Zone({
   zone,
@@ -72,13 +88,19 @@ function Zone({
   children: React.ReactNode;
 }) {
   const chip = zoneChip(zone);
+  const Glyph = chip.icon;
   return (
-    <section className="flex flex-col gap-3">
+    <section className="flex flex-col gap-3" aria-label={title}>
       <div className="flex flex-col gap-1 px-1">
         <div className="flex items-center gap-2">
-          <Chip icon={chip.icon} tone={chip.tone} size={26} />
-          <h2 className="m-0 text-body font-semibold">{title}</h2>
-          <Pill tone="neutral">{String(count)}</Pill>
+          <Glyph
+            size={18}
+            weight="fill"
+            aria-hidden="true"
+            className={chip.tone === "accent" ? "text-accent" : "text-ok"}
+          />
+          <h2 className="m-0 text-heading">{title}</h2>
+          <Count value={count} />
         </div>
         <p className="m-0 text-caption text-muted">{explanation}</p>
       </div>
@@ -95,7 +117,7 @@ function delegatedLabel(count: number): string {
 
 export function VaultScreen() {
   const session = useSession();
-  const { entries } = useEntries();
+  const { entries, unreadable } = useEntries();
   const breaches = useBreaches();
   const policies = usePolicies();
   const rotations = useRotations();
@@ -122,80 +144,92 @@ export function VaultScreen() {
     const due = daysUntil(policies.data?.find((p) => p.item_id === e.item.id)?.next_due_at);
     if (due !== null)
       return (
-        <span className="whitespace-nowrap text-caption text-muted">
+        <span className="tabular whitespace-nowrap text-caption text-muted">
           {due <= 0 ? "rotation due" : `dans ${String(due)} j`}
         </span>
       );
-    return <CaretRightIcon size={20} className="text-muted" aria-hidden="true" />;
+    return <Caret />;
+  };
+
+  /*
+   * Where things stand. Offline, or while the alerts have not answered, nothing reassuring is
+   * said: "all is well" is a claim, and the app only makes it when it knows.
+   */
+  const status = () => {
+    if (session.offline || entries.length === 0 || query) return null;
+    const summary = `${plural(entries.length, "entrée", "entrées")} · ${delegatedLabel(agent.length)}`;
+    if (breaches.isPending) return null;
+    if (breaches.isError)
+      return (
+        <StatusCard
+          icon={ShieldWarningIcon}
+          tone="neutral"
+          title="Alertes indisponibles"
+          text="La veille n'a pas répondu. Réessaie dans un instant."
+        />
+      );
+    return watched.size === 0 ? (
+      <StatusCard icon={ShieldCheckIcon} tone="ok" title="Tout va bien" text={summary} />
+    ) : (
+      <StatusCard
+        icon={ShieldWarningIcon}
+        tone="warn"
+        title={`${plural(watched.size, "compte", "comptes")} à surveiller`}
+        text={summary}
+        action={
+          <Button
+            variant="secondary"
+            onClick={() => {
+              shell.go("breaches");
+            }}
+          >
+            Voir
+          </Button>
+        }
+      />
+    );
   };
 
   return (
     <>
-      <Header title="Coffre" subtitle="Tes comptes, dans leurs deux zones." />
-      <div className="flex flex-col gap-5 pb-6">
-        {session.offline ? (
+      <Header title="Coffre" subtitle="Tes comptes, rangés dans leurs deux zones." />
+      <div className="flex flex-col gap-6 pb-6">
+        {session.offline && session.needsUnlock ? (
+          <div className="flex flex-col gap-3 rounded-control bg-accent-soft px-4 py-3 @[620px]:flex-row @[620px]:items-center">
+            <p className="m-0 flex flex-1 items-start gap-2.5 text-caption text-accent">
+              <LockKeyIcon size={17} weight="bold" aria-hidden="true" className="mt-px shrink-0" />
+              Connexion revenue. Déverrouille à nouveau pour pouvoir modifier ton coffre.
+            </p>
+            <Button
+              variant="secondary"
+              icon={LockKeyIcon}
+              onClick={() => {
+                void session.lock();
+              }}
+            >
+              Verrouiller
+            </Button>
+          </div>
+        ) : session.offline ? (
           <Note tone="warn" icon={CloudSlashIcon}>
             Hors ligne : tu peux lire ton coffre, mais rien n'y est modifiable tant que le serveur
             n'est pas joignable.
           </Note>
         ) : null}
+        {unreadable > 0 ? (
+          <Note tone="crit" icon={WarningIcon}>
+            {plural(unreadable, "entrée illisible", "entrées illisibles")} : elles ne se déchiffrent
+            pas avec tes clés et restent masquées. Si ça dure, préviens l'administrateur du serveur.
+          </Note>
+        ) : null}
 
         {entries.length > 0 ? (
-          <div className="relative mx-auto w-full max-w-[420px]">
-            <MagnifyingGlassIcon
-              size={18}
-              aria-hidden="true"
-              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"
-            />
-            <input
-              type="search"
-              aria-label="Rechercher une entrée"
-              placeholder="Rechercher"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-              }}
-              className="h-11 w-full rounded-control border border-line bg-raised pl-10 pr-4 text-body outline-none placeholder:text-muted focus-visible:border-accent"
-            />
+          <div className="@[620px]:max-w-[420px]">
+            <SearchField label="Rechercher une entrée" value={query} onChange={setQuery} />
           </div>
         ) : null}
 
-        {/* Offline, alerts cannot be checked: no "all is well" that could be wrong. */}
-        {!session.offline && entries.length > 0 && !query ? (
-          <Card className="mx-auto flex w-full max-w-[520px] items-center gap-3.5">
-            <motion.span
-              animate={watched.size === 0 ? { scale: [1, 1.05, 1] } : { scale: 1 }}
-              transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <Chip
-                icon={watched.size === 0 ? ShieldCheckIcon : ShieldWarningIcon}
-                tone={watched.size === 0 ? "ok" : "warn"}
-                duotone
-                size={44}
-              />
-            </motion.span>
-            <span className="flex min-w-0 flex-1 flex-col">
-              <span className="text-body font-semibold">
-                {watched.size === 0
-                  ? "Tout va bien."
-                  : `${plural(watched.size, "compte", "comptes")} à surveiller`}
-              </span>
-              <span className="text-caption text-muted">
-                {plural(entries.length, "entrée", "entrées")} · {delegatedLabel(agent.length)}
-              </span>
-            </span>
-            {watched.size > 0 ? (
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  shell.go("breaches");
-                }}
-              >
-                Voir
-              </Button>
-            ) : null}
-          </Card>
-        ) : null}
+        {status()}
 
         {entries.length === 0 ? (
           <EmptyState
@@ -220,7 +254,7 @@ export function VaultScreen() {
             text={`Rien ne correspond à « ${query} ».`}
           />
         ) : (
-          <div className="grid gap-5 @[620px]:grid-cols-2 @[620px]:items-start">
+          <div className="grid gap-8 @[760px]:grid-cols-2 @[760px]:items-start @[760px]:gap-6">
             <Zone
               zone="personal"
               title="Protégé par toi"
@@ -233,9 +267,7 @@ export function VaultScreen() {
                   onOpen={(e) => {
                     shell.openEntry(e.item.id);
                   }}
-                  trailing={() => (
-                    <CaretRightIcon size={20} className="text-muted" aria-hidden="true" />
-                  )}
+                  trailing={() => <Caret />}
                 />
               ) : (
                 <EmptyState
@@ -263,7 +295,7 @@ export function VaultScreen() {
                 <EmptyState
                   icon={RobotIcon}
                   title="Rien de confié."
-                  text="Ouvre une entrée, puis « Confier à l'agent » : c'est toujours ton choix, entrée par entrée."
+                  text="Ouvre une entrée, puis « Confier à l'agent ». C'est toujours ton choix, entrée par entrée."
                 />
               )}
             </Zone>

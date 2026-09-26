@@ -5,6 +5,7 @@ import { useToast } from "../../../app/toast";
 import { Button, Confirm, ErrorNote, Field, Note } from "../../../design";
 import { regenerateRecoveryKit } from "../credentials";
 import { RecoveryKitPanel } from "../RecoveryKitPanel";
+import { useHoldSettings } from "./guard";
 import { errorText } from "../screens/wording";
 
 type Stage = "idle" | "form" | "kit";
@@ -22,6 +23,7 @@ export function RecoveryKitSection() {
   const [kit, setKit] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  useHoldSettings(stage === "kit");
 
   const submit = (event: FormEvent) => {
     event.preventDefault();

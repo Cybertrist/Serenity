@@ -4,8 +4,10 @@ import { useBreaches, useNotifications, type NotificationRecord } from "../../ap
 import { useEntries } from "../../app/hooks/useEntries";
 import { useSession } from "../../app/session";
 import { useShell } from "../../app/shell/context";
+import { useToast } from "../../app/toast";
+import { errorText } from "../account/screens/wording";
 import { Button, Card, Chip, EmptyState, Modal, Note, Row, Skeleton } from "../../design";
-import { relative } from "../../lib/format";
+import { plural, relative } from "../../lib/format";
 import { BREACH_LABELS, notificationText } from "../../lib/labels";
 
 /**
@@ -15,6 +17,7 @@ import { BREACH_LABELS, notificationText } from "../../lib/labels";
 export function NotificationsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const session = useSession();
   const shell = useShell();
+  const toast = useToast();
   const queryClient = useQueryClient();
   const notifications = useNotifications();
   const breaches = useBreaches();
@@ -31,13 +34,22 @@ export function NotificationsDialog({ open, onClose }: { open: boolean; onClose:
   };
 
   const readAll = async () => {
-    await session.api.post("/api/notifications/read-all");
-    await queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    try {
+      await session.api.post("/api/notifications/read-all");
+      await queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    } catch (e) {
+      toast(errorText(e), "crit");
+    }
   };
 
   const openOne = async (n: NotificationRecord) => {
-    await session.api.post(`/api/notifications/${String(n.id)}/read`);
-    await queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    // Opening what it points to matters more than marking it read: offline, it still opens.
+    try {
+      await session.api.post(`/api/notifications/${String(n.id)}/read`);
+      await queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    } catch {
+      // Stays unread; nothing else is lost.
+    }
     onClose();
     if (n.item_id) shell.openEntry(n.item_id);
     else if (n.breach_id !== null) shell.go("breaches");
@@ -48,7 +60,7 @@ export function NotificationsDialog({ open, onClose }: { open: boolean; onClose:
       open={open}
       onClose={onClose}
       title="Notifications"
-      subtitle={unread.length ? `${String(unread.length)} non lue(s)` : "Tout est lu"}
+      subtitle={unread.length ? plural(unread.length, "non lue", "non lues") : "Tout est lu"}
       icon={BellIcon}
       tone="accent"
       {...(unread.length
@@ -77,10 +89,12 @@ export function NotificationsDialog({ open, onClose }: { open: boolean; onClose:
               first={i === 0}
               chip={<Chip icon={BellIcon} tone={n.read_at === null ? "accent" : "neutral"} />}
               title={text(n)}
-              caption={relative(n.created_at)}
+              caption={
+                n.read_at === null ? `Non lue · ${relative(n.created_at)}` : relative(n.created_at)
+              }
               trailing={
                 n.read_at === null ? (
-                  <span aria-label="Non lue" className="h-2 w-2 shrink-0 rounded-full bg-accent" />
+                  <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-accent" />
                 ) : null
               }
               onClick={() => void openOne(n)}

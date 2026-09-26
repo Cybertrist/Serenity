@@ -73,7 +73,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       aria-live="polite"
       className={
         slot
-          ? "pointer-events-none absolute inset-x-0 bottom-0 z-30 flex flex-col items-center gap-2 p-3 @[620px]:items-end"
+          ? // Clear of the add button: above it on a phone, beside it on a wide app.
+            "pointer-events-none absolute inset-x-0 bottom-[84px] z-30 flex flex-col items-center gap-2 px-4 @[620px]:bottom-6 @[620px]:px-6"
           : "pointer-events-none fixed inset-x-0 bottom-5 z-50 flex flex-col items-center gap-2 px-4"
       }
     >
@@ -85,18 +86,18 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               key={t.id}
               type="button"
               layout
-              initial={{ opacity: 0, y: 12, scale: 0.97 }}
+              initial={{ opacity: 0, y: 10, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, scale: 0.97 }}
               transition={SPRING}
               onClick={() => {
                 setToasts((all) => all.filter((x) => x.id !== t.id));
               }}
-              className="pointer-events-auto flex max-w-[440px] items-start gap-2.5 rounded-control border border-line bg-raised px-4 py-3 text-left text-caption shadow-[0_12px_32px_-8px_var(--color-shade)]"
+              className="pointer-events-auto flex max-w-[440px] items-start gap-2.5 rounded-control bg-float px-4 py-3 text-left text-caption font-medium shadow-float ring-1 ring-line"
             >
               <IconComponent
                 size={18}
-                weight="duotone"
+                weight="fill"
                 aria-hidden="true"
                 className={`mt-px shrink-0 ${COLOURS[t.tone]}`}
               />

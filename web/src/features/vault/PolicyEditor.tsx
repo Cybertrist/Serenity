@@ -56,7 +56,7 @@ export function PolicyEditor({
     }
   };
   return (
-    <div className="flex flex-col gap-4 rounded-card border border-line bg-surface p-4">
+    <div className="flex flex-col gap-4 rounded-card bg-surface p-4 shadow-[inset_0_0_0_1px_var(--color-line)]">
       <p className="m-0 text-caption text-muted">
         {agentZone ? "Changer ce mot de passe tous les…" : "Me rappeler de le changer tous les…"}
       </p>

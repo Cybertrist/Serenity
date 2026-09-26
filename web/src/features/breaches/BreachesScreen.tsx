@@ -29,7 +29,9 @@ import {
   Note,
   Pill,
   Skeleton,
+  StatusCard,
 } from "../../design";
+import { errorText } from "../account/screens/wording";
 import { plural, relative } from "../../lib/format";
 import { BREACH_LABELS } from "../../lib/labels";
 
@@ -62,10 +64,21 @@ export function BreachesScreen() {
   }, [scan, session.offline]);
 
   const dismiss = async (id: number) => {
-    await session.api.post(`/api/breaches/${String(id)}/dismiss`);
-    await queryClient.invalidateQueries({ queryKey: ["breaches"] });
-    toast("Alerte mise de côté.");
+    try {
+      await session.api.post(`/api/breaches/${String(id)}/dismiss`);
+      await queryClient.invalidateQueries({ queryKey: ["breaches"] });
+      toast("Alerte mise de côté.");
+    } catch (e) {
+      toast(errorText(e), "crit");
+    }
   };
+  const checked = scanning
+    ? "Vérification en cours…"
+    : lastScan
+      ? `Vérifié ${relative(lastScan.toISOString())}`
+      : plan.data?.last_scan_at
+        ? `Vérifié ${relative(plan.data.last_scan_at)}`
+        : "Pas encore vérifié";
 
   const list = breaches.data ?? [];
   const accounts = new Set(list.map((b) => b.item_id ?? b.details.email));
@@ -85,33 +98,32 @@ export function BreachesScreen() {
         }
       />
       <div className="flex flex-col gap-4 pb-6">
-        <Card className="flex items-center gap-3.5">
-          <Chip
-            icon={list.length === 0 ? SealCheckIcon : SealWarningIcon}
-            tone={list.length === 0 ? "ok" : "warn"}
-            duotone
-            size={44}
+        {/* No "all is well" unless the alerts actually answered. */}
+        {breaches.isPending && !session.offline ? (
+          <Skeleton lines={2} />
+        ) : session.offline || breaches.isError ? (
+          <StatusCard
+            icon={ShieldWarningIcon}
+            tone="neutral"
+            title="Alertes indisponibles"
+            text={
+              session.offline
+                ? "Hors ligne : la veille ne peut pas être consultée."
+                : "La veille n'a pas répondu. Réessaie dans un instant."
+            }
           />
-          <span className="flex min-w-0 flex-1 flex-col">
-            <span className="text-body font-semibold">
-              {list.length === 0
-                ? "Tout va bien."
-                : `${plural(accounts.size, "compte", "comptes")} à surveiller`}
-            </span>
-            <span className="text-caption text-muted">
-              {scanning
-                ? "Vérification en cours…"
-                : lastScan
-                  ? `Vérifié ${relative(lastScan.toISOString())}`
-                  : plan.data?.last_scan_at
-                    ? `Vérifié ${relative(plan.data.last_scan_at)}`
-                    : "Pas encore vérifié"}
-            </span>
-          </span>
-        </Card>
+        ) : list.length === 0 ? (
+          <StatusCard icon={SealCheckIcon} tone="ok" title="Tout va bien" text={checked} />
+        ) : (
+          <StatusCard
+            icon={SealWarningIcon}
+            tone="warn"
+            title={`${plural(accounts.size, "compte", "comptes")} à surveiller`}
+            text={checked}
+          />
+        )}
 
-        {breaches.isLoading ? <Skeleton /> : null}
-        {!breaches.isLoading && list.length === 0 ? (
+        {breaches.isSuccess && !session.offline && list.length === 0 ? (
           <EmptyState
             icon={SealCheckIcon}
             title="Aucune alerte."
@@ -134,7 +146,7 @@ export function BreachesScreen() {
           variants={LIST}
           initial="initial"
           animate="animate"
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-3"
         >
           {list.map((b) => {
             const label = BREACH_LABELS[b.kind] ?? {
@@ -150,12 +162,7 @@ export function BreachesScreen() {
             return (
               <motion.div key={b.id} variants={LIST_ITEM}>
                 <Card className="flex items-start gap-3.5">
-                  <Chip
-                    icon={ICONS[b.kind] ?? SealWarningIcon}
-                    tone={label.tone}
-                    duotone
-                    size={44}
-                  />
+                  <Chip icon={ICONS[b.kind] ?? SealWarningIcon} tone={label.tone} duotone />
                   <div className="flex min-w-0 flex-1 flex-col gap-1">
                     <span className="text-body font-semibold">
                       {subject} : {label.title.toLowerCase()}
@@ -166,26 +173,26 @@ export function BreachesScreen() {
                         : ""}
                       {label.hint}
                     </span>
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
                       {b.source === "agent" ? <Pill tone="accent">Vu par l'agent</Pill> : null}
                       {itemId ? (
-                        <button
-                          type="button"
-                          className="min-h-11 rounded-control px-2 text-caption font-medium text-accent transition-colors duration-150 hover:bg-accent-soft"
+                        <Button
+                          variant="link"
                           onClick={() => {
                             shell.openEntry(itemId);
                           }}
                         >
                           Ouvrir l'entrée
-                        </button>
+                        </Button>
                       ) : null}
-                      <button
-                        type="button"
-                        className="min-h-11 rounded-control px-2 text-caption text-muted transition-colors duration-150 hover:bg-hover hover:text-text"
+                      <Button
+                        variant="link"
+                        className="!text-muted hover:!bg-hover hover:!text-text"
+                        disabled={session.offline}
                         onClick={() => void dismiss(b.id)}
                       >
                         Mettre de côté
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </Card>

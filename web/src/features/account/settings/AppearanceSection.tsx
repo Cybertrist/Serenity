@@ -31,7 +31,7 @@ export function AppearanceSection() {
           setThemeChoice(v);
         }}
       />
-      <div className="flex items-center gap-4 rounded-card border border-line bg-surface p-5">
+      <div className="flex items-center gap-4 rounded-card bg-surface p-5 shadow-[inset_0_0_0_1px_var(--color-line)]">
         <LockMark size={54} />
         <div className="flex flex-col gap-1">
           <p className="m-0 text-body font-medium">

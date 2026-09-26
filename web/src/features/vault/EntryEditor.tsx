@@ -175,7 +175,7 @@ export function EntryEditor({
               setNotes(e.target.value);
             }}
             rows={3}
-            className="rounded-control border border-line bg-surface px-4 py-3 text-body text-text outline-none focus-visible:border-accent"
+            className="rounded-control bg-surface px-3.5 py-3 text-body text-text shadow-[inset_0_0_0_1px_var(--color-line-strong)] outline-none transition-shadow duration-150 focus-visible:shadow-[inset_0_0_0_2px_var(--color-accent)]"
           />
         </label>
         {error ? <ErrorNote>{error}</ErrorNote> : null}

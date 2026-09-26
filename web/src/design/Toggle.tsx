@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { SPRING } from "./motion";
 
+/** A switch. The knob moves by transform; the hit area is 44 px high whatever the track. */
 export function Toggle({
   checked,
   onChange,
@@ -22,14 +23,18 @@ export function Toggle({
       onClick={() => {
         onChange(!checked);
       }}
-      className={`relative h-[34px] w-14 shrink-0 rounded-full transition-colors duration-200 disabled:opacity-50 ${checked ? "bg-accent" : "bg-neutral-soft border border-line"}`}
+      className="flex h-11 shrink-0 items-center disabled:opacity-50"
     >
-      <motion.span
-        layout
-        transition={SPRING}
-        className="absolute top-1 h-[26px] w-[26px] rounded-full bg-knob shadow-[0_1px_3px_var(--color-shade)]"
-        style={{ left: checked ? 26 : 4 }}
-      />
+      <span
+        className={`flex h-[30px] w-[50px] items-center rounded-full p-[3px] transition-colors duration-200 ${checked ? "bg-accent" : "bg-track"}`}
+      >
+        <motion.span
+          initial={false}
+          animate={{ x: checked ? 20 : 0 }}
+          transition={SPRING}
+          className="h-6 w-6 rounded-full bg-knob shadow-[0_1px_3px_rgb(0_0_0/0.3)]"
+        />
+      </span>
     </button>
   );
 }

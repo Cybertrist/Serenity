@@ -73,7 +73,7 @@ export function Generator({ onUse }: { onUse: (value: string) => void }) {
   };
 
   return (
-    <div className="flex flex-col gap-3.5 rounded-card border border-line bg-surface p-4">
+    <div className="flex flex-col gap-3.5 rounded-card bg-surface p-4 shadow-[inset_0_0_0_1px_var(--color-line)]">
       <Segmented
         options={KINDS}
         value={kind}
@@ -83,14 +83,15 @@ export function Generator({ onUse }: { onUse: (value: string) => void }) {
           regenerate({ kind: k });
         }}
       />
-      <p className="m-0 break-all rounded-chip bg-raised px-3.5 py-3 font-mono text-body">
+      <p className="m-0 break-all rounded-control bg-surface px-3.5 py-3 font-mono text-[15px] shadow-[inset_0_0_0_1px_var(--color-line)]">
         {value}
       </p>
       <div className="flex flex-col gap-1.5">
         <div className="h-1.5 overflow-hidden rounded-full bg-neutral-soft">
+          {/* Grown by transform, not by width: the bar never makes the layout move. */}
           <div
-            className={`h-full rounded-full transition-[width] duration-300 ${BARS[level.tone]}`}
-            style={{ width: `${String(Math.round(level.ratio * 100))}%` }}
+            className={`h-full origin-left rounded-full transition-transform duration-300 ${BARS[level.tone]}`}
+            style={{ transform: `scaleX(${String(Math.max(0.02, level.ratio))})` }}
           />
         </div>
         <p className="m-0 text-caption text-muted">
@@ -100,8 +101,8 @@ export function Generator({ onUse }: { onUse: (value: string) => void }) {
       </div>
       {kind === "password" ? (
         <>
-          <label className="flex items-center justify-between gap-3 text-caption text-muted">
-            Longueur : {length}
+          <label className="flex min-h-11 items-center justify-between gap-3 text-caption text-muted">
+            <span className="tabular">Longueur : {length}</span>
             <input
               type="range"
               min={12}
@@ -111,7 +112,7 @@ export function Generator({ onUse }: { onUse: (value: string) => void }) {
                 setLength(Number(e.target.value));
                 regenerate({ length: Number(e.target.value) });
               }}
-              className="w-40 accent-accent"
+              className="h-11 w-44 cursor-pointer accent-(--color-accent)"
             />
           </label>
           <div className="flex items-center justify-between text-caption text-muted">
@@ -127,8 +128,8 @@ export function Generator({ onUse }: { onUse: (value: string) => void }) {
           </div>
         </>
       ) : (
-        <label className="flex items-center justify-between gap-3 text-caption text-muted">
-          Mots : {words}
+        <label className="flex min-h-11 items-center justify-between gap-3 text-caption text-muted">
+          <span className="tabular">Mots : {words}</span>
           <input
             type="range"
             min={4}
@@ -138,7 +139,7 @@ export function Generator({ onUse }: { onUse: (value: string) => void }) {
               setWords(Number(e.target.value));
               regenerate({ words: Number(e.target.value) });
             }}
-            className="w-40 accent-accent"
+            className="h-11 w-44 cursor-pointer accent-(--color-accent)"
           />
         </label>
       )}

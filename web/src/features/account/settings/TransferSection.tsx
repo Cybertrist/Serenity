@@ -8,7 +8,11 @@ import type { Entry } from "../../../crypto/items";
 import { plural } from "../../../lib/format";
 import { exportVault } from "../../../vault/export";
 import { parseAuthenticatorExport, type OneTimeAccount } from "../../../vault/import/authenticator";
-import { ImportError, parseBitwardenExport } from "../../../vault/import/bitwarden";
+import {
+  ImportError,
+  MAX_IMPORT_BYTES,
+  parseBitwardenExport,
+} from "../../../vault/import/bitwarden";
 import { parseGoogleExport } from "../../../vault/import/google";
 import { addEntries, updateEntry } from "../../../vault/operations";
 import { errorText, passwordHint } from "../screens/wording";
@@ -41,6 +45,10 @@ export function TransferSection() {
   const read = async (selected: File | undefined) => {
     if (!selected) return;
     setError(null);
+    if (selected.size > MAX_IMPORT_BYTES) {
+      setError("Ce fichier est trop gros : 5 Mo au maximum.");
+      return;
+    }
     try {
       // The format is read from the file, not from its name: a JSON is a Bitwarden export,
       // anything else is the CSV that Google writes.
@@ -165,7 +173,12 @@ export function TransferSection() {
           type="file"
           accept="text/csv,.csv,application/json,.json"
           className="hidden"
-          onChange={(e) => void read(e.target.files?.[0])}
+          onChange={(e) => {
+            const chosen = e.target.files?.[0];
+            // Emptied, so choosing the same file again (after a cancel) still reads it.
+            e.target.value = "";
+            void read(chosen);
+          }}
         />
         {importing ? (
           <Card className="flex flex-col gap-3">
@@ -205,7 +218,7 @@ export function TransferSection() {
           <p className="m-0 text-caption text-muted">
             Dans Google Authenticator : menu, « Transférer les comptes », « Exporter ». L'appli
             affiche un QR code. Scanne-le avec n'importe quel lecteur, puis colle ici le lien
-            <code className="mx-1 font-mono text-[12px]">otpauth-migration://</code>
+            <code className="mx-1 font-mono text-micro">otpauth-migration://</code>
             qu'il contient. Les secrets sont lus et chiffrés ici.
           </p>
         </div>
@@ -250,7 +263,7 @@ export function TransferSection() {
                 rows={3}
                 spellCheck={false}
                 placeholder="otpauth-migration://offline?data=…"
-                className="resize-none rounded-control border border-line bg-surface px-4 py-3 font-mono text-caption text-text outline-none placeholder:text-muted focus-visible:border-accent"
+                className="resize-none rounded-control bg-surface px-3.5 py-3 font-mono text-caption text-text shadow-[inset_0_0_0_1px_var(--color-line-strong)] outline-none transition-shadow duration-150 placeholder:text-muted focus-visible:shadow-[inset_0_0_0_2px_var(--color-accent)]"
               />
             </label>
             <Button

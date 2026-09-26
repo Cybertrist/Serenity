@@ -21,10 +21,10 @@ export function CodeField({
   const id = useId();
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={id} className="text-caption text-muted">
+      <label htmlFor={id} className="px-0.5 text-caption font-medium text-muted">
         {label}
       </label>
-      <div className="relative">
+      <div className="group relative">
         <div className="flex gap-2" aria-hidden="true">
           {Array.from({ length: CELLS }, (_, i) => {
             const char = value[i];
@@ -32,8 +32,12 @@ export function CodeField({
             return (
               <span
                 key={i}
-                className={`flex h-[52px] flex-1 items-center justify-center rounded-control border bg-raised font-mono text-title transition-colors duration-150 ${
-                  error ? "border-crit" : active ? "border-accent" : "border-line"
+                // The cell being typed in wears the focus ring, and only while the field has
+                // the focus: a ring on an idle field would say it is listening when it is not.
+                className={`tabular flex h-[54px] flex-1 items-center justify-center rounded-control bg-surface font-mono text-title transition-shadow duration-150 ${
+                  error
+                    ? "shadow-[inset_0_0_0_1.5px_var(--color-crit)]"
+                    : `shadow-[inset_0_0_0_1px_var(--color-line-strong)] ${active ? "group-focus-within:shadow-[inset_0_0_0_2px_var(--color-accent)]" : ""}`
                 }`}
               >
                 {char ?? ""}

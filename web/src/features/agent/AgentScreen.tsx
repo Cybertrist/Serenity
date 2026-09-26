@@ -4,6 +4,7 @@ import {
   HandTapIcon,
   PowerIcon,
   ProhibitIcon,
+  QuestionIcon,
   ShieldCheckIcon,
   TerminalWindowIcon,
   WarningIcon,
@@ -27,8 +28,10 @@ import {
   Row,
   SectionTitle,
   Skeleton,
+  StatusCard,
   Toggle,
 } from "../../design";
+import { EntryMark } from "../vault/EntryMark";
 import { daysUntil, plural } from "../../lib/format";
 import { TRIGGER_LABELS } from "../../lib/labels";
 import { errorText } from "../account/screens/wording";
@@ -46,7 +49,9 @@ export function AgentScreen() {
   const [busy, setBusy] = useState<number | "switch" | null>(null);
   const [switching, setSwitching] = useState<boolean | null>(null);
 
-  const active = status.data ? !status.data.kill_switch : true;
+  // Unknown is not "on": offline or unanswered, the screen says it does not know.
+  const known = status.data !== undefined && !session.offline;
+  const active = status.data ? !status.data.kill_switch : false;
   const toggle = async (on: boolean) => {
     setBusy("switch");
     try {
@@ -93,35 +98,40 @@ export function AgentScreen() {
     <>
       <Header title="Agent" subtitle="Ce qu'il surveille et ce qu'il te propose." />
       <div className="flex flex-col gap-5 pb-6">
-        {status.isLoading ? (
-          <Skeleton lines={2} />
+        {status.isLoading && !session.offline ? (
+          <Skeleton lines={1} />
+        ) : !known ? (
+          <StatusCard
+            icon={QuestionIcon}
+            tone="neutral"
+            title="État de l'agent inconnu"
+            text={
+              session.offline
+                ? "Hors ligne : impossible de savoir s'il tourne, ni de l'arrêter d'ici."
+                : "Le serveur n'a pas répondu. Réessaie dans un instant."
+            }
+          />
         ) : (
-          <Card className="flex items-center gap-3.5">
-            <Chip
-              icon={active ? PowerIcon : ProhibitIcon}
-              tone={active ? "accent" : "neutral"}
-              duotone
-              size={48}
-            />
-            <span className="flex flex-1 flex-col">
-              <span className="text-body font-semibold">
-                {active ? "L'agent est actif." : "L'agent est arrêté."}
-              </span>
-              <span className="text-caption text-muted">
-                {active
-                  ? "Il surveille la zone agent et prépare les rotations. Ce bouton le coupe tout de suite."
-                  : "Le kill switch est enclenché : il ne surveille ni ne change plus rien."}
-              </span>
-            </span>
-            <Toggle
-              checked={active}
-              label="Agent actif"
-              disabled={busy === "switch" || session.offline}
-              onChange={(v) => {
-                setSwitching(v);
-              }}
-            />
-          </Card>
+          <StatusCard
+            icon={active ? PowerIcon : ProhibitIcon}
+            tone={active ? "accent" : "neutral"}
+            title={active ? "L'agent est actif" : "L'agent est arrêté"}
+            text={
+              active
+                ? "Il surveille la zone agent et prépare les rotations. Ce bouton le coupe tout de suite."
+                : "Le kill switch est enclenché : il ne surveille ni ne change plus rien."
+            }
+            action={
+              <Toggle
+                checked={active}
+                label="Agent actif"
+                disabled={busy === "switch"}
+                onChange={(v) => {
+                  setSwitching(v);
+                }}
+              />
+            }
+          />
         )}
 
         {pending.length ? (
@@ -133,8 +143,8 @@ export function AgentScreen() {
             {pending.map((r) => {
               const name = byId.get(r.item_id)?.entry.name ?? "Entrée";
               return (
-                <Card key={r.id} className="flex flex-col gap-3.5">
-                  <div className="flex items-center gap-3">
+                <Card key={r.id} className="flex flex-col gap-4 ring-1 ring-accent/40">
+                  <div className="flex items-center gap-3.5">
                     <Chip icon={HandTapIcon} tone="accent" duotone />
                     <span className="flex flex-col">
                       <span className="text-body font-semibold">{name}</span>
@@ -148,7 +158,7 @@ export function AgentScreen() {
                       variant="secondary"
                       icon={XCircleIcon}
                       className="flex-1"
-                      disabled={busy !== null}
+                      disabled={busy !== null || session.offline}
                       onClick={() => void decide(r.id, false)}
                     >
                       Refuser
@@ -157,7 +167,7 @@ export function AgentScreen() {
                       icon={CheckCircleIcon}
                       className="flex-1"
                       busy={busy === r.id}
-                      disabled={busy !== null || !active}
+                      disabled={busy !== null || !active || session.offline}
                       onClick={() => void decide(r.id, true)}
                     >
                       Approuver
@@ -202,7 +212,7 @@ export function AgentScreen() {
         <section className="flex flex-col gap-3">
           <SectionTitle
             title="Prochaines rotations"
-            subtitle="Zone agent : l'agent change le mot de passe lui-même. Zone personnelle : il te le rappelle."
+            subtitle="Les entrées confiées : l'agent change leur mot de passe lui-même, à la date prévue."
           />
           {upcoming.length === 0 ? (
             <EmptyState
@@ -229,11 +239,11 @@ export function AgentScreen() {
                   <Row
                     key={p.item_id}
                     first={i === 0}
-                    chip={<Chip icon={ArrowsClockwiseIcon} tone="accent" />}
+                    chip={<EntryMark name={entry?.entry.name ?? "?"} zone="agent" />}
                     title={entry?.entry.name ?? "Entrée"}
                     caption={`Tous les ${String(p.frequency_days)} jours · ${p.mode === "autonomous" ? "sans te demander" : "avec ta validation"}`}
                     trailing={
-                      <span className="whitespace-nowrap text-caption text-muted">
+                      <span className="tabular whitespace-nowrap text-caption text-muted">
                         {due === null ? "" : due <= 0 ? "due" : `dans ${String(due)} j`}
                       </span>
                     }

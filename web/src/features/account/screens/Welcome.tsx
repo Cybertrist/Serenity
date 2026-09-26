@@ -1,7 +1,7 @@
 import { ArrowRightIcon, CheckCircleIcon, ShieldCheckIcon } from "@phosphor-icons/react";
 import { useState, type FormEvent } from "react";
 import { useSession } from "../../../app/session";
-import { Button, Card, ErrorNote, Field, Note } from "../../../design";
+import { Button, Checkbox, ErrorNote, Field, Note } from "../../../design";
 import { CodeField } from "../CodeField";
 import { RecoveryKitPanel } from "../RecoveryKitPanel";
 import { signup, type PendingSignup } from "../signup";
@@ -59,6 +59,10 @@ export function Welcome() {
   };
 
   const kit = pending?.recoveryKit ?? "";
+  /** The account is created under this name: the kit has to carry the same one. */
+  const account = username.trim().toLowerCase();
+  /** Only an authenticator link is ever offered as a link, whatever the server sent. */
+  const totpLink = pending?.totpUri.startsWith("otpauth://") ? pending.totpUri : null;
 
   return (
     <AuthShell step={`creation-${String(step)}`}>
@@ -117,20 +121,25 @@ export function Welcome() {
             subtitle="Ajoute Serenity dans ton appli d'authentification."
             step={[2, 3]}
           />
-          <Card className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 rounded-card bg-surface p-4 shadow-[inset_0_0_0_1px_var(--color-line)]">
             <p className="m-0 text-caption text-muted">
               Clé à saisir dans l'appli (type : basé sur le temps)
             </p>
             <p
               data-totp-secret
-              className="m-0 select-all break-all font-mono text-body tracking-wider"
+              className="m-0 select-all break-all font-mono text-[15px] tracking-wider"
             >
               {(pending.totpSecret.match(/.{1,4}/g) ?? []).join(" ")}
             </p>
-            <a href={pending.totpUri} className="min-h-11 text-body text-accent">
-              Ouvrir dans l'appli d'authentification
-            </a>
-          </Card>
+            {totpLink ? (
+              <a
+                href={totpLink}
+                className="-mx-2 inline-flex min-h-11 items-center self-start rounded-control px-2 text-caption font-medium text-accent hover:bg-accent-soft"
+              >
+                Ouvrir dans l'appli d'authentification
+              </a>
+            ) : null}
+          </div>
           <form className="flex flex-col gap-4" onSubmit={(e) => void activate(e)}>
             <CodeField
               label="Code à 6 chiffres"
@@ -156,22 +165,23 @@ export function Welcome() {
             subtitle="La seule façon de rouvrir ton coffre si tu oublies ton mot de passe maître."
             step={[3, 3]}
           />
-          <RecoveryKitPanel kit={kit} username={username} />
+          <RecoveryKitPanel kit={kit} username={account} />
           <Note tone="warn">
             Il ne sera plus jamais affiché. Note-le sur papier ou garde le fichier hors ligne.
           </Note>
-          <label className="flex min-h-11 cursor-pointer items-center gap-3 text-body">
-            <input
-              type="checkbox"
-              checked={noted}
-              onChange={(e) => {
-                setNoted(e.target.checked);
-              }}
-              className="h-[22px] w-[22px] accent-accent"
-            />
-            Je l'ai noté dans un endroit sûr.
-          </label>
-          <Button icon={CheckCircleIcon} disabled={!noted || !done} onClick={() => void done?.()}>
+          <Checkbox checked={noted} onChange={setNoted}>
+            <span className="text-body">Je l'ai noté dans un endroit sûr.</span>
+          </Checkbox>
+          {error ? <ErrorNote>{error}</ErrorNote> : null}
+          <Button
+            icon={CheckCircleIcon}
+            disabled={!noted || !done}
+            onClick={() => {
+              done?.().catch((e: unknown) => {
+                setError(errorText(e));
+              });
+            }}
+          >
             Ouvrir mon coffre
           </Button>
         </>

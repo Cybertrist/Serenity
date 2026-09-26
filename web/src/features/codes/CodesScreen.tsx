@@ -9,8 +9,9 @@ import { useMemo, useState } from "react";
 import { useEntries, type VaultEntry } from "../../app/hooks/useEntries";
 import { Header } from "../../app/shell/Header";
 import { useShell } from "../../app/shell/context";
-import { Button, Card, Chip, EmptyState, LIST, LIST_ITEM, Note } from "../../design";
+import { Button, Card, EmptyState, LIST, LIST_ITEM, Note, SearchField } from "../../design";
 import { plural } from "../../lib/format";
+import { EntryMark } from "../vault/EntryMark";
 import { TotpCode } from "../vault/TotpCode";
 import { zoneChip } from "../vault/zone";
 
@@ -29,22 +30,24 @@ function CodeRow({
 }) {
   const chip = zoneChip(entry.item.zone);
   return (
-    <div
-      className={`flex min-h-[60px] w-full items-center gap-3 px-4 py-2 ${first ? "" : "border-t border-line"}`}
-    >
-      <Chip icon={chip.icon} tone={chip.tone} />
-      <button
-        type="button"
-        onClick={onOpen}
-        title="Ouvrir la fiche"
-        className="flex min-w-0 flex-1 flex-col rounded-control py-1 text-left transition-colors duration-150 hover:bg-hover"
+    <div className="flex w-full items-center gap-3.5 pl-4 pr-2">
+      <EntryMark name={entry.entry.name} zone={entry.item.zone} badge />
+      <div
+        className={`flex min-h-[68px] min-w-0 flex-1 flex-wrap items-center justify-between gap-x-3 py-2 ${first ? "" : "border-t border-line"}`}
       >
-        <span className="truncate text-body font-medium">{entry.entry.name}</span>
-        <span className="truncate text-caption text-muted">
-          {entry.entry.username || entry.domain || chip.label}
-        </span>
-      </button>
-      <TotpCode value={entry.entry.totp ?? ""} />
+        <button
+          type="button"
+          onClick={onOpen}
+          title="Ouvrir la fiche"
+          className="-mx-2 flex min-w-0 max-w-full flex-col rounded-control px-2 py-1 text-left transition-colors duration-150 hover:bg-hover"
+        >
+          <span className="truncate text-body font-medium">{entry.entry.name}</span>
+          <span className="truncate text-caption text-muted">
+            {entry.entry.username || entry.domain || chip.label}
+          </span>
+        </button>
+        <TotpCode value={entry.entry.totp ?? ""} />
+      </div>
     </div>
   );
 }
@@ -71,24 +74,10 @@ export function CodesScreen() {
   return (
     <>
       <Header title="Codes" subtitle="Tes codes à deux facteurs, calculés sur cet appareil." />
-      <div className="mx-auto flex w-full max-w-[720px] flex-col gap-4">
+      <div className="flex flex-col gap-5 pb-6">
         {coded.length > 0 ? (
-          <div className="relative mx-auto w-full max-w-[420px]">
-            <MagnifyingGlassIcon
-              size={18}
-              aria-hidden="true"
-              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"
-            />
-            <input
-              type="search"
-              aria-label="Rechercher un code"
-              placeholder="Rechercher"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-              }}
-              className="h-11 w-full rounded-control border border-line bg-raised pl-10 pr-4 text-body outline-none placeholder:text-muted focus-visible:border-accent"
-            />
+          <div className="@[620px]:max-w-[420px]">
+            <SearchField label="Rechercher un code" value={query} onChange={setQuery} />
           </div>
         ) : null}
 
@@ -112,9 +101,14 @@ export function CodesScreen() {
           <EmptyState icon={MagnifyingGlassIcon} title="Aucun code à ce nom." />
         ) : (
           <Card padded={false}>
-            <motion.div variants={LIST} initial="initial" animate="animate">
+            <motion.ul
+              variants={LIST}
+              initial="initial"
+              animate="animate"
+              className="m-0 list-none p-0"
+            >
               {filtered.map((e, i) => (
-                <motion.div key={e.item.id} variants={LIST_ITEM}>
+                <motion.li key={e.item.id} variants={LIST_ITEM}>
                   <CodeRow
                     entry={e}
                     first={i === 0}
@@ -122,9 +116,9 @@ export function CodesScreen() {
                       openEntry(e.item.id);
                     }}
                   />
-                </motion.div>
+                </motion.li>
               ))}
-            </motion.div>
+            </motion.ul>
           </Card>
         )}
 

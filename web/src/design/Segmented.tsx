@@ -8,7 +8,7 @@ export interface Option<T> {
 }
 
 /**
- * A row of exclusive choices. The selected one is marked by a single pill that
+ * A row of exclusive choices in one track. The selected one is marked by a single thumb that
  * slides from the previous choice, so the eye follows where the selection went.
  */
 export function Segmented<T extends string | number | null>({
@@ -16,18 +16,21 @@ export function Segmented<T extends string | number | null>({
   value,
   onChange,
   label,
-  size = "md",
 }: {
   options: readonly Option<T>[];
   value: T;
   onChange: (value: T) => void;
   label: string;
+  /** Kept for callers; every size is now the same. */
   size?: "sm" | "md";
 }) {
   const group = useId();
-  const height = size === "sm" ? "h-8" : "h-9";
   return (
-    <div role="radiogroup" aria-label={label} className="flex flex-wrap gap-1.5">
+    <div
+      role="radiogroup"
+      aria-label={label}
+      className="flex flex-wrap gap-1 rounded-control bg-neutral-soft p-1 shadow-[inset_0_0_0_1px_var(--color-line)]"
+    >
       {options.map((option) => {
         const selected = option.value === value;
         return (
@@ -39,10 +42,8 @@ export function Segmented<T extends string | number | null>({
             onClick={() => {
               onChange(option.value);
             }}
-            className={`relative ${height} rounded-full px-3.5 text-caption font-medium transition-colors duration-150 ${
-              selected
-                ? "text-on-accent"
-                : "border border-line text-muted hover:bg-hover hover:text-text"
+            className={`relative min-h-9 flex-1 whitespace-nowrap rounded-[9px] px-3 text-caption font-medium transition-colors duration-150 [@media(pointer:coarse)]:min-h-11 ${
+              selected ? "text-text" : "text-muted hover:text-text"
             }`}
           >
             {selected ? (
@@ -50,7 +51,7 @@ export function Segmented<T extends string | number | null>({
                 layoutId={`segmented-${group}`}
                 transition={SPRING}
                 aria-hidden="true"
-                className="absolute inset-0 rounded-full bg-accent"
+                className="absolute inset-0 rounded-[9px] bg-raised shadow-[0_1px_3px_var(--color-shade),inset_0_0_0_1px_var(--color-line)]"
               />
             ) : null}
             <span className="relative">{option.label}</span>

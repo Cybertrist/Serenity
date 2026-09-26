@@ -172,7 +172,7 @@ export function GuideDialog({ open, onClose }: { open: boolean; onClose: () => v
             {PAGES.map((p, i) => (
               <span
                 key={p.title}
-                className={`h-1 w-6 rounded-full transition-colors duration-300 ${i <= page ? "bg-accent" : "bg-raised"}`}
+                className={`h-1 w-6 rounded-full transition-colors duration-300 ${i <= page ? "bg-accent" : "bg-track"}`}
               />
             ))}
           </span>

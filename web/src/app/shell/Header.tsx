@@ -1,13 +1,8 @@
-import { motion } from "motion/react";
 import type { ReactNode } from "react";
-import { EASE_OUT } from "../../design";
 
 /**
- * Page header inside the square: the name of the screen and, under it, what the screen is for.
- * The app-wide buttons (notifications, lock, settings) live in the frame, above this.
- *
- * The title is set in the stencil of the logotype: the screen names are the only place in the
- * app that borrows the mark's own letters.
+ * Page header inside the app: the name of the screen and, under it, what the screen is for.
+ * Left-aligned on the same axis as the content, with room on the right for one action.
  */
 export function Header({
   title,
@@ -19,26 +14,12 @@ export function Header({
   actions?: ReactNode;
 }) {
   return (
-    <header className="mb-5 flex flex-col items-center gap-3 text-center">
-      <div className="flex min-w-0 flex-col items-center gap-1">
-        <motion.h1
-          className="m-0 font-stencil text-title font-normal uppercase tracking-[0.16em] @[620px]:text-display"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: EASE_OUT }}
-        >
-          {title}
-        </motion.h1>
-        <motion.p
-          className="m-0 text-caption text-muted"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.06, ease: EASE_OUT }}
-        >
-          {subtitle}
-        </motion.p>
+    <header className="mb-6 flex items-end justify-between gap-4 @[620px]:mb-7">
+      <div className="flex min-w-0 flex-col gap-1">
+        <h1 className="m-0 text-title @[620px]:text-display">{title}</h1>
+        <p className="m-0 text-body text-muted">{subtitle}</p>
       </div>
-      {actions ? <div className="flex items-center justify-center gap-2">{actions}</div> : null}
+      {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
     </header>
   );
 }

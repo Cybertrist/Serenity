@@ -11,8 +11,9 @@ import {
   UserCircleIcon,
   WatchIcon,
 } from "@phosphor-icons/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSession } from "../../app/session";
+import { useToast } from "../../app/toast";
 import { Modal, Note } from "../../design";
 import { JournalSection } from "../logs/JournalSection";
 import { AboutSection } from "./settings/AboutSection";
@@ -23,6 +24,7 @@ import { LockSection } from "./settings/LockSection";
 import { TransferSection } from "./settings/TransferSection";
 import { TrashSection } from "./settings/TrashSection";
 import { WatchSection } from "./settings/WatchSection";
+import { SettingsGuard } from "./settings/guard";
 
 import type { SettingsSection } from "../../app/shell/context";
 
@@ -51,7 +53,19 @@ export function SettingsDialog({
   onClose: () => void;
 }) {
   const session = useSession();
+  const toast = useToast();
   const [current, setCurrent] = useState<SettingsSection>(section);
+  const [held, setHeld] = useState(false);
+  const hold = useCallback((value: boolean) => {
+    setHeld(value);
+  }, []);
+  const close = () => {
+    if (held) {
+      toast("Garde d'abord ton nouveau kit, puis confirme-le.", "warn");
+      return;
+    }
+    onClose();
+  };
   useEffect(() => {
     if (open) setCurrent(section);
   }, [open, section]);
@@ -66,7 +80,7 @@ export function SettingsDialog({
       );
     switch (current) {
       case "lock":
-        return <LockSection onClose={onClose} />;
+        return <LockSection onClose={close} />;
       case "appearance":
         return <AppearanceSection />;
       case "journal":
@@ -80,7 +94,7 @@ export function SettingsDialog({
       case "trash":
         return <TrashSection />;
       case "account":
-        return <AccountSection onClose={onClose} />;
+        return <AccountSection onClose={close} />;
       case "about":
         return <AboutSection />;
     }
@@ -89,42 +103,52 @@ export function SettingsDialog({
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={close}
       title="Réglages"
       {...(session.username ? { subtitle: session.username } : {})}
       icon={UserCircleIcon}
       size="lg"
       flush
     >
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto md:flex-row md:overflow-hidden">
-        <nav
-          aria-label="Sections des réglages"
-          className="flex shrink-0 gap-1.5 overflow-x-auto border-b border-line px-5 py-3 md:w-[220px] md:flex-col md:overflow-visible md:border-b-0 md:border-r md:px-3 md:py-4"
-        >
-          {SECTIONS.map(({ id, label, icon: IconComponent }) => {
-            const active = id === current;
-            return (
-              <button
-                key={id}
-                type="button"
-                aria-current={active ? "true" : undefined}
-                onClick={() => {
-                  setCurrent(id);
-                }}
-                className={`flex h-11 w-[142px] shrink-0 items-center justify-center gap-2.5 whitespace-nowrap rounded-control px-3 text-body transition-colors duration-150 md:w-full md:justify-start md:px-3.5 ${
-                  active
-                    ? "bg-accent-soft font-semibold text-accent"
-                    : "font-medium text-muted hover:bg-hover hover:text-text"
-                }`}
-              >
-                <IconComponent size={20} weight={active ? "fill" : "duotone"} aria-hidden="true" />
-                {label}
-              </button>
-            );
-          })}
-        </nav>
-        <div className="min-w-0 flex-1 px-5 py-5 md:overflow-y-auto">{body()}</div>
-      </div>
+      <SettingsGuard.Provider value={hold}>
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto @[760px]:flex-row @[760px]:overflow-hidden">
+          <nav
+            aria-label="Sections des réglages"
+            className="flex shrink-0 gap-1 overflow-x-auto border-b border-line px-4 py-2.5 @[760px]:w-[220px] @[760px]:flex-col @[760px]:overflow-visible @[760px]:border-b-0 @[760px]:border-r @[760px]:px-3 @[760px]:py-4"
+          >
+            {SECTIONS.map(({ id, label, icon: IconComponent }) => {
+              const active = id === current;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  aria-current={active ? "true" : undefined}
+                  disabled={held && !active}
+                  onClick={() => {
+                    setCurrent(id);
+                  }}
+                  className={`flex h-10 shrink-0 items-center gap-2.5 whitespace-nowrap rounded-control px-3 text-caption transition-colors duration-150 disabled:opacity-40 @[760px]:w-full ${
+                    active
+                      ? "bg-raised font-semibold text-text shadow-card"
+                      : "font-medium text-muted hover:bg-hover hover:text-text"
+                  }`}
+                >
+                  <IconComponent
+                    size={18}
+                    weight={active ? "fill" : "regular"}
+                    aria-hidden="true"
+                    className={active ? "text-accent" : ""}
+                  />
+                  {label}
+                </button>
+              );
+            })}
+          </nav>
+          <div className="min-w-0 flex-1 px-5 py-5 @[620px]:px-6 @[760px]:overflow-y-auto">
+            {body()}
+          </div>
+        </div>
+      </SettingsGuard.Provider>
     </Modal>
   );
 }

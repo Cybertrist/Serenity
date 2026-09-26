@@ -9,15 +9,14 @@ import { EntryEditor } from "../../features/vault/EntryEditor";
 import { GuideDialog } from "../../features/guide/GuideDialog";
 import { NotificationsDialog } from "../../features/notifications/NotificationsDialog";
 import { VaultScreen } from "../../features/vault/VaultScreen";
-import { PERSPECTIVE, SCREEN } from "../../design";
+import { SCREEN } from "../../design";
 import { useBreaches, useNotifications, useRotations } from "../hooks/queries";
 import { useEntries } from "../hooks/useEntries";
 import { useSession } from "../session";
 import { AddButton } from "./AddButton";
 import { AppFrame } from "./AppFrame";
 import { ShellContext, type SettingsSection, type ShellApi, type Tab } from "./context";
-import { TABS } from "./nav";
-import { TabBar } from "./TabBar";
+import { SideNav, TabBar } from "./TabBar";
 
 const SCREENS: Record<Tab, () => React.ReactElement> = {
   vault: VaultScreen,
@@ -35,8 +34,6 @@ export function Shell() {
   const [openedEntry, setOpenedEntry] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [scroller, setScroller] = useState<HTMLElement | null>(null);
-  /** Which way the screens travel: the tab bar is a row, so the movement follows it. */
-  const [direction, setDirection] = useState(1);
   const { byId } = useEntries();
   const breaches = useBreaches();
   const rotations = useRotations();
@@ -44,11 +41,7 @@ export function Shell() {
 
   const go = useCallback(
     (t: Tab) => {
-      setTab((current) => {
-        const order = TABS.map((entry) => entry.id);
-        setDirection(order.indexOf(t) >= order.indexOf(current) ? 1 : -1);
-        return t;
-      });
+      setTab(t);
       scroller?.scrollTo({ top: 0 });
     },
     [scroller],
@@ -99,22 +92,21 @@ export function Shell() {
             {tab === "vault" && !session.offline ? <AddButton onClick={addEntry} /> : null}
           </AnimatePresence>
         }
-        footer={<TabBar tab={tab} onChange={go} badges={badges} />}
+        nav={<TabBar tab={tab} onChange={go} badges={badges} />}
+        sidebar={<SideNav tab={tab} onChange={go} badges={badges} />}
       >
         <main
           ref={setScroller}
-          className="relative min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-4 pb-24 pt-4 sm:px-6"
-          style={{ perspective: PERSPECTIVE }}
+          className="relative min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-4 pb-28 pt-3 @[620px]:px-8 @[620px]:pt-8 @[900px]:px-10 @[900px]:pt-10"
         >
-          <AnimatePresence mode="wait" custom={direction}>
+          <AnimatePresence mode="wait">
             <motion.div
               key={tab}
-              custom={direction}
               variants={SCREEN}
               initial="initial"
               animate="animate"
               exit="exit"
-              style={{ transformStyle: "preserve-3d" }}
+              className="mx-auto w-full max-w-[880px]"
             >
               <Screen />
             </motion.div>
@@ -125,6 +117,7 @@ export function Shell() {
         <div id="dialog-slot" className="absolute inset-0 z-40 empty:pointer-events-none" />
       </AppFrame>
       <EntryDialog
+        key={openedEntry ?? "none"}
         entry={openedEntry ? (byId.get(openedEntry) ?? null) : null}
         onClose={() => {
           setOpenedEntry(null);

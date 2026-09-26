@@ -37,6 +37,8 @@ export function AccountSection({ onClose }: { onClose: () => void }) {
           pw.next,
           pw.code,
         );
+        // The offline copy is sealed with the old password: it follows the new one.
+        await session.refreshKeysCache();
         setPw({ current: "", next: "", confirm: "", code: "" });
         await queryClient.invalidateQueries({ queryKey: ["sessions"] });
         toast("Mot de passe maître changé. Tes autres appareils sont déconnectés.");

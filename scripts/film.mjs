@@ -21,7 +21,7 @@ const MASTER = "une phrase de passe de test";
 const SITE_USER = "tristan@exemple.fr";
 const WEAK = "password123";
 
-const FONT = readFileSync("/repo/web/public/fonts/chakra-petch-500-latin.woff2").toString("base64");
+const FONT = readFileSync("/repo/web/public/fonts/inter-latin.woff2").toString("base64");
 const STENCIL = readFileSync("/repo/web/public/fonts/black-ops-one-latin.woff2").toString("base64");
 
 function base32(s) {
