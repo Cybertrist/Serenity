@@ -224,6 +224,14 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Corrigé
 
+- Veille : une erreur imprévue chez un utilisateur (par exemple une entrée importée datée
+  « 2024-01-01 », sans fuseau) **arrêtait la veille de tout le monde**. Une date sans fuseau est
+  lue en UTC, et une erreur ne coûte plus que l'utilisateur concerné, avec une ligne dans le
+  journal.
+- Veille : les appels à Have I Been Pwned partaient d'un coup et un `429` faisait échouer la
+  veille des adresses. Ils sont espacés (10 par minute), un `429` attend le délai demandé, et
+  chaque passage écrit une ligne `watch.email.scan` dans le journal (des nombres, jamais les
+  adresses).
 - Agent : une rotation autonome réussie **ne repoussait pas l'échéance**. Elle revenait donc à
   chaque passage horaire. La date du dernier changement et la prochaine échéance sont mises à
   jour à la fin de la rotation ; après un échec, l'échéance passe au lendemain.

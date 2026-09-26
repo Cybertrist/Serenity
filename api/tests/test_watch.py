@@ -277,7 +277,7 @@ def test_watched_emails_with_hibp(account: Account, client: TestClient, agent_re
         seen.append(request)
         return httpx.Response(200, json=[{"Name": "Adobe", "BreachDate": "2013-10-04"}])
 
-    hibp = Hibp(httpx.Client(transport=httpx.MockTransport(handler)), "fake-key")
+    hibp = Hibp(httpx.Client(transport=httpx.MockTransport(handler)), "fake-key", min_interval=0)
     run_watch(_engine(client), agent_ready, _pwned(FakePwned()), hibp, NOW)
     run_watch(_engine(client), agent_ready, _pwned(FakePwned()), hibp, NOW)  # no duplicate
     assert seen[0].headers["hibp-api-key"] == "fake-key"
@@ -286,6 +286,12 @@ def test_watched_emails_with_hibp(account: Account, client: TestClient, agent_re
     with Session(_engine(client)) as db:
         assert len(db.exec(select(Notification)).all()) == 1
         assert db.exec(select(WatchedEmail)).one().last_checked_at is not None
+        scans = [a for a in db.exec(select(AuditLog)) if a.action == "watch.email.scan"]
+    assert [s.details for s in scans] == [
+        {"checked": 1, "watched": 1, "new": 1},
+        {"checked": 1, "watched": 1, "new": 0},
+    ]
+    assert "exemple.fr" not in json.dumps([s.details for s in scans]).lower()
     emails = account.api.call("GET", "/api/watch/emails")
     assert emails["enabled"] is False  # no HIBP_API_KEY in the test settings
 
@@ -416,3 +422,71 @@ def test_a_checked_entry_must_be_part_of_the_scan(account: Account, keys: Keyrin
     with pytest.raises(ApiError) as exc:
         _partial(account, [a], [a, b], [])
     assert exc.value.status == 422
+
+
+def test_hibp_calls_are_spaced_and_a_429_waits_as_asked() -> None:
+    answers = [
+        httpx.Response(429, headers={"retry-after": "3"}),
+        httpx.Response(200, json=[]),
+        httpx.Response(404),
+    ]
+    now = [100.0]
+    slept: list[float] = []
+
+    def sleep(seconds: float) -> None:
+        slept.append(round(seconds, 3))
+        now[0] += seconds
+
+    hibp = Hibp(
+        httpx.Client(transport=httpx.MockTransport(lambda request: answers.pop(0))),
+        "fake-key",
+        sleep=sleep,
+        clock=lambda: now[0],
+    )
+    assert hibp.breaches("a@exemple.fr") == []  # 429, then an answer
+    assert hibp.breaches("b@exemple.fr") == []
+    # Retry-After honoured, then the minimum spacing before each following call.
+    assert slept == [3.0, 3.5, 6.5]
+
+
+def test_a_date_without_offset_is_utc() -> None:
+    parsed = rules.parse_date("2024-01-01")
+    assert parsed == datetime(2024, 1, 1, tzinfo=UTC)
+    assert rules.is_old(parsed, NOW) is True
+
+
+def test_an_unexpected_error_for_one_user_does_not_stop_the_watch(
+    account: Account, client: TestClient, agent_ready: bytes, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def boom(*args: object) -> int:
+        raise RuntimeError("panne")
+
+    monkeypatch.setattr("serenity.agent.watch.watch_user", boom)
+    report = run_watch(_engine(client), agent_ready, _pwned(FakePwned()), None, NOW)
+    assert report.users == 0
+    with Session(_engine(client)) as db:
+        failures = [
+            a.details
+            for a in db.exec(select(AuditLog))
+            if a.action == "agent.watch" and a.outcome == "failure"
+        ]
+    assert failures == [{"error": "RuntimeError"}]
+
+
+def test_an_entry_with_a_naive_change_date_is_watched(
+    account: Account, keys: Keyring, client: TestClient, agent_ready: bytes
+) -> None:
+    """An imported entry dated "2024-01-01" used to crash the whole agent watch."""
+    entry = {
+        "v": 1,
+        "type": "login",
+        "name": "Importée",
+        "password": "x7Kq-m2Pz-9Lw4-rT8v",
+        "passwordChangedAt": "2024-01-01",
+    }
+    item = account.api.move(keys, account.api.add(keys, entry), "agent")
+    report = run_watch(_engine(client), agent_ready, _pwned(FakePwned()), None, NOW)
+    assert report.users == 1
+    with Session(_engine(client)) as db:
+        kinds = {b.kind for b in db.exec(select(Breach).where(Breach.item_id == item["id"]))}
+    assert BreachKind.OLD in kinds

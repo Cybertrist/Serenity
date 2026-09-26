@@ -9,14 +9,12 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 
-import httpx
 from sqlalchemy import Engine
 from sqlmodel import Session, desc, select
 
 from serenity import audit
 from serenity.agent import killswitch
 from serenity.crypto import contexts, items, sealed
-from serenity.crypto.errors import CryptoError
 from serenity.models import Actor, AgentKey, BreachKind, Item, User, UserStatus, WatchedEmail, Zone
 from serenity.watcher import service
 from serenity.watcher.checks import ScannedEntry, analyze
@@ -83,8 +81,9 @@ def watch_user(
 
 
 def watch_emails(session: Session, user: User, hibp: Hibp, now: datetime) -> int:
-    new = 0
-    for watched in session.exec(select(WatchedEmail).where(WatchedEmail.user_id == user.id)).all():
+    new = checked = 0
+    watched_emails = session.exec(select(WatchedEmail).where(WatchedEmail.user_id == user.id)).all()
+    for watched in watched_emails:
         if killswitch.is_engaged(session):
             break
         found = hibp.breaches(watched.email)
@@ -94,6 +93,16 @@ def watch_emails(session: Session, user: User, hibp: Hibp, now: datetime) -> int
         watched.last_checked_at = now
         session.add(watched)
         session.commit()
+        checked += 1
+    if watched_emails:
+        # Counts only: the addresses themselves stay in their own table.
+        audit.record(
+            session,
+            Actor.AGENT,
+            "watch.email.scan",
+            user_id=user.id,
+            details={"checked": checked, "watched": len(watched_emails), "new": new},
+        )
     return new
 
 
@@ -125,7 +134,9 @@ def run_watch(
                 if hibp is not None:
                     report.new_alerts += watch_emails(session, user, hibp, now)
                 report.users += 1
-            except (CryptoError, httpx.HTTPError, service.InvalidReportError) as exc:
+            except Exception as exc:
+                # Whatever went wrong for this user (a broken entry, HIBP down, a bug), the
+                # others are still watched.
                 session.rollback()
                 logger.warning("watch failed for a user: %s", type(exc).__name__)
                 audit.record(

@@ -5,7 +5,7 @@ Both implementations are checked against shared/test-vectors/watch.json.
 
 import math
 import re
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 MIN_LENGTH = 12
 MIN_BITS = 60
@@ -45,6 +45,9 @@ def parse_date(value: object) -> datetime | None:
     if not isinstance(value, str) or not value:
         return None
     try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError:
         return None
+    # A date without an offset ("2024-01-01", written by an import or by hand) is taken as UTC:
+    # a naive datetime cannot be compared with the aware ones the checks use.
+    return parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=UTC)
