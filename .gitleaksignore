@@ -4,3 +4,6 @@ f4ac054db4000c30e4a5f987ab2bc7a3d5c021ea:web/src/lib/totp.test.ts:generic-api-ke
 # Sample passwords in the phase 5 watch tests (fake values).
 af98a6f10be9b47708403895fded9aa5ed20d7fe:web/src/features/breaches/e2e.test.ts:generic-api-key:46
 af98a6f10be9b47708403895fded9aa5ed20d7fe:api/tests/test_watch.py:generic-api-key:212
+# Sample passwords in the watch regression tests (fake values).
+bc95de72e18988e1b7137fac6a5cc1cac93877e3:web/src/features/breaches/scan.test.ts:generic-api-key:133
+ef49259bed69d8a88fbd71ad052eb0cdb7409d47:api/tests/test_watch.py:generic-api-key:484
