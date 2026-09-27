@@ -419,19 +419,20 @@
 }
 .aurora svg {
   position: absolute;
-  right: -4%;
-  top: -12%;
-  width: 78%;
-  height: auto;
-  opacity: 0.55;
+  right: 0;
+  top: 0;
+  /* Never squeezed: on a phone, only the gentle right half of the curve shows. */
+  width: max(100%, 1200px);
+  height: 240px;
+  opacity: 0.6;
 }
 [data-theme="light"] .aurora svg {
   opacity: 0.35;
 }
 .aurora .aurora-glow {
   stroke: var(--g2);
-  stroke-width: 26;
-  opacity: 0.25;
+  stroke-width: 22;
+  opacity: 0.22;
   filter: blur(10px);
   fill: none;
 }
@@ -442,7 +443,12 @@
   stop-color: var(--g3);
 }
 .aurora .aurora-line {
-  stroke-width: 1.4;
+  stroke-width: 1.5;
+  fill: none;
+}
+.aurora .aurora-echo {
+  stroke-width: 0.8;
+  opacity: 0.45;
   fill: none;
 }
 .aurora-revealed::before {
