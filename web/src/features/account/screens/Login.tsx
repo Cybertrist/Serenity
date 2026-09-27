@@ -1,4 +1,4 @@
-import { ArrowRightIcon, LifebuoyIcon } from "@phosphor-icons/react";
+import { ArrowLeftIcon, ArrowRightIcon, LifebuoyIcon, LockOpenIcon } from "@phosphor-icons/react";
 import { useState, type FormEvent } from "react";
 import { useSession } from "../../../app/session";
 import { Button, ErrorNote, Field, Note } from "../../../design";
@@ -7,6 +7,8 @@ import { login } from "../session";
 import { errorText } from "./wording";
 import { AuthHead, AuthShell } from "./AuthShell";
 import { Recovery } from "./Recovery";
+
+const STEPS = ["Mot de passe", "Vérification"] as const;
 
 /** Full login: new device, or every 60 days. Master password, then the six-digit code. */
 export function Login({ onOpening }: { onOpening: () => Promise<void> }) {
@@ -65,18 +67,19 @@ export function Login({ onOpening }: { onOpening: () => Promise<void> }) {
       footer={
         step === "mdp" ? (
           <Button
-            variant="secondary"
+            variant="link"
             icon={LifebuoyIcon}
             disabled={opening}
             onClick={() => {
               setRecovering(true);
             }}
           >
-            Utiliser mon kit de récupération
+            Mot de passe oublié ? Utilise ton kit de récupération
           </Button>
         ) : (
           <Button
-            variant="secondary"
+            variant="link"
+            icon={ArrowLeftIcon}
             disabled={opening}
             onClick={() => {
               setStep("mdp");
@@ -93,7 +96,7 @@ export function Login({ onOpening }: { onOpening: () => Promise<void> }) {
           <AuthHead
             title="Connexion"
             subtitle="Sur un nouvel appareil, ou tous les 60 jours."
-            step={[1, 2]}
+            steps={{ names: STEPS, current: 1 }}
           />
           <form className="flex flex-col gap-4" onSubmit={toCode}>
             <Field
@@ -115,7 +118,12 @@ export function Login({ onOpening }: { onOpening: () => Promise<void> }) {
               autoComplete="current-password"
               required
             />
-            <Button type="submit" icon={ArrowRightIcon} disabled={!username.trim() || !password}>
+            <Button
+              type="submit"
+              size="lg"
+              icon={ArrowRightIcon}
+              disabled={!username.trim() || !password}
+            >
               Continuer
             </Button>
           </form>
@@ -125,8 +133,8 @@ export function Login({ onOpening }: { onOpening: () => Promise<void> }) {
         <>
           <AuthHead
             title="La double vérification"
-            subtitle="Le code à 6 chiffres de ton appli d'authentification."
-            step={[2, 2]}
+            subtitle="Le code à 6 chiffres que montre ton appli d'authentification."
+            steps={{ names: STEPS, current: 2 }}
           />
           <form className="flex flex-col gap-4" onSubmit={(e) => void submit(e)}>
             <CodeField
@@ -138,7 +146,13 @@ export function Login({ onOpening }: { onOpening: () => Promise<void> }) {
               }}
             />
             {error ? <ErrorNote>{error}</ErrorNote> : null}
-            <Button type="submit" busy={busy} disabled={code.length !== 6}>
+            <Button
+              type="submit"
+              size="lg"
+              icon={LockOpenIcon}
+              busy={busy}
+              disabled={code.length !== 6}
+            >
               Déverrouiller
             </Button>
           </form>

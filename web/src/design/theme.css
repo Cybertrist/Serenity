@@ -247,7 +247,7 @@
 
 /* Bars of the chrome (title bar, tab bar): the light shows through, blurred. */
 @utility glass-bar {
-  background-color: color-mix(in oklab, var(--color-bg) 72%, transparent);
+  background-color: color-mix(in oklab, var(--color-bg) 94%, transparent);
   -webkit-backdrop-filter: blur(24px) saturate(150%);
   backdrop-filter: blur(24px) saturate(150%);
 }

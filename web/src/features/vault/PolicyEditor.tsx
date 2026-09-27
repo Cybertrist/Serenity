@@ -56,10 +56,18 @@ export function PolicyEditor({
     }
   };
   return (
-    <div className="flex flex-col gap-4 rounded-card bg-surface p-4 shadow-[inset_0_0_0_1px_var(--color-line)]">
-      <p className="m-0 text-caption text-muted">
-        {agentZone ? "Changer ce mot de passe tous les…" : "Me rappeler de le changer tous les…"}
-      </p>
+    <section
+      aria-label={agentZone ? "Rotation" : "Rappel"}
+      className="glass flex flex-col gap-4 rounded-card p-4 @[620px]:p-[18px]"
+    >
+      <div className="flex flex-col gap-0.5">
+        <h3 className="m-0 text-[15px] font-semibold">
+          {agentZone ? "Rotation automatique" : "Rappel de changement"}
+        </h3>
+        <p className="m-0 text-caption text-faint">
+          {agentZone ? "Changer ce mot de passe tous les…" : "Me rappeler de le changer tous les…"}
+        </p>
+      </div>
       <Segmented
         options={FREQUENCIES}
         value={frequency}
@@ -92,6 +100,6 @@ export function PolicyEditor({
           Enregistrer
         </Button>
       </div>
-    </div>
+    </section>
   );
 }

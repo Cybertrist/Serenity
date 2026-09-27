@@ -1,9 +1,16 @@
-import { ClockCountdownIcon, DownloadSimpleIcon, UploadSimpleIcon } from "@phosphor-icons/react";
+import {
+  ClockCountdownIcon,
+  DownloadSimpleIcon,
+  FileCsvIcon,
+  type Icon,
+  QrCodeIcon,
+  VaultIcon,
+} from "@phosphor-icons/react";
 import { useRef, useState, type FormEvent } from "react";
 import { useEntries } from "../../../app/hooks/useEntries";
 import { useSession } from "../../../app/session";
 import { useToast } from "../../../app/toast";
-import { Button, Card, ErrorNote, Field, Note } from "../../../design";
+import { Button, Chip, ErrorNote, Field, Note, TextArea } from "../../../design";
 import type { Entry } from "../../../crypto/items";
 import { plural } from "../../../lib/format";
 import { exportVault } from "../../../vault/export";
@@ -16,6 +23,7 @@ import {
 import { parseGoogleExport } from "../../../vault/import/google";
 import { addEntries, updateEntry } from "../../../vault/operations";
 import { errorText, passwordHint } from "../screens/wording";
+import { Group } from "./parts";
 
 function download(name: string, text: string) {
   const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
@@ -39,6 +47,8 @@ export function TransferSection() {
   const [busy, setBusy] = useState<"import" | "codes" | "export" | null>(null);
   const [link, setLink] = useState("");
   const [codes, setCodes] = useState<OneTimeAccount[] | null>(null);
+  /** The Authenticator card is open: its three steps and the field for the link. */
+  const [codesOpen, setCodesOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const file = useRef<HTMLInputElement>(null);
 
@@ -110,6 +120,7 @@ export function TransferSection() {
       toast(count + how);
       setCodes(null);
       setLink("");
+      setCodesOpen(false);
     } catch (e) {
       setError(errorText(e));
     } finally {
@@ -156,18 +167,38 @@ export function TransferSection() {
     }
   };
 
+  const importCard = (
+    icon: Icon,
+    title: string,
+    caption: string,
+    onClick: () => void,
+    active = false,
+  ) => (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-expanded={active}
+      className={`group flex min-w-0 items-center gap-3 rounded-[12px] border p-3 text-left transition-[border-color,background,transform] duration-200 hover:-translate-y-px @[760px]:flex-col @[760px]:items-start @[760px]:gap-2.5 @[760px]:p-3.5 ${
+        active
+          ? "border-accent bg-accent-soft"
+          : "border-line-strong bg-glass-2 hover:border-[color-mix(in_oklab,var(--color-accent)_50%,transparent)]"
+      }`}
+    >
+      <Chip icon={icon} tone="accent" size={30} />
+      <span className="flex min-w-0 flex-col gap-0.5">
+        <span className="text-[13.5px] font-medium leading-tight">{title}</span>
+        <span className="text-[12px] leading-snug text-faint">{caption}</span>
+      </span>
+    </button>
+  );
+
   return (
-    <div className="flex flex-col gap-6">
+    <>
       {error ? <ErrorNote>{error}</ErrorNote> : null}
-      <section className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2">
-          <p className="m-0 text-body font-medium">Importer mes mots de passe</p>
-          <p className="m-0 text-caption text-muted">
-            Le fichier .csv du gestionnaire de mots de passe de Google, ou un export .json non
-            chiffré de Bitwarden. Le format est reconnu tout seul. Le fichier est lu et chiffré ici
-            : son contenu en clair ne part jamais vers le serveur.
-          </p>
-        </div>
+      <Group
+        title="Importer"
+        text="Le fichier est lu et chiffré sur cet appareil : son contenu en clair ne part jamais vers le serveur. Tout arrive dans « Protégé par toi »."
+      >
         <input
           ref={file}
           type="file"
@@ -180,8 +211,28 @@ export function TransferSection() {
             void read(chosen);
           }}
         />
+        <div className="grid grid-cols-1 gap-2 @[760px]:grid-cols-3 @[760px]:gap-2.5">
+          {importCard(FileCsvIcon, "Mots de passe Google", "Fichier .csv exporté de Chrome", () => {
+            setCodesOpen(false);
+            file.current?.click();
+          })}
+          {importCard(
+            QrCodeIcon,
+            "Google Authenticator",
+            "Le lien du QR code de transfert",
+            () => {
+              setCodesOpen(!codesOpen);
+            },
+            codesOpen || codes !== null,
+          )}
+          {importCard(VaultIcon, "Bitwarden", "Export .json non chiffré", () => {
+            setCodesOpen(false);
+            file.current?.click();
+          })}
+        </div>
+
         {importing ? (
-          <Card className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 rounded-[12px] bg-hover p-3.5">
             <p className="m-0 text-body">
               {plural(importing.entries.length, "entrée prête", "entrées prêtes")} à importer
               {importing.skipped ? `, ${String(importing.skipped)} ignorée(s)` : ""}. Tout arrivera
@@ -204,26 +255,11 @@ export function TransferSection() {
             <p className="m-0 text-caption text-muted">
               Pense à supprimer le fichier d'export de ton disque ensuite.
             </p>
-          </Card>
-        ) : (
-          <Button variant="secondary" icon={UploadSimpleIcon} onClick={() => file.current?.click()}>
-            Choisir le fichier
-          </Button>
-        )}
-      </section>
+          </div>
+        ) : null}
 
-      <section className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2">
-          <p className="m-0 text-body font-medium">Importer mes codes à deux facteurs</p>
-          <p className="m-0 text-caption text-muted">
-            Dans Google Authenticator : menu, « Transférer les comptes », « Exporter ». L'appli
-            affiche un QR code. Scanne-le avec n'importe quel lecteur, puis colle ici le lien
-            <code className="mx-1 font-mono text-micro">otpauth-migration://</code>
-            qu'il contient. Les secrets sont lus et chiffrés ici.
-          </p>
-        </div>
         {codes ? (
-          <Card className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 rounded-[12px] bg-hover p-3.5">
             <p className="m-0 text-body">
               {plural(codes.length, "code trouvé", "codes trouvés")} :{" "}
               {codes
@@ -250,22 +286,34 @@ export function TransferSection() {
                 Importer
               </Button>
             </div>
-          </Card>
-        ) : (
-          <div className="flex flex-col gap-3">
-            <label className="flex flex-col gap-2 text-caption text-muted">
-              Lien de migration
-              <textarea
-                value={link}
-                onChange={(e) => {
-                  setLink(e.target.value);
-                }}
-                rows={3}
-                spellCheck={false}
-                placeholder="otpauth-migration://offline?data=…"
-                className="resize-none rounded-control bg-surface px-3.5 py-3 font-mono text-caption text-text shadow-[inset_0_0_0_1px_var(--color-line-strong)] outline-none transition-shadow duration-150 placeholder:text-muted focus-visible:shadow-[inset_0_0_0_2px_var(--color-accent)]"
-              />
-            </label>
+          </div>
+        ) : codesOpen ? (
+          <div className="flex flex-col gap-3 rounded-[12px] bg-hover p-3.5">
+            <ol className="m-0 flex list-none flex-col gap-1.5 p-0 text-caption text-muted">
+              {[
+                "Dans Google Authenticator : menu, « Transférer les comptes », « Exporter ».",
+                "L'appli affiche un QR code : scanne-le avec n'importe quel lecteur.",
+                "Colle ici le lien otpauth-migration:// qu'il contient. Les secrets sont lus et chiffrés ici.",
+              ].map((text, i) => (
+                <li key={text} className="flex gap-2.5">
+                  <span className="tabular grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent-soft text-[11px] font-semibold text-accent-text">
+                    {i + 1}
+                  </span>
+                  <span>{text}</span>
+                </li>
+              ))}
+            </ol>
+            <TextArea
+              label="Lien de migration"
+              value={link}
+              onChange={(e) => {
+                setLink(e.target.value);
+              }}
+              rows={3}
+              spellCheck={false}
+              placeholder="otpauth-migration://offline?data=…"
+              className="font-mono !text-caption"
+            />
             <Button
               variant="secondary"
               icon={ClockCountdownIcon}
@@ -275,33 +323,35 @@ export function TransferSection() {
               Lire le lien
             </Button>
           </div>
-        )}
-      </section>
+        ) : null}
+      </Group>
 
-      <section className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2">
-          <p className="m-0 text-body font-medium">Exporter mon coffre</p>
-          <p className="m-0 text-caption text-muted">
-            Un fichier chiffré par une phrase de passe que tu choisis ici, produit sur cet appareil.
-            Les deux zones y sont, chacune marquée.
-          </p>
-        </div>
-        <form className="flex flex-col gap-3" onSubmit={doExport}>
-          <Field
-            label="Phrase de passe de l'export"
-            secret
-            hint={passwordHint(exportPass)}
-            value={exportPass}
-            onChange={(e) => {
-              setExportPass(e.target.value);
-            }}
-            minLength={12}
-            required
-          />
+      <Group
+        title="Exporter"
+        text="Un fichier chiffré par une phrase de passe que tu choisis ici, produit sur cet appareil. Les deux zones y sont, chacune marquée."
+      >
+        <form
+          className="flex flex-col gap-2.5 @[760px]:flex-row @[760px]:items-start"
+          onSubmit={doExport}
+        >
+          <div className="min-w-0 flex-1">
+            <Field
+              label="Phrase de passe de l'export"
+              secret
+              hint={passwordHint(exportPass)}
+              value={exportPass}
+              onChange={(e) => {
+                setExportPass(e.target.value);
+              }}
+              minLength={12}
+              required
+            />
+          </div>
           <Button
             type="submit"
             variant="secondary"
             icon={DownloadSimpleIcon}
+            className="@[760px]:mt-[23px] @[760px]:!h-11"
             busy={busy === "export"}
           >
             Exporter
@@ -311,7 +361,7 @@ export function TransferSection() {
           Sans cette phrase de passe, le fichier est illisible : personne ne peut le récupérer pour
           toi.
         </Note>
-      </section>
-    </div>
+      </Group>
+    </>
   );
 }

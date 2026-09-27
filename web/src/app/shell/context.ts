@@ -1,7 +1,8 @@
 import { createContext, useContext } from "react";
 
-export type Tab = "vault" | "codes" | "breaches" | "agent";
-/** Sections of the settings dialog, so other screens can open it where they need to. */
+/** The screens of the open vault. Settings is one of them: a tab on a phone, a pane when wide. */
+export type Tab = "vault" | "codes" | "breaches" | "agent" | "settings";
+/** Sections of the settings screen, so other screens can open it where they need to. */
 export type SettingsSection =
   | "lock"
   | "appearance"
@@ -9,6 +10,7 @@ export type SettingsSection =
   | "devices"
   | "watch"
   | "transfer"
+  | "recovery"
   | "trash"
   | "account"
   | "about";
@@ -22,7 +24,13 @@ export type Form = "mobile" | "web" | "desktop";
 export interface ShellApi {
   tab: Tab;
   go: (tab: Tab) => void;
+  /**
+   * Goes to the settings screen, on a section when given. Without one, a phone shows the list
+   * of sections and a wide app its first section.
+   */
   openSettings: (section?: SettingsSection) => void;
+  /** The section the settings screen shows; null for the list (phone) or the first one. */
+  settingsSection: SettingsSection | null;
   openNotifications: () => void;
   openGuide: () => void;
   /** Entry sheet opened from any tab (e.g. from an alert); null when closed. */

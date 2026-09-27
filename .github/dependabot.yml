@@ -17,6 +17,10 @@ updates:
       # Drop this line once typescript-eslint ships TypeScript 7 support.
       - dependency-name: typescript
         update-types: [version-update:semver-major]
+  - package-ecosystem: npm
+    directory: /desktop
+    schedule: { interval: weekly }
+    labels: [desktop]
   - package-ecosystem: docker
     directories: [/api, /web]
     schedule: { interval: weekly }
@@ -30,6 +34,10 @@ updates:
       - dependency-name: python
         update-types:
           [version-update:semver-major, version-update:semver-minor]
+  - package-ecosystem: npm
+    directory: /desktop
+    schedule: { interval: weekly }
+    labels: [desktop]
   - package-ecosystem: docker-compose
     directory: /
     schedule: { interval: weekly }

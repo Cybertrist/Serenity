@@ -62,3 +62,4 @@ Thumbs.db
 .claude/settings.local.json
 desktop/node_modules/
 desktop/dist/
+!desktop/build/

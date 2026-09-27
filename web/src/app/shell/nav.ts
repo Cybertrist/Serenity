@@ -1,6 +1,7 @@
 import {
   ClockCountdownIcon,
   type Icon,
+  SlidersHorizontalIcon,
   SparkleIcon,
   TargetIcon,
   VaultIcon,
@@ -55,3 +56,23 @@ export const TABS: {
     keys: "g a",
   },
 ];
+
+/**
+ * The settings, a screen of their own: the last tab on a phone, at the foot of the sidebar
+ * when wide. Ctrl+, goes there.
+ */
+export const SETTINGS_TAB = {
+  id: "settings",
+  label: "Réglages",
+  long: "Réglages",
+  hint: "Ce coffre, ses appareils et la façon dont il se protège.",
+  icon: SlidersHorizontalIcon,
+  keys: "mod+,",
+} as const satisfies {
+  id: Tab;
+  label: string;
+  long: string;
+  hint: string;
+  icon: Icon;
+  keys: string;
+};

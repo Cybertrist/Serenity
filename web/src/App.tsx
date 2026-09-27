@@ -1,3 +1,4 @@
+import { motion, useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Welcome } from "./features/account/screens/Welcome";
 import { Login } from "./features/account/screens/Login";
@@ -11,6 +12,7 @@ export function App() {
   const session = useSession();
   const { phase } = session;
   const [opening, setOpening] = useState(false);
+  const reduce = useReducedMotion();
   const covered = useRef<(() => void) | null>(null);
 
   /**
@@ -48,9 +50,31 @@ export function App() {
   const screen = () => {
     switch (phase) {
       case "booting":
+        // The first paint, while the session is looked up: the mark breathing on the night
+        // blue of the lock screen, so the entry screen that follows does not jump.
         return (
-          <main className="grid min-h-dvh place-items-center">
-            <Logo size={56} className="animate-pulse opacity-70" label="Serenity" />
+          <main
+            aria-busy="true"
+            className="grid min-h-dvh place-items-center bg-[radial-gradient(70%_55%_at_50%_38%,color-mix(in_oklab,var(--g1)_22%,var(--color-bg)),var(--color-bg)_70%)] [[data-theme=light]_&]:bg-[radial-gradient(70%_55%_at_50%_30%,color-mix(in_oklab,var(--g2)_14%,var(--color-bg)),var(--color-bg)_70%)]"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.15, ease: [0.2, 0.8, 0.2, 1] }}
+              className="flex flex-col items-center gap-5"
+            >
+              <span className="relative h-[72px] w-[72px]">
+                <span aria-hidden="true" className="mark-halo" />
+                <Logo size={72} className="relative" label="Serenity" />
+              </span>
+              <span className="h-1 w-16 overflow-hidden rounded-full bg-track">
+                <motion.span
+                  className="block h-full w-1/2 rounded-full bg-accent"
+                  animate={reduce ? {} : { x: ["-100%", "200%"] }}
+                  transition={{ duration: 1.3, repeat: Infinity, ease: "easeInOut" }}
+                />
+              </span>
+            </motion.div>
           </main>
         );
       case "welcome":

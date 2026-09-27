@@ -109,12 +109,25 @@ await add(
 );
 await add("Spotify", "tristanj", "x7Kq-m2Pz-9Lw4-rT8v", "https://open.spotify.com");
 await shot("05-coffre");
-await page.getByRole("button", { name: /Netflix/ }).click();
+// The row, not the status card that may name it too: the row is named by the entry first.
+await page.getByRole("button", { name: /^Netflix/ }).click();
 await page.getByRole("dialog").waitFor();
 await shot("06-fiche");
 await page.getByRole("button", { name: "Confier à l'agent" }).click();
 await shot("07-confier");
 await page.getByRole("button", { name: "Confier", exact: true }).click();
+// The fiche stays open on its new zone card; then it is closed by hand.
+await page
+  .getByRole("dialog", { name: "Confier cette entrée à l'agent ?" })
+  .waitFor({ state: "detached" });
+await page
+  .getByText("L'agent s'occupe de ce compte")
+  .or(page.getByText("L'agent a vu la fuite"))
+  .or(page.getByText(/rotation/i))
+  .first()
+  .waitFor();
+await shot("08a-fiche-confiee");
+await page.getByRole("button", { name: "Fermer" }).click();
 await page.getByRole("dialog").waitFor({ state: "detached" });
 await shot("08-coffre-delegue");
 await page.getByLabel("Navigation principale").getByRole("button", { name: "Codes" }).click();
@@ -126,7 +139,7 @@ await page
 await shot("08b-codes");
 await page.getByLabel("Navigation principale").getByRole("button", { name: "Fuites" }).click();
 await page
-  .getByText(/à surveiller|Tout va bien/)
+  .getByText(/demande(nt)? ton attention|Tout va bien/)
   .first()
   .waitFor();
 await page.waitForTimeout(2500);
@@ -134,28 +147,39 @@ await shot("09-fuites");
 await page.getByLabel("Navigation principale").getByRole("button", { name: "Agent" }).click();
 await page.waitForTimeout(800);
 await shot("11-agent");
-// The journal is not a tab any more: it is a section of the settings.
+// The journal is not a tab any more: it is a section of the settings screen.
 await page.getByRole("button", { name: "Voir le journal" }).click();
-await page.getByRole("dialog").waitFor();
+await page.getByRole("heading", { name: "Journal", level: 1 }).waitFor();
 await shot("10-journal");
-await page.keyboard.press("Escape");
-// The dialog lives inside the square now: let it finish leaving before the next one opens.
-await page.getByRole("dialog").waitFor({ state: "detached" });
+// The settings are a tab on a phone: the list first, each section full screen.
 await page.getByRole("button", { name: "Réglages" }).first().click();
-await page.getByRole("dialog").waitFor();
+await page.getByRole("heading", { name: "Réglages", level: 1 }).waitFor();
 await shot("12-reglages");
-await page.getByRole("button", { name: "Verrouillage" }).click();
+await page.getByRole("button", { name: /^Apparence/ }).click();
+await shot("12b-reglages-apparence");
+await page.getByRole("button", { name: "Réglages" }).first().click();
+await page.getByRole("button", { name: /^Kit de récupération/ }).click();
+await shot("12c-reglages-kit");
+await page.getByRole("button", { name: "Réglages" }).first().click();
+await page.getByRole("button", { name: /^Verrouillage/ }).click();
+await shot("12d-reglages-verrouillage");
 await page.getByRole("button", { name: "Verrouiller maintenant" }).click();
 await page.getByText(/Ton coffre est verrouillé/).waitFor();
 await shot("13-deverrouillage");
+// Forgotten password: the recovery with the kit, two short steps, then back.
+await page.getByRole("button", { name: /Utilise ton kit/ }).click();
+await page.getByLabel("Clé de récupération").waitFor();
+await shot("13b-recuperation");
+await page.getByRole("button", { name: "Retour" }).click();
+await page.getByText(/Ton coffre est verrouillé/).waitFor();
 await page.getByLabel("Mot de passe maître").fill("une phrase de passe de test");
 await page.getByRole("button", { name: "Déverrouiller" }).click();
-await page.getByRole("heading", { name: "Protégé par toi" }).waitFor({ timeout: 20000 });
+await page.getByRole("heading", { name: "Protégé par toi", level: 2 }).waitFor({ timeout: 20000 });
 await shot("14-deverrouille");
 
 // Offline: the service worker serves the app, the encrypted cache is unlocked locally, read-only.
 await page.getByRole("button", { name: "Réglages" }).first().click();
-await page.getByRole("dialog").waitFor();
+await page.getByRole("button", { name: /^Verrouillage/ }).click();
 await page.getByRole("button", { name: "Verrouiller maintenant" }).click();
 await page.getByText(/Ton coffre est verrouillé/).waitFor();
 await context.setOffline(true);
@@ -218,7 +242,7 @@ await report(big, "connexion sur grand écran", async () => {
   await big.locator(".opening-veil").waitFor({ state: "attached", timeout: 20000 });
   await big.waitForTimeout(600);
   await big.screenshot({ path: `${shots}/17b-bureau-ouverture.png` });
-  await big.getByRole("heading", { name: "Protégé par toi" }).waitFor({ timeout: 20000 });
+  await big.getByRole("heading", { name: "Protégé par toi", level: 2 }).waitFor({ timeout: 20000 });
 });
 await wideShot("18-bureau-coffre");
 // The keyboard: the palette (Ctrl+K), a search in it, then "G then C" to go to the codes.
@@ -231,35 +255,82 @@ await big.keyboard.press("Escape");
 await big.getByRole("dialog").waitFor({ state: "detached" });
 await big.keyboard.press("g");
 await big.keyboard.press("c");
-await big.getByRole("heading", { name: "Codes", exact: true }).waitFor();
+await big.getByRole("heading", { name: "Codes 2FA", exact: true }).waitFor();
 await wideShot("18d-bureau-codes");
 await big.keyboard.press("g");
 await big.keyboard.press("v");
-await big.getByRole("button", { name: /Banque/ }).click();
-await big.getByRole("dialog").waitFor();
+// List and fiche side by side: a click selects, the arrows move the selection.
+await big.getByRole("button", { name: /^Banque/ }).click();
+await big.getByRole("heading", { name: "Banque", level: 2 }).waitFor();
+await big.keyboard.press("ArrowDown");
+await big.getByRole("heading", { name: "Spotify", level: 2 }).waitFor();
+await big.keyboard.press("ArrowUp");
+await big.getByRole("heading", { name: "Banque", level: 2 }).waitFor();
 await wideShot("19-bureau-fiche");
+await big.getByRole("button", { name: "Nouvelle entrée" }).first().click();
+await big.getByRole("button", { name: "Générer un mot de passe" }).click();
+await wideShot("19b-bureau-editeur");
 await big.keyboard.press("Escape");
 await big.getByRole("dialog").waitFor({ state: "detached" });
 await big.getByLabel("Navigation principale").getByRole("button", { name: "Agent" }).click();
 await big.waitForTimeout(500);
 await wideShot("20-bureau-agent");
+// The kill switch is held, not confirmed: one second on Space stops the agent, again restarts it.
+const killSwitch = big.getByRole("switch", { name: "Kill switch de l'agent" });
+await killSwitch.focus();
+await big.keyboard.down("Space");
+await big.waitForTimeout(1400);
+await big.keyboard.up("Space");
+await big.getByText("L'agent est arrêté").waitFor();
+await wideShot("20b-bureau-agent-arrete");
+await killSwitch.focus();
+await big.keyboard.down("Space");
+await big.waitForTimeout(1400);
+await big.keyboard.up("Space");
+await big.getByText("L'agent veille").first().waitFor();
+await big.getByRole("button", { name: "Voir le journal" }).click();
+await big.getByRole("heading", { name: "Journal", level: 2 }).first().waitFor();
+await wideShot("20c-bureau-journal");
+await big.getByLabel("Navigation principale").getByRole("button", { name: "Fuites" }).click();
+await big
+  .getByText(/demande(nt)? ton attention|Tout va bien/)
+  .first()
+  .waitFor();
+await wideShot("20d-bureau-fuites");
 await big.getByRole("button", { name: "Notifications" }).click();
 await big.getByRole("dialog").waitFor();
 await wideShot("21-bureau-notifications");
 await big.keyboard.press("Escape");
 await big.getByRole("dialog").waitFor({ state: "detached" });
 await big.getByRole("button", { name: "Réglages" }).click();
-await big.getByRole("dialog").waitFor();
-await big.getByRole("button", { name: "Corbeille" }).click();
+await big.getByRole("heading", { name: "Réglages", level: 1 }).waitFor();
 await wideShot("22-bureau-reglages");
+await big.getByRole("button", { name: "Apparence" }).click();
+await wideShot("22a-bureau-apparence");
+await big.getByRole("button", { name: "Corbeille" }).click();
+await wideShot("22c-bureau-corbeille");
 await big.getByRole("button", { name: "Import et export" }).click();
-await big.getByText("Importer mes mots de passe").waitFor();
+await big.getByText("Mots de passe Google").waitFor();
 await wideShot("22b-bureau-import");
+await big.getByRole("button", { name: "Kit de récupération" }).click();
+await wideShot("22d-bureau-kit");
+await big.getByRole("button", { name: "Appareils" }).click();
+await big.getByText(/^Vu /).first().waitFor();
+await wideShot("22e-bureau-appareils");
 // The AGPL asks a web app to offer its source: the link has to be there, and to work offline.
 await big.getByRole("button", { name: "À propos" }).click();
 await big.getByRole("link", { name: "Code source" }).waitFor();
 await wideShot("23-bureau-a-propos");
+// The guide: three drawings (the vault, the two zones, the agent), then what to try.
+await big.getByRole("button", { name: "Guide" }).click();
+await big.getByRole("dialog").waitFor();
+await wideShot("23b-bureau-guide");
+await big.getByRole("button", { name: "Suivant" }).click();
+await wideShot("23c-bureau-guide-zones");
+await big.getByRole("button", { name: "Suivant" }).click();
+await wideShot("23d-bureau-guide-agent");
 await big.keyboard.press("Escape");
+await big.getByRole("dialog").waitFor({ state: "detached" });
 // Light theme: a third context whose system is set to light, so the app resolves to it.
 const day = await browser.newContext({
   viewport: { width: 1440, height: 900 },
@@ -296,18 +367,40 @@ await report(sun, "connexion en thème clair", async () => {
   await sun.locator(".opening-veil").waitFor({ state: "attached", timeout: 20000 });
   await sun.waitForTimeout(600);
   await sun.screenshot({ path: `${shots}/25-clair-ouverture.png` });
-  await sun.getByRole("heading", { name: "Protégé par toi" }).waitFor({ timeout: 20000 });
+  await sun.getByRole("heading", { name: "Protégé par toi", level: 2 }).waitFor({ timeout: 20000 });
 });
 await dayShot("26-clair-coffre");
-await sun.getByRole("button", { name: /Banque/ }).click();
-await sun.getByRole("dialog").waitFor();
+await sun.getByRole("button", { name: /^Banque/ }).click();
+await sun.getByRole("heading", { name: "Banque", level: 2 }).waitFor();
 await dayShot("27-clair-fiche");
+await sun.keyboard.press("g");
+await sun.keyboard.press("c");
+await sun.getByRole("heading", { name: "Codes 2FA", exact: true }).waitFor();
+await dayShot("27b-clair-codes");
+await sun.getByLabel("Navigation principale").getByRole("button", { name: "Fuites" }).click();
+await sun
+  .getByText(/demande(nt)? ton attention|Tout va bien/)
+  .first()
+  .waitFor();
+await dayShot("27b-clair-fuites");
+await sun.getByLabel("Navigation principale").getByRole("button", { name: "Agent" }).click();
+await dayShot("27c-clair-agent");
+await sun.getByRole("button", { name: "Notifications" }).click();
+await sun.getByRole("dialog").waitFor();
+await dayShot("27d-clair-notifications");
 await sun.keyboard.press("Escape");
 await sun.getByRole("dialog").waitFor({ state: "detached" });
 await sun.getByRole("button", { name: "Réglages" }).click();
-await sun.getByRole("dialog").waitFor();
+await sun.getByRole("heading", { name: "Réglages", level: 1 }).waitFor();
 await sun.getByRole("button", { name: "Apparence" }).click();
 await dayShot("28-clair-apparence");
+await sun.getByRole("button", { name: "Kit de récupération" }).click();
+await dayShot("28b-clair-kit");
+await sun.getByRole("button", { name: "Guide" }).click();
+await sun.getByRole("button", { name: "Suivant" }).click();
+await dayShot("28c-clair-guide-zones");
+await sun.keyboard.press("Escape");
+await sun.getByRole("dialog").waitFor({ state: "detached" });
 // The lock screen is the piece the light theme could ruin: lock, and look at it.
 await sun.getByRole("button", { name: "Verrouillage" }).click();
 await sun.getByRole("button", { name: "Verrouiller maintenant" }).click();
@@ -354,7 +447,7 @@ await app.getByRole("button", { name: "Continuer" }).click();
 await app.getByLabel("Code à 6 chiffres").fill(totp(secret, await tick()));
 await report(app, "connexion dans l'appli de bureau", async () => {
   await app.getByRole("button", { name: "Déverrouiller" }).click();
-  await app.getByRole("heading", { name: "Protégé par toi" }).waitFor({ timeout: 20000 });
+  await app.getByRole("heading", { name: "Protégé par toi", level: 2 }).waitFor({ timeout: 20000 });
 });
 await appShot("31-appli-coffre");
 await app.getByRole("button", { name: "Rechercher une entrée ou une action" }).click();
@@ -365,6 +458,11 @@ await app.getByRole("dialog").waitFor({ state: "detached" });
 await app.keyboard.press("g");
 await app.keyboard.press("a");
 await appShot("33-appli-agent");
+// In the desktop app, the about section is also where you point it at another server.
+await app.keyboard.press("Control+,");
+await app.getByRole("button", { name: "À propos" }).click();
+await app.getByRole("button", { name: "Changer de serveur" }).waitFor();
+await appShot("34-appli-a-propos");
 await win.close();
 
 await browser.close();

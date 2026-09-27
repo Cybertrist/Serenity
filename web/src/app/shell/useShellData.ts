@@ -5,6 +5,7 @@ import { useAgentStatus, useNotifications, useRotations, useScanPlan } from "../
 import { useEntries } from "../hooks/useEntries";
 import { useHealth } from "../health";
 import { useSession } from "../session";
+import type { Tab } from "./context";
 
 export function useUnread(): number {
   const news = useNotifications();
@@ -60,7 +61,7 @@ export function useBaseMood(): Mood {
  * The light a tab asks for by default, before the screen says anything: the agent screen
  * glows violet (grey once stopped), the breaches amber while something is open.
  */
-export function useTabMood(tab: "vault" | "codes" | "breaches" | "agent"): Mood | null {
+export function useTabMood(tab: Tab): Mood | null {
   const agent = useAgentState();
   const health = useHealth();
   if (tab === "agent") return agent.running === false ? "off" : "agent";

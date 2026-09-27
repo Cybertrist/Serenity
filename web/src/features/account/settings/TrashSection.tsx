@@ -3,11 +3,12 @@ import { useState } from "react";
 import { useEntries } from "../../../app/hooks/useEntries";
 import { useSession } from "../../../app/session";
 import { useToast } from "../../../app/toast";
-import { Button, Card, Chip, EmptyState, ErrorNote, Note, Row } from "../../../design";
+import { Button, ErrorNote, Monogram, Note } from "../../../design";
 import { daysUntil } from "../../../lib/format";
 import { restore } from "../../../vault/operations";
 import type { ItemRecord } from "../../../vault/state";
 import { errorText } from "../screens/wording";
+import { Group, Rows, SettingRow } from "./parts";
 
 const TRASH_DAYS = 30;
 
@@ -44,45 +45,49 @@ export function TrashSection() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <p className="m-0 text-body font-medium">Corbeille</p>
-        <p className="m-0 text-caption text-muted">
-          Une entrée supprimée y reste {TRASH_DAYS} jours, toujours chiffrée, avant d'être effacée
-          pour de bon.
-        </p>
-      </div>
-      {error ? <ErrorNote>{error}</ErrorNote> : null}
-      {trash.length === 0 ? (
-        <EmptyState icon={TrashIcon} title="Corbeille vide." />
-      ) : (
-        <Card padded={false}>
-          {trash.map((e, i) => (
-            <Row
-              key={e.item.id}
-              first={i === 0}
-              chip={<Chip icon={TrashIcon} tone="neutral" />}
-              title={e.entry.name}
-              caption={left(e.item)}
-              trailing={
-                <Button
-                  variant="secondary"
-                  icon={ArrowCounterClockwiseIcon}
-                  busy={busy === e.item.id}
-                  disabled={session.offline}
-                  onClick={() => void put(e.item)}
-                >
-                  Restaurer
-                </Button>
-              }
-            />
-          ))}
-        </Card>
-      )}
+    <>
+      <Group
+        title="Entrées supprimées"
+        text={`Une entrée supprimée y reste ${String(TRASH_DAYS)} jours, toujours chiffrée, avant d'être effacée pour de bon.`}
+      >
+        {error ? <ErrorNote>{error}</ErrorNote> : null}
+        {trash.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 rounded-control border border-dashed border-line-strong px-4 py-6 text-center">
+            <TrashIcon size={24} weight="duotone" aria-hidden="true" className="text-faint" />
+            <p className="m-0 text-[13.5px] font-medium">Corbeille vide.</p>
+            <p className="m-0 text-caption text-muted">
+              Rien à restaurer, rien qui attend d'être effacé.
+            </p>
+          </div>
+        ) : (
+          <Rows>
+            {trash.map((e) => (
+              <SettingRow
+                key={e.item.id}
+                lead={<Monogram name={e.entry.name} size={30} />}
+                title={e.entry.name}
+                caption={left(e.item)}
+                control={
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon={ArrowCounterClockwiseIcon}
+                    busy={busy === e.item.id}
+                    disabled={session.offline}
+                    onClick={() => void put(e.item)}
+                  >
+                    Restaurer
+                  </Button>
+                }
+              />
+            ))}
+          </Rows>
+        )}
+      </Group>
       <Note>
         Une entrée reprise à l'agent puis supprimée reste connue du serveur : change ce mot de passe
         sur le site avant de l'oublier.
       </Note>
-    </div>
+    </>
   );
 }

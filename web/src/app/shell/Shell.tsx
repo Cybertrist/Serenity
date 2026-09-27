@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AgentScreen } from "../../features/agent/AgentScreen";
-import { SettingsDialog } from "../../features/account/SettingsDialog";
+import { SettingsScreen } from "../../features/account/SettingsScreen";
 import { BreachesScreen } from "../../features/breaches/BreachesScreen";
 import { CodesScreen } from "../../features/codes/CodesScreen";
 import { EntryDialog } from "../../features/vault/EntryDialog";
@@ -15,7 +15,6 @@ import { useEntries } from "../hooks/useEntries";
 import { CommandPalette } from "../palette/CommandPalette";
 import { useSession } from "../session";
 import { useShortcut } from "../shortcuts";
-import { AddButton } from "./AddButton";
 import {
   ShellContext,
   WIDE_FROM,
@@ -39,6 +38,7 @@ const SCREENS: Record<Tab, () => React.ReactElement> = {
   codes: CodesScreen,
   breaches: BreachesScreen,
   agent: AgentScreen,
+  settings: SettingsScreen,
 };
 
 /** Width of the app, kept up to date: the layout switches on it, not on the window. */
@@ -70,7 +70,7 @@ function useWidth(target: HTMLElement | null): number {
 export function Shell() {
   const session = useSession();
   const [tab, setTab] = useState<Tab>("vault");
-  const [settings, setSettings] = useState<SettingsSection | null>(null);
+  const [settingsSection, setSettingsSection] = useState<SettingsSection | null>(null);
   const [notifications, setNotifications] = useState(false);
   const [guide, setGuide] = useState(false);
   const [generator, setGenerator] = useState(false);
@@ -97,9 +97,13 @@ export function Shell() {
     setTab(t);
     scroller.current?.scrollTo({ top: 0 });
   }, []);
-  const openSettings = useCallback((section: SettingsSection = "lock") => {
-    setSettings(section);
-  }, []);
+  const openSettings = useCallback(
+    (section?: SettingsSection) => {
+      setSettingsSection(section ?? null);
+      go("settings");
+    },
+    [go],
+  );
   const openNotifications = useCallback(() => {
     setNotifications(true);
   }, []);
@@ -124,6 +128,7 @@ export function Shell() {
       tab,
       go,
       openSettings,
+      settingsSection,
       openNotifications,
       openGuide,
       openedEntry,
@@ -141,6 +146,7 @@ export function Shell() {
       tab,
       go,
       openSettings,
+      settingsSection,
       openNotifications,
       openGuide,
       openedEntry,
@@ -224,11 +230,6 @@ export function Shell() {
                 </motion.div>
               </AnimatePresence>
             </main>
-            <AnimatePresence>
-              {tab === "vault" && !session.offline ? (
-                <AddButton onClick={addEntry} wide={wide} />
-              ) : null}
-            </AnimatePresence>
             {wide ? <StatusBar /> : <TabBar />}
           </div>
           {/* Where the toasts and the dialogs land: over the app, under the title bar. */}
@@ -245,7 +246,8 @@ export function Shell() {
       />
       <EntryDialog
         key={openedEntry ?? "none"}
-        entry={openedEntry ? (byId.get(openedEntry) ?? null) : null}
+        // On a wide app the vault shows an opened entry in its own pane (VaultScreen).
+        entry={openedEntry && !(wide && tab === "vault") ? (byId.get(openedEntry) ?? null) : null}
         onClose={() => {
           setOpenedEntry(null);
         }}
@@ -274,13 +276,6 @@ export function Shell() {
         open={notifications}
         onClose={() => {
           setNotifications(false);
-        }}
-      />
-      <SettingsDialog
-        open={settings !== null}
-        section={settings ?? "lock"}
-        onClose={() => {
-          setSettings(null);
         }}
       />
     </ShellContext.Provider>

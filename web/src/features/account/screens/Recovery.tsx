@@ -1,17 +1,32 @@
-import { ArrowLeftIcon, LifebuoyIcon } from "@phosphor-icons/react";
+import { ArrowLeftIcon, ArrowRightIcon, LifebuoyIcon } from "@phosphor-icons/react";
 import { useState, type FormEvent } from "react";
 import { useSession } from "../../../app/session";
-import { Button, Card, ErrorNote, Field, Note } from "../../../design";
+import { Button, ErrorNote, Field, Note, useMood } from "../../../design";
 import type { Keyring } from "../../../vault/keyring";
+import { CodeField } from "../CodeField";
 import { recover } from "../credentials";
+import { RecoveryKitReveal } from "../RecoveryKitPanel";
 import type { LoginPayload } from "../types";
 import { errorText, passwordHint } from "./wording";
 import { AuthHead, AuthShell } from "./AuthShell";
 
-/** Recovery with the kit (docs/crypto.md §7.8): a new master password and a NEW kit. */
-export function Recovery({ onCancel }: { onCancel: () => void }) {
+const STEPS = ["Preuve", "Mot de passe", "Nouveau kit"] as const;
+
+/**
+ * Recovery with the kit (docs/crypto.md §7.8): a new master password and a NEW kit. Two short
+ * forms rather than one long one: what proves it is you, then what replaces the password.
+ */
+export function Recovery({
+  onCancel,
+  username: known = "",
+}: {
+  onCancel: () => void;
+  /** Filled in when the device already knows who it belongs to. */
+  username?: string;
+}) {
   const session = useSession();
-  const [username, setUsername] = useState("");
+  const [stage, setStage] = useState<"proof" | "password">("proof");
+  const [username, setUsername] = useState(known);
   const [kit, setKit] = useState("");
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
@@ -23,6 +38,13 @@ export function Recovery({ onCancel }: { onCancel: () => void }) {
     kit: string;
     login: LoginPayload;
   } | null>(null);
+  useMood(result ? "leak" : null);
+
+  const next = (event: FormEvent) => {
+    event.preventDefault();
+    setError(null);
+    setStage("password");
+  };
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -38,6 +60,9 @@ export function Recovery({ onCancel }: { onCancel: () => void }) {
       setPassword("");
       setConfirm("");
     } catch (e) {
+      // What is wrong is on the first form (kit, code, name): back there, with the reason.
+      setStage("proof");
+      setCode("");
       setError(
         e instanceof Error && e.name === "CryptoError"
           ? "Clé de récupération invalide (faute de frappe ?)."
@@ -48,48 +73,55 @@ export function Recovery({ onCancel }: { onCancel: () => void }) {
     }
   };
 
+  if (result)
+    return (
+      <AuthShell step="kit" wide halo>
+        <AuthHead
+          title="Ton nouveau kit"
+          subtitle="L'ancien ne fonctionne plus. Garde celui-ci à l'abri avant d'ouvrir ton coffre."
+          steps={{ names: STEPS, current: 3 }}
+        />
+        <Note tone="warn">Tes autres appareils ont été déconnectés.</Note>
+        <RecoveryKitReveal
+          kit={result.kit}
+          username={result.login.username}
+          confirmLabel="Ouvrir mon coffre"
+          onConfirm={() => void session.enter(result.keyring, result.login, result.login.username)}
+        />
+      </AuthShell>
+    );
+
   return (
     <AuthShell
-      step={result ? "kit" : "recuperation"}
+      step={`recuperation-${stage}`}
       footer={
-        result ? undefined : (
-          <Button variant="secondary" icon={ArrowLeftIcon} onClick={onCancel}>
-            Retour à la connexion
-          </Button>
-        )
+        <Button
+          variant="link"
+          icon={ArrowLeftIcon}
+          onClick={() => {
+            if (stage === "password") setStage("proof");
+            else onCancel();
+          }}
+        >
+          {stage === "password" ? "Revenir au kit" : "Retour"}
+        </Button>
       }
     >
-      {result ? (
-        <>
-          <AuthHead
-            title="Ton nouveau kit"
-            subtitle="L'ancien ne fonctionne plus. Note celui-ci, il ne sera plus affiché."
-          />
-          <Card>
-            <p className="m-0 select-all break-all font-mono text-body tracking-wider">
-              {result.kit}
-            </p>
-          </Card>
-          <Note tone="warn">Tes autres appareils ont été déconnectés.</Note>
-          <Button
-            onClick={() => void session.enter(result.keyring, result.login, result.login.username)}
-          >
-            C'est noté, ouvrir mon coffre
-          </Button>
-        </>
-      ) : (
+      {stage === "proof" ? (
         <>
           <AuthHead
             title="Récupération"
-            subtitle="Ton kit et un code, puis un nouveau mot de passe maître."
+            subtitle="Ton kit et un code prouvent que c'est toi. Ensuite, tu choisis un nouveau mot de passe maître."
+            steps={{ names: STEPS, current: 1 }}
           />
-          <form className="flex flex-col gap-4" onSubmit={(e) => void submit(e)}>
+          <form className="flex flex-col gap-4" onSubmit={next}>
             <Field
               label="Identifiant"
               value={username}
               onChange={(e) => {
                 setUsername(e.target.value);
               }}
+              autoComplete="username"
               required
             />
             <Field
@@ -101,19 +133,35 @@ export function Recovery({ onCancel }: { onCancel: () => void }) {
                 setKit(e.target.value);
               }}
               autoComplete="off"
+              spellCheck={false}
               required
             />
-            <Field
-              label="Code TOTP"
-              inputMode="numeric"
-              maxLength={6}
-              mono
+            <CodeField
+              label="Code à 6 chiffres"
               value={code}
               onChange={(e) => {
                 setCode(e.target.value.replace(/\D/g, ""));
               }}
-              required
             />
+            {error ? <ErrorNote>{error}</ErrorNote> : null}
+            <Button
+              type="submit"
+              size="lg"
+              icon={ArrowRightIcon}
+              disabled={!username.trim() || !kit.trim() || code.length !== 6}
+            >
+              Continuer
+            </Button>
+          </form>
+        </>
+      ) : (
+        <>
+          <AuthHead
+            title="Nouveau mot de passe maître"
+            subtitle="Il remplace l'ancien. Tout se passe ici, sur cet appareil."
+            steps={{ names: STEPS, current: 2 }}
+          />
+          <form className="flex flex-col gap-4" onSubmit={(e) => void submit(e)}>
             <Field
               label="Nouveau mot de passe maître"
               secret
@@ -123,6 +171,7 @@ export function Recovery({ onCancel }: { onCancel: () => void }) {
                 setPassword(e.target.value);
               }}
               autoComplete="new-password"
+              autoFocus
               required
               minLength={12}
             />
@@ -133,10 +182,11 @@ export function Recovery({ onCancel }: { onCancel: () => void }) {
               onChange={(e) => {
                 setConfirm(e.target.value);
               }}
+              autoComplete="new-password"
               required
             />
             {error ? <ErrorNote>{error}</ErrorNote> : null}
-            <Button type="submit" icon={LifebuoyIcon} busy={busy}>
+            <Button type="submit" size="lg" icon={LifebuoyIcon} busy={busy}>
               Récupérer mon coffre
             </Button>
           </form>

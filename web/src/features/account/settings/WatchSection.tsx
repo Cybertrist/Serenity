@@ -1,14 +1,25 @@
-import { AtIcon, TrashIcon } from "@phosphor-icons/react";
+import { AtIcon, PlusIcon, TrashIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { useSession } from "../../../app/session";
-import { Button, Card, EmptyState, ErrorNote, Field, IconButton, Note, Row } from "../../../design";
+import { Button, Chip, ErrorNote, Field, IconButton, Note, Skeleton } from "../../../design";
 import { relative } from "../../../lib/format";
 import { errorText } from "../screens/wording";
+import { Group, Rows, SettingRow } from "./parts";
 
 interface Emails {
   enabled: boolean;
   emails: { id: number; email: string; last_checked_at: string | null }[];
+}
+
+/** The watched addresses, shared with the settings list (it shows how many there are). */
+export function useWatchedEmails() {
+  const session = useSession();
+  return useQuery({
+    queryKey: ["emails"],
+    queryFn: () => session.api.get<Emails>("/api/watch/emails"),
+    enabled: !session.offline,
+  });
 }
 
 /** Watched e-mail addresses: checked against HIBP by the agent, never by the browser. */
@@ -18,10 +29,7 @@ export function WatchSection() {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const emails = useQuery({
-    queryKey: ["emails"],
-    queryFn: () => session.api.get<Emails>("/api/watch/emails"),
-  });
+  const emails = useWatchedEmails();
 
   const run = async (action: () => Promise<void>) => {
     setBusy(true);
@@ -46,69 +54,79 @@ export function WatchSection() {
 
   const list = emails.data?.emails ?? [];
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <p className="m-0 text-body font-medium">Adresses surveillées</p>
-        <p className="m-0 text-caption text-muted">
-          L'agent demande toutes les 6 h si ces adresses apparaissent dans une fuite connue. Les
-          alertes atterrissent dans l'onglet Fuites.
-        </p>
-      </div>
-      {emails.data?.enabled === false ? (
-        <Note tone="warn">
-          Vérification désactivée : il manque une clé HIBP sur le serveur. Les adresses ajoutées
-          seront gardées mais pas vérifiées.
-        </Note>
-      ) : null}
-      {error ? <ErrorNote>{error}</ErrorNote> : null}
-      {list.length ? (
-        <Card padded={false}>
-          {list.map((e, i) => (
-            <Row
-              key={e.id}
-              first={i === 0}
-              chip={<AtIcon size={20} className="text-muted" aria-hidden="true" />}
-              title={e.email}
-              caption={
-                e.last_checked_at
-                  ? `Vérifiée ${relative(e.last_checked_at)}`
-                  : "Pas encore vérifiée"
-              }
-              trailing={
-                <IconButton
-                  icon={TrashIcon}
-                  label={`Retirer ${e.email}`}
-                  onClick={() =>
-                    void run(async () => {
-                      await session.api.delete(`/api/watch/emails/${String(e.id)}`);
-                    })
-                  }
-                />
-              }
+    <>
+      <Group
+        title="Adresses surveillées"
+        text="Toutes les 6 h, l'agent demande si ces adresses apparaissent dans une fuite connue. Ce qu'il trouve arrive dans l'onglet Fuites."
+      >
+        {emails.data?.enabled === false ? (
+          <Note tone="warn">
+            Vérification désactivée : il manque une clé HIBP sur le serveur. Les adresses ajoutées
+            seront gardées mais pas vérifiées.
+          </Note>
+        ) : null}
+        {error ? <ErrorNote>{error}</ErrorNote> : null}
+        {emails.isLoading ? <Skeleton lines={2} /> : null}
+        {list.length ? (
+          <Rows>
+            {list.map((e) => (
+              <SettingRow
+                key={e.id}
+                lead={<Chip icon={AtIcon} tone="accent" size={30} />}
+                title={e.email}
+                caption={
+                  e.last_checked_at
+                    ? `Vérifiée ${relative(e.last_checked_at)}`
+                    : "Pas encore vérifiée"
+                }
+                control={
+                  <IconButton
+                    icon={TrashIcon}
+                    label={`Retirer ${e.email}`}
+                    onClick={() =>
+                      void run(async () => {
+                        await session.api.delete(`/api/watch/emails/${String(e.id)}`);
+                      })
+                    }
+                  />
+                }
+              />
+            ))}
+          </Rows>
+        ) : !emails.isLoading ? (
+          <p className="m-0 rounded-control border border-dashed border-line-strong px-4 py-3.5 text-caption text-muted">
+            Aucune adresse pour l'instant. Commence par ta principale : c'est elle qui apparaît le
+            plus souvent dans les fuites.
+          </p>
+        ) : null}
+        <form className="flex flex-col gap-2.5 @[760px]:flex-row @[760px]:items-end" onSubmit={add}>
+          <div className="min-w-0 flex-1">
+            <Field
+              label="Nouvelle adresse"
+              type="email"
+              placeholder="prenom@exemple.fr"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+              }}
             />
-          ))}
-        </Card>
-      ) : (
-        <EmptyState
-          icon={AtIcon}
-          title="Aucune adresse surveillée."
-          text="Ajoute ton adresse principale : c'est elle qui apparaît le plus souvent dans les fuites."
-        />
-      )}
-      <form className="flex flex-col gap-3" onSubmit={add}>
-        <Field
-          label="Nouvelle adresse"
-          type="email"
-          placeholder="prenom@exemple.fr"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-          }}
-        />
-        <Button type="submit" variant="secondary" busy={busy} disabled={!email}>
-          Surveiller cette adresse
-        </Button>
-      </form>
-    </div>
+          </div>
+          <Button
+            type="submit"
+            variant="secondary"
+            icon={PlusIcon}
+            className="@[760px]:!h-11"
+            busy={busy}
+            disabled={!email}
+          >
+            Surveiller
+          </Button>
+        </form>
+      </Group>
+      <Note>
+        Tes mots de passe, eux, sont vérifiés depuis l'onglet Fuites, en k-anonymat : seuls 5
+        caractères de leur empreinte quittent cet appareil.
+      </Note>
+    </>
   );
 }

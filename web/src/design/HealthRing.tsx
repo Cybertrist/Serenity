@@ -71,7 +71,7 @@ export function HealthRing({
       {showValue ? (
         <span
           aria-hidden="true"
-          className="tabular absolute font-display font-bold leading-none"
+          className="tabular absolute font-sans font-semibold tracking-[-0.02em] leading-none"
           style={{ fontSize: Math.round(size * 0.27) }}
         >
           {score === null ? "…" : score}

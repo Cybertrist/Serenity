@@ -1,45 +1,36 @@
+import { Monogram } from "../../design";
 import type { Zone } from "../../vault/state";
 import { zoneChip } from "./zone";
 
-/** Whole characters, so an accented or composed first letter is never cut in half. */
-const GRAPHEMES = new Intl.Segmenter("fr", { granularity: "grapheme" });
-
 /**
- * The face of an entry in a list: the first letter of its name on a quiet tile. No favicon:
- * fetching one would tell a third party which accounts are in the vault.
+ * The face of an entry: its monogram, tinted by a hue drawn from its name, the same on every
+ * device. No favicon: fetching one would tell a third party which accounts are in the vault.
  *
- * Where both zones share a list (codes, breaches), a small badge in the corner carries the
- * zone; in the vault the section already says it, so the badge stays off.
+ * Where both zones share a list (the agent, the breaches), a small badge in the corner carries
+ * the zone; in the vault the group already says it, so the badge stays off.
  */
 export function EntryMark({
   name,
   zone,
   badge = false,
-  size = 40,
+  size = 36,
 }: {
   name: string;
   zone: Zone;
   badge?: boolean;
-  size?: 36 | 40;
+  size?: number;
 }) {
-  const first = GRAPHEMES.segment(name.trim())[Symbol.iterator]().next();
-  const letter = first.done ? "?" : first.value.segment.toLocaleUpperCase("fr");
+  if (!badge) return <Monogram name={name} size={size} />;
   const chip = zoneChip(zone);
   const Glyph = chip.icon;
   return (
-    <span
-      aria-hidden="true"
-      className="relative flex shrink-0 items-center justify-center rounded-[11px] bg-neutral-soft text-[16px] font-semibold text-text shadow-[inset_0_0_0_1px_var(--color-line)]"
-      style={{ width: size, height: size }}
-    >
-      {letter}
-      {badge ? (
-        <span
-          className={`absolute -bottom-1 -right-1 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-raised ring-2 ring-raised ${chip.tone === "accent" ? "text-accent" : "text-ok"}`}
-        >
-          <Glyph size={13} weight="fill" />
-        </span>
-      ) : null}
+    <span className="relative shrink-0" aria-hidden="true">
+      <Monogram name={name} size={size} />
+      <span
+        className={`absolute -bottom-1 -right-1 grid h-[18px] w-[18px] place-items-center rounded-full bg-panel ring-2 ring-panel ${zone === "agent" ? "text-violet-text" : "text-accent-text"}`}
+      >
+        <Glyph size={12} weight="fill" />
+      </span>
     </span>
   );
 }

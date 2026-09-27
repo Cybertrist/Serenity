@@ -1,6 +1,8 @@
-import { ArrowsClockwiseIcon } from "@phosphor-icons/react";
+import { ArrowsClockwiseIcon, CheckIcon, CopyIcon } from "@phosphor-icons/react";
 import { useState } from "react";
-import { Button, Segmented, Toggle, type Tone } from "../../design";
+import { copySecret } from "../../app/clipboard";
+import { useToast } from "../../app/toast";
+import { Button, IconButton, Segmented, Toggle } from "../../design";
 import {
   DEFAULT_PASSPHRASE,
   DEFAULT_PASSWORD,
@@ -8,151 +10,257 @@ import {
   generatePassword,
   passphraseBits,
   passwordBits,
+  type PassphraseOptions,
+  type PasswordOptions,
 } from "../../vault/generator";
+import { errorText } from "../account/screens/wording";
+import { PasswordText, StrengthBars, strengthOfBits } from "./secret";
+
+type Kind = "password" | "passphrase";
 
 const KINDS = [
   { value: "password" as const, label: "Mot de passe" },
   { value: "passphrase" as const, label: "Phrase de passe" },
 ];
 
-/** Entropy in plain words: the number alone means nothing to most people. */
-function strength(bits: number): { label: string; tone: Tone; ratio: number } {
-  if (bits < 60) return { label: "Faible", tone: "crit", ratio: bits / 128 };
-  if (bits < 80) return { label: "Correct", tone: "warn", ratio: bits / 128 };
-  if (bits < 100) return { label: "Solide", tone: "ok", ratio: bits / 128 };
-  return { label: "Très solide", tone: "ok", ratio: Math.min(1, bits / 128) };
+interface Settings {
+  kind: Kind;
+  length: number;
+  digits: boolean;
+  symbols: boolean;
+  avoidAmbiguous: boolean;
+  words: number;
+  capitalize: boolean;
 }
 
-const BARS: Record<Tone, string> = {
-  ok: "bg-ok",
-  warn: "bg-warn",
-  crit: "bg-crit",
-  accent: "bg-accent",
-  neutral: "bg-muted",
+const START: Settings = {
+  kind: "password",
+  length: DEFAULT_PASSWORD.length,
+  digits: true,
+  symbols: true,
+  avoidAmbiguous: false,
+  words: DEFAULT_PASSPHRASE.words,
+  capitalize: false,
 };
 
-const TEXTS: Record<Tone, string> = {
-  ok: "text-ok",
-  warn: "text-warn",
-  crit: "text-crit",
-  accent: "text-accent",
-  neutral: "text-muted",
-};
+function passwordOptions(s: Settings): PasswordOptions {
+  return {
+    ...DEFAULT_PASSWORD,
+    length: s.length,
+    digits: s.digits,
+    symbols: s.symbols,
+    avoidAmbiguous: s.avoidAmbiguous,
+  };
+}
 
-/** Password or passphrase generator, uniform randomness from libsodium. */
-export function Generator({ onUse }: { onUse: (value: string) => void }) {
-  const [kind, setKind] = useState<"password" | "passphrase">("password");
-  const [length, setLength] = useState(DEFAULT_PASSWORD.length);
-  const [symbols, setSymbols] = useState(true);
-  const [words, setWords] = useState(DEFAULT_PASSPHRASE.words);
-  const make = () =>
-    kind === "password"
-      ? generatePassword({ ...DEFAULT_PASSWORD, length, symbols })
-      : generatePassphrase({ ...DEFAULT_PASSPHRASE, words, withDigit: true });
-  const [value, setValue] = useState(make);
-  const bits =
-    kind === "password"
-      ? passwordBits({ ...DEFAULT_PASSWORD, length, symbols })
-      : passphraseBits({ ...DEFAULT_PASSPHRASE, words, withDigit: true });
-  const level = strength(bits);
+function passphraseOptions(s: Settings): PassphraseOptions {
+  return { ...DEFAULT_PASSPHRASE, words: s.words, capitalize: s.capitalize, withDigit: true };
+}
 
-  const regenerate = (
-    next?: Partial<{ kind: typeof kind; length: number; symbols: boolean; words: number }>,
-  ) => {
-    const k = next?.kind ?? kind;
-    const opts = {
-      length: next?.length ?? length,
-      symbols: next?.symbols ?? symbols,
-      words: next?.words ?? words,
-    };
-    setValue(
-      k === "password"
-        ? generatePassword({ ...DEFAULT_PASSWORD, length: opts.length, symbols: opts.symbols })
-        : generatePassphrase({ ...DEFAULT_PASSPHRASE, words: opts.words, withDigit: true }),
-    );
+function make(s: Settings): string {
+  return s.kind === "password"
+    ? generatePassword(passwordOptions(s))
+    : generatePassphrase(passphraseOptions(s));
+}
+
+function bitsOf(s: Settings): number {
+  return s.kind === "password"
+    ? passwordBits(passwordOptions(s))
+    : passphraseBits(passphraseOptions(s));
+}
+
+/** A labelled switch on one line: the whole line reads as the setting. */
+function Option({
+  label,
+  hint,
+  checked,
+  onChange,
+}: {
+  label: string;
+  hint?: string;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <div className="flex min-h-10 items-center justify-between gap-3">
+      <span className="flex min-w-0 flex-col">
+        <span className="text-[13.5px]">{label}</span>
+        {hint ? <span className="text-[12px] text-faint">{hint}</span> : null}
+      </span>
+      <Toggle checked={checked} label={label} onChange={onChange} />
+    </div>
+  );
+}
+
+function Slider({
+  label,
+  value,
+  min,
+  max,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <label className="flex min-h-11 items-center gap-4">
+      <span className="w-[92px] shrink-0 text-[13.5px]">{label}</span>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={value}
+        onChange={(e) => {
+          onChange(Number(e.target.value));
+        }}
+        className="h-11 min-w-0 flex-1 cursor-pointer accent-(--color-accent)"
+      />
+      <span className="tabular w-8 text-right font-mono text-[14px] font-semibold">{value}</span>
+    </label>
+  );
+}
+
+/**
+ * Password or passphrase generator, uniform randomness from libsodium. The result shows its
+ * digits and symbols in colour, and its strength in plain words, not in bits alone.
+ */
+export function Generator({
+  onUse,
+  useLabel = "Utiliser",
+}: {
+  onUse: (value: string) => void;
+  useLabel?: string;
+}) {
+  const toast = useToast();
+  const [settings, setSettings] = useState<Settings>(START);
+  const [value, setValue] = useState(() => make(START));
+  const [copied, setCopied] = useState(false);
+  const bits = bitsOf(settings);
+  const strength = strengthOfBits(bits);
+
+  const change = (next: Partial<Settings>) => {
+    const s = { ...settings, ...next };
+    setSettings(s);
+    setValue(make(s));
+    setCopied(false);
   };
 
   return (
-    <div className="flex flex-col gap-3.5 rounded-card bg-surface p-4 shadow-[inset_0_0_0_1px_var(--color-line)]">
+    <div className="flex flex-col gap-4 rounded-card border border-line bg-glass-2 p-4">
       <Segmented
         options={KINDS}
-        value={kind}
+        value={settings.kind}
         label="Type"
-        onChange={(k) => {
-          setKind(k);
-          regenerate({ kind: k });
+        onChange={(kind) => {
+          change({ kind });
         }}
       />
-      <p className="m-0 break-all rounded-control bg-surface px-3.5 py-3 font-mono text-[15px] shadow-[inset_0_0_0_1px_var(--color-line)]">
-        {value}
-      </p>
-      <div className="flex flex-col gap-1.5">
-        <div className="h-1.5 overflow-hidden rounded-full bg-neutral-soft">
-          {/* Grown by transform, not by width: the bar never makes the layout move. */}
-          <div
-            className={`h-full origin-left rounded-full transition-transform duration-300 ${BARS[level.tone]}`}
-            style={{ transform: `scaleX(${String(Math.max(0.02, level.ratio))})` }}
+      <div className="flex flex-col gap-2.5">
+        <div className="flex items-start gap-1 rounded-[12px] border border-line bg-glass px-3.5 py-3">
+          <PasswordText
+            value={value}
+            className="min-h-[1.5em] flex-1 self-center text-[16px] font-medium leading-normal"
+          />
+          <IconButton
+            icon={ArrowsClockwiseIcon}
+            label="Un autre"
+            onClick={() => {
+              change({});
+            }}
+          />
+          <IconButton
+            icon={copied ? CheckIcon : CopyIcon}
+            label="Copier"
+            className={copied ? "!text-ok" : ""}
+            onClick={() => {
+              copySecret(value).then(
+                () => {
+                  setCopied(true);
+                  toast("Copié. Effacé du presse-papiers dans 30 s.");
+                },
+                (e: unknown) => {
+                  toast(errorText(e), "crit");
+                },
+              );
+            }}
           />
         </div>
-        <p className="m-0 text-caption text-muted">
-          <span className={TEXTS[level.tone]}>{level.label}</span> · {Math.round(bits)} bits
-          d'entropie
-        </p>
+        <StrengthBars
+          strength={strength}
+          caption={`${strength.label}, ${String(Math.round(bits))} bits d'entropie`}
+          className="px-0.5"
+        />
       </div>
-      {kind === "password" ? (
-        <>
-          <label className="flex min-h-11 items-center justify-between gap-3 text-caption text-muted">
-            <span className="tabular">Longueur : {length}</span>
-            <input
-              type="range"
+      <div className="flex flex-col gap-1 border-t border-line pt-3">
+        {settings.kind === "password" ? (
+          <>
+            <Slider
+              label="Longueur"
+              value={settings.length}
               min={12}
               max={64}
-              value={length}
-              onChange={(e) => {
-                setLength(Number(e.target.value));
-                regenerate({ length: Number(e.target.value) });
+              onChange={(length) => {
+                change({ length });
               }}
-              className="h-11 w-44 cursor-pointer accent-(--color-accent)"
             />
-          </label>
-          <div className="flex items-center justify-between text-caption text-muted">
-            Symboles
-            <Toggle
-              checked={symbols}
+            <Option
+              label="Chiffres"
+              checked={settings.digits}
+              onChange={(digits) => {
+                change({ digits });
+              }}
+            />
+            <Option
               label="Symboles"
-              onChange={(v) => {
-                setSymbols(v);
-                regenerate({ symbols: v });
+              checked={settings.symbols}
+              onChange={(symbols) => {
+                change({ symbols });
               }}
             />
-          </div>
-        </>
-      ) : (
-        <label className="flex min-h-11 items-center justify-between gap-3 text-caption text-muted">
-          <span className="tabular">Mots : {words}</span>
-          <input
-            type="range"
-            min={4}
-            max={10}
-            value={words}
-            onChange={(e) => {
-              setWords(Number(e.target.value));
-              regenerate({ words: Number(e.target.value) });
-            }}
-            className="h-11 w-44 cursor-pointer accent-(--color-accent)"
-          />
-        </label>
-      )}
+            <Option
+              label="Sans caractères ambigus"
+              hint="Ni I, l, 1, ni O, 0, o : plus simple à recopier."
+              checked={settings.avoidAmbiguous}
+              onChange={(avoidAmbiguous) => {
+                change({ avoidAmbiguous });
+              }}
+            />
+          </>
+        ) : (
+          <>
+            <Slider
+              label="Mots"
+              value={settings.words}
+              min={4}
+              max={10}
+              onChange={(words) => {
+                change({ words });
+              }}
+            />
+            <Option
+              label="Majuscules"
+              hint="Une majuscule au début de chaque mot."
+              checked={settings.capitalize}
+              onChange={(capitalize) => {
+                change({ capitalize });
+              }}
+            />
+          </>
+        )}
+      </div>
       <div className="flex gap-2">
         <Button
           variant="secondary"
           icon={ArrowsClockwiseIcon}
           className="flex-1"
           onClick={() => {
-            regenerate();
+            change({});
           }}
         >
-          Autre
+          Un autre
         </Button>
         <Button
           className="flex-1"
@@ -160,7 +268,7 @@ export function Generator({ onUse }: { onUse: (value: string) => void }) {
             onUse(value);
           }}
         >
-          Utiliser
+          {useLabel}
         </Button>
       </div>
     </div>

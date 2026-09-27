@@ -1,26 +1,41 @@
-import { ArrowRightIcon, CheckCircleIcon, ShieldCheckIcon } from "@phosphor-icons/react";
+import {
+  ArrowRightIcon,
+  ArrowSquareOutIcon,
+  CopyIcon,
+  QrCodeIcon,
+  ShieldCheckIcon,
+} from "@phosphor-icons/react";
 import { useState, type FormEvent } from "react";
+import { copySecret } from "../../../app/clipboard";
 import { useSession } from "../../../app/session";
-import { Button, Checkbox, ErrorNote, Field, Note } from "../../../design";
+import { useToast } from "../../../app/toast";
+import { Button, ErrorNote, Field, Note, useMood } from "../../../design";
 import { CodeField } from "../CodeField";
-import { RecoveryKitPanel } from "../RecoveryKitPanel";
+import { RecoveryKitReveal } from "../RecoveryKitPanel";
 import { signup, type PendingSignup } from "../signup";
+import { TotpQr } from "../TotpQr";
 import { errorText, passwordHint } from "./wording";
-import { AuthHead, AuthShell } from "./AuthShell";
+import { AuthHead, AuthShell, useNarrow } from "./AuthShell";
+
+const STEPS = ["Compte", "Vérification", "Récupération"] as const;
 
 /** Account creation: identity and master password, TOTP enrolment, recovery kit. */
 export function Welcome() {
   const session = useSession();
+  const toast = useToast();
+  const narrow = useNarrow();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [code, setCode] = useState("");
   const [pending, setPending] = useState<PendingSignup | null>(null);
-  const [noted, setNoted] = useState(false);
+  const [showQr, setShowQr] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<(() => Promise<void>) | null>(null);
+  // The kit is the serious moment of the creation: the light turns amber while it is on screen.
+  useMood(step === 3 ? "leak" : null);
 
   const create = async (event: FormEvent) => {
     event.preventDefault();
@@ -63,15 +78,17 @@ export function Welcome() {
   const account = username.trim().toLowerCase();
   /** Only an authenticator link is ever offered as a link, whatever the server sent. */
   const totpLink = pending?.totpUri.startsWith("otpauth://") ? pending.totpUri : null;
+  // On a phone the app is on the same device: a link opens it, a QR code is for another one.
+  const qr = totpLink !== null && (!narrow || showQr);
 
   return (
-    <AuthShell step={`creation-${String(step)}`}>
+    <AuthShell step={`creation-${String(step)}`} wide={step > 1} halo={step === 3}>
       {step === 1 ? (
         <>
           <AuthHead
             title="Bienvenue."
             subtitle="Crée ton coffre. Ton mot de passe maître ne quitte jamais cet appareil."
-            step={[1, 3]}
+            steps={{ names: STEPS, current: 1 }}
           />
           <form className="flex flex-col gap-4" onSubmit={(e) => void create(e)}>
             <Field
@@ -107,7 +124,7 @@ export function Welcome() {
               required
             />
             {error ? <ErrorNote>{error}</ErrorNote> : null}
-            <Button type="submit" icon={ArrowRightIcon} busy={busy}>
+            <Button type="submit" size="lg" icon={ArrowRightIcon} busy={busy}>
               Continuer
             </Button>
           </form>
@@ -118,39 +135,80 @@ export function Welcome() {
         <>
           <AuthHead
             title="La double vérification"
-            subtitle="Ajoute Serenity dans ton appli d'authentification."
-            step={[2, 3]}
+            subtitle="Ajoute Serenity à ton appli d'authentification, puis tape le code qu'elle affiche."
+            steps={{ names: STEPS, current: 2 }}
           />
-          <div className="flex flex-col gap-2 rounded-card bg-surface p-4 shadow-[inset_0_0_0_1px_var(--color-line)]">
-            <p className="m-0 text-caption text-muted">
-              Clé à saisir dans l'appli (type : basé sur le temps)
-            </p>
-            <p
-              data-totp-secret
-              className="m-0 select-all break-all font-mono text-[15px] tracking-wider"
-            >
-              {(pending.totpSecret.match(/.{1,4}/g) ?? []).join(" ")}
-            </p>
-            {totpLink ? (
-              <a
-                href={totpLink}
-                className="-mx-2 inline-flex min-h-11 items-center self-start rounded-control px-2 text-caption font-medium text-accent hover:bg-accent-soft"
+          <div className="flex items-center gap-4 rounded-card bg-hover p-3.5 shadow-[inset_0_0_0_1px_var(--color-line)]">
+            {qr && totpLink ? <TotpQr uri={totpLink} size={narrow ? 120 : 132} /> : null}
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+              <p className="m-0 text-caption text-muted">
+                {narrow
+                  ? "Clé à saisir dans ton appli d'authentification"
+                  : "Scanne ce code avec ton téléphone, ou saisis la clé à la main"}
+              </p>
+              <p
+                data-totp-secret
+                className="m-0 select-all break-all font-mono text-[14.5px] font-medium leading-relaxed tracking-[0.08em]"
               >
-                Ouvrir dans l'appli d'authentification
-              </a>
-            ) : null}
+                {(pending.totpSecret.match(/.{1,4}/g) ?? []).join(" ")}
+              </p>
+              <div className="flex flex-wrap gap-x-3">
+                <Button
+                  variant="link"
+                  icon={CopyIcon}
+                  onClick={() => {
+                    copySecret(pending.totpSecret).then(
+                      () => {
+                        toast("Clé copiée. Effacée du presse-papiers dans 30 s.");
+                      },
+                      (e: unknown) => {
+                        toast(errorText(e), "crit");
+                      },
+                    );
+                  }}
+                >
+                  Copier la clé
+                </Button>
+                {narrow && totpLink ? (
+                  <Button
+                    variant="link"
+                    icon={QrCodeIcon}
+                    onClick={() => {
+                      setShowQr(!showQr);
+                    }}
+                  >
+                    {showQr ? "Masquer le QR code" : "QR code"}
+                  </Button>
+                ) : null}
+              </div>
+            </div>
           </div>
+          {narrow && totpLink ? (
+            <a
+              href={totpLink}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[11px] border border-line-strong bg-glass-2 px-4 text-[14px] font-medium text-text transition-colors duration-150 hover:bg-glass-hi"
+            >
+              <ArrowSquareOutIcon size={17} weight="bold" aria-hidden="true" />
+              Ouvrir dans l'appli d'authentification
+            </a>
+          ) : null}
           <form className="flex flex-col gap-4" onSubmit={(e) => void activate(e)}>
             <CodeField
               label="Code à 6 chiffres"
               value={code}
-              autoFocus
+              autoFocus={!narrow}
               onChange={(e) => {
                 setCode(e.target.value.replace(/\D/g, ""));
               }}
             />
             {error ? <ErrorNote>{error}</ErrorNote> : null}
-            <Button type="submit" icon={ShieldCheckIcon} busy={busy} disabled={code.length !== 6}>
+            <Button
+              type="submit"
+              size="lg"
+              icon={ShieldCheckIcon}
+              busy={busy}
+              disabled={code.length !== 6}
+            >
               Vérifier
             </Button>
           </form>
@@ -162,28 +220,21 @@ export function Welcome() {
         <>
           <AuthHead
             title="Ton kit de récupération"
-            subtitle="La seule façon de rouvrir ton coffre si tu oublies ton mot de passe maître."
-            step={[3, 3]}
+            subtitle="Ta seule issue si tu oublies ton mot de passe maître. Prends une minute pour le mettre à l'abri."
+            steps={{ names: STEPS, current: 3 }}
           />
-          <RecoveryKitPanel kit={kit} username={account} />
-          <Note tone="warn">
-            Il ne sera plus jamais affiché. Note-le sur papier ou garde le fichier hors ligne.
-          </Note>
-          <Checkbox checked={noted} onChange={setNoted}>
-            <span className="text-body">Je l'ai noté dans un endroit sûr.</span>
-          </Checkbox>
-          {error ? <ErrorNote>{error}</ErrorNote> : null}
-          <Button
-            icon={CheckCircleIcon}
-            disabled={!noted || !done}
-            onClick={() => {
+          <RecoveryKitReveal
+            kit={kit}
+            username={account}
+            confirmLabel="Ouvrir mon coffre"
+            ready={done !== null}
+            error={error}
+            onConfirm={() => {
               done?.().catch((e: unknown) => {
                 setError(errorText(e));
               });
             }}
-          >
-            Ouvrir mon coffre
-          </Button>
+          />
         </>
       ) : null}
     </AuthShell>

@@ -204,6 +204,8 @@ export function Sidebar({ brand }: { brand: boolean }) {
           icon={SlidersHorizontalIcon}
           label="Réglages"
           title="Réglages (Ctrl ,)"
+          current={shell.tab === "settings"}
+          layout="side-current"
           onClick={() => {
             shell.openSettings();
           }}

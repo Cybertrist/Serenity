@@ -36,7 +36,7 @@ export function TabBar() {
   return (
     <nav
       aria-label="Navigation principale"
-      className="glass-bar absolute inset-x-0 bottom-0 z-20 flex border-t border-line px-2 pb-[max(10px,env(safe-area-inset-bottom))] pt-1.5"
+      className="absolute inset-x-0 bottom-0 z-20 flex border-t bg-bg border-line px-2 pb-[max(10px,env(safe-area-inset-bottom))] pt-1.5"
     >
       {TABS.map(({ id, label, hint, icon: IconComponent }) => {
         const active = id === shell.tab;
@@ -66,12 +66,23 @@ export function TabBar() {
       })}
       <button
         type="button"
+        aria-current={shell.tab === "settings" ? "page" : undefined}
         onClick={() => {
+          // Tapping it again from a section goes back to the list, as on a phone's own tabs.
           shell.openSettings();
         }}
-        className={`${item} text-faint hover:text-muted`}
+        className={`${item} ${shell.tab === "settings" ? "text-text" : "text-faint hover:text-muted"}`}
       >
-        <SlidersHorizontalIcon size={23} aria-hidden="true" />
+        <SlidersHorizontalIcon
+          size={23}
+          weight={shell.tab === "settings" ? "fill" : "regular"}
+          aria-hidden="true"
+          className={
+            shell.tab === "settings"
+              ? "text-accent-text drop-shadow-[0_0_8px_var(--halo)]"
+              : "text-current"
+          }
+        />
         <span>Réglages</span>
       </button>
     </nav>
