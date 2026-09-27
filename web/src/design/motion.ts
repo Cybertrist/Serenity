@@ -1,8 +1,8 @@
 /**
  * The motion system. Every animation in the app comes from here, so timings and curves stay
  * consistent: transforms and opacity only (hardware accelerated), springs for anything the
- * user pushed, curves for anything the app decided. Nothing turns in 3D and nothing loops:
- * a vault that fidgets does not look calm.
+ * user pushed, curves for anything the app decided. Nothing turns in 3D, and only the light
+ * behind the app drifts, slowly: a vault that fidgets does not look calm.
  *
  * `prefers-reduced-motion` is honoured globally (`MotionConfig reducedMotion="user"`); the
  * variants below keep an opacity fallback so a reduced run still reads.

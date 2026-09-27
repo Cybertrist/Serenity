@@ -1,5 +1,5 @@
 import { BookOpenTextIcon, ScalesIcon, WarningIcon } from "@phosphor-icons/react";
-import { LockMark, Note } from "../../../design";
+import { Logo, Note } from "../../../design";
 
 const SOURCE = "https://github.com/Cybertrist/Serenity";
 
@@ -11,7 +11,7 @@ export function AboutSection() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-4 rounded-card bg-surface p-5 shadow-[inset_0_0_0_1px_var(--color-line)]">
-        <LockMark size={54} />
+        <Logo size={54} />
         <div className="flex flex-col gap-1">
           <p className="m-0 text-body font-medium">Serenity</p>
           <p className="m-0 text-caption text-muted">

@@ -1,10 +1,12 @@
 import type { Icon } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
+import { Glass } from "./Glass";
 import { TONE_SOFT, TONE_TEXT, type Tone } from "./tone";
 
 /**
  * The head of a screen: where things stand, in one sentence, and the one thing to do about it.
- * The vault, the breaches and the agent all open on one; it is the same card everywhere.
+ * The vault, the breaches and the agent all open on one. It carries the mood edge: the light
+ * of the app is what it talks about.
  */
 export function StatusCard({
   icon: IconComponent,
@@ -19,26 +21,24 @@ export function StatusCard({
   text?: ReactNode;
   action?: ReactNode;
 }) {
+  const ink =
+    tone === "accent" ? "text-accent-text" : tone === "warn" ? "text-warn-text" : TONE_TEXT[tone];
   return (
-    <div
-      className={`relative flex items-center gap-4 overflow-hidden rounded-card bg-raised p-4 shadow-card @[620px]:p-5`}
+    <Glass
+      halo
+      className="flex items-center gap-3.5 px-4 py-3.5 @[620px]:gap-4 @[620px]:px-5 @[620px]:py-4"
     >
-      {/* A wash of the state colour from the icon side: the tone is felt before it is read. */}
       <span
         aria-hidden="true"
-        className={`pointer-events-none absolute inset-y-0 left-0 w-2/3 opacity-60 ${TONE_SOFT[tone]} [mask-image:linear-gradient(90deg,#000,transparent)]`}
-      />
-      <span
-        aria-hidden="true"
-        className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${TONE_SOFT[tone]} ${TONE_TEXT[tone]}`}
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] ${TONE_SOFT[tone]} ${ink}`}
       >
-        <IconComponent size={26} weight="duotone" />
+        <IconComponent size={22} weight="duotone" />
       </span>
-      <span className="relative flex min-w-0 flex-1 flex-col gap-0.5">
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-heading">{title}</span>
         {text ? <span className="text-caption text-muted">{text}</span> : null}
       </span>
-      {action ? <span className="relative shrink-0">{action}</span> : null}
-    </div>
+      {action ? <span className="shrink-0">{action}</span> : null}
+    </Glass>
   );
 }

@@ -5,11 +5,13 @@ import { SPRING } from "./motion";
 export interface Option<T> {
   value: T;
   label: string;
+  /** A quiet figure after the label ("Toi 8"). */
+  count?: number;
 }
 
 /**
- * A row of exclusive choices in one track. The selected one is marked by a single thumb that
- * slides from the previous choice, so the eye follows where the selection went.
+ * A row of exclusive choices in one track. The selected one is marked by a single glass thumb
+ * that slides from the previous choice, so the eye follows where the selection went.
  */
 export function Segmented<T extends string | number | null>({
   options,
@@ -29,7 +31,7 @@ export function Segmented<T extends string | number | null>({
     <div
       role="radiogroup"
       aria-label={label}
-      className="flex flex-wrap gap-1 rounded-control bg-neutral-soft p-1 shadow-[inset_0_0_0_1px_var(--color-line)]"
+      className="flex flex-wrap gap-0.5 rounded-control border border-line bg-hover p-[3px]"
     >
       {options.map((option) => {
         const selected = option.value === value;
@@ -42,7 +44,7 @@ export function Segmented<T extends string | number | null>({
             onClick={() => {
               onChange(option.value);
             }}
-            className={`relative min-h-9 flex-1 whitespace-nowrap rounded-[9px] px-3 text-caption font-medium transition-colors duration-150 [@media(pointer:coarse)]:min-h-11 ${
+            className={`relative inline-flex h-[28px] flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] px-2.5 text-[12.5px] font-medium transition-colors duration-150 [@media(pointer:coarse)]:h-10 ${
               selected ? "text-text" : "text-muted hover:text-text"
             }`}
           >
@@ -51,10 +53,13 @@ export function Segmented<T extends string | number | null>({
                 layoutId={`segmented-${group}`}
                 transition={SPRING}
                 aria-hidden="true"
-                className="absolute inset-0 rounded-[9px] bg-raised shadow-[0_1px_3px_var(--color-shade),inset_0_0_0_1px_var(--color-line)]"
+                className="absolute inset-0 rounded-[7px] bg-glass-hi shadow-[0_1px_2px_rgb(0_0_0/0.2),inset_0_0_0_1px_var(--color-line-strong)]"
               />
             ) : null}
             <span className="relative">{option.label}</span>
+            {option.count !== undefined ? (
+              <span className="tabular relative text-faint">{option.count}</span>
+            ) : null}
           </button>
         );
       })}

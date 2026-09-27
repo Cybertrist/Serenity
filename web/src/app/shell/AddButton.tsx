@@ -1,28 +1,37 @@
 import { PlusIcon } from "@phosphor-icons/react";
 import { motion } from "motion/react";
-import { SPRING } from "../../design";
+import { Kbd, SPRING } from "../../design";
 
 /**
- * Adding an entry is the one thing you do from anywhere in the vault, so its button floats
- * over the screen rather than competing with the title. Round on a phone, a labelled button
- * once the app is wide enough to say what it does.
+ * Adding an entry is the one thing you do from anywhere in the vault. On a phone it is a round
+ * button under the thumb, above the tabs; on a wide app a labelled button in the corner, with
+ * its shortcut. The same action is on Ctrl+N and in the palette.
  */
-export function AddButton({ onClick }: { onClick: () => void }) {
+export function AddButton({ onClick, wide }: { onClick: () => void; wide: boolean }) {
   return (
     <motion.button
       type="button"
-      aria-label="Ajouter une entrée"
-      title="Ajouter une entrée"
+      aria-label="Nouvelle entrée"
+      title="Nouvelle entrée (Ctrl N)"
       onClick={onClick}
       initial={{ opacity: 0, scale: 0.8, y: 8 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.8 }}
       whileTap={{ scale: 0.95 }}
       transition={SPRING}
-      className="absolute bottom-4 right-4 z-20 flex h-14 w-14 items-center justify-center gap-2 rounded-2xl bg-accent text-on-accent shadow-[inset_0_1px_0_rgb(255_255_255/0.25),0_16px_40px_-12px_var(--color-glow-strong)] transition-colors duration-150 hover:bg-accent-strong @[620px]:bottom-6 @[620px]:right-6 @[620px]:h-12 @[620px]:w-auto @[620px]:rounded-control @[620px]:pl-4 @[620px]:pr-5"
+      className={`absolute z-20 flex items-center justify-center gap-2 border border-white/15 bg-linear-to-b from-[#4b8cf8] to-[#2c6ce4] text-white shadow-primary transition-[filter] duration-150 hover:brightness-110 ${
+        wide
+          ? "bottom-11 right-8 h-10 rounded-[11px] pl-3.5 pr-2.5 text-[14px] font-medium"
+          : "bottom-[calc(86px+env(safe-area-inset-bottom))] right-4 h-14 w-14 rounded-[18px]"
+      }`}
     >
-      <PlusIcon size={22} weight="bold" aria-hidden="true" />
-      <span className="hidden text-body font-semibold @[620px]:inline">Ajouter</span>
+      <PlusIcon size={wide ? 17 : 24} weight="bold" aria-hidden="true" />
+      {wide ? (
+        <>
+          <span>Nouvelle entrée</span>
+          <Kbd keys="mod+n" onAccent className="ml-1" />
+        </>
+      ) : null}
     </motion.button>
   );
 }

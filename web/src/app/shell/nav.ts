@@ -1,37 +1,57 @@
 import {
   ClockCountdownIcon,
   type Icon,
-  RobotIcon,
-  SealWarningIcon,
+  SparkleIcon,
+  TargetIcon,
   VaultIcon,
 } from "@phosphor-icons/react";
 import type { Tab } from "./context";
 
 /**
- * The four screens of the app. The journal is deliberately not here: it is a record you
- * consult, not a place you work in: it lives in the settings, and the agent screen links to it.
+ * The four screens of the app, with their "go to" key (G then the letter). The journal is not
+ * here: it is a record you consult, it lives in the settings and the agent screen links to it.
  *
  * Codes sits next to the vault because it is the same data seen for another job: the vault is
  * where you manage an account, Codes is where you grab a number in two seconds.
  */
-export const TABS: { id: Tab; label: string; hint: string; icon: Icon }[] = [
-  { id: "vault", label: "Coffre", hint: "Tes comptes, dans leurs deux zones.", icon: VaultIcon },
+export const TABS: {
+  id: Tab;
+  label: string;
+  long: string;
+  hint: string;
+  icon: Icon;
+  keys: string;
+}[] = [
+  {
+    id: "vault",
+    label: "Coffre",
+    long: "Coffre",
+    hint: "Tes comptes, dans leurs deux zones.",
+    icon: VaultIcon,
+    keys: "g v",
+  },
   {
     id: "codes",
     label: "Codes",
+    long: "Codes 2FA",
     hint: "Tes codes à deux facteurs, calculés sur cet appareil.",
     icon: ClockCountdownIcon,
+    keys: "g c",
   },
   {
     id: "breaches",
     label: "Fuites",
+    long: "Fuites",
     hint: "Ce que la veille a trouvé sur tes comptes.",
-    icon: SealWarningIcon,
+    icon: TargetIcon,
+    keys: "g f",
   },
   {
     id: "agent",
     label: "Agent",
+    long: "Agent",
     hint: "Ce qu'il surveille, ce qu'il te propose, comment l'arrêter.",
-    icon: RobotIcon,
+    icon: SparkleIcon,
+    keys: "g a",
   },
 ];

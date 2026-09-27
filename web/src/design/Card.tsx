@@ -1,24 +1,28 @@
 import type { ReactNode } from "react";
+import { Glass } from "./Glass";
 
 /**
- * One main piece of information per card. It stands out by its surface, a step lighter than the
- * app, and a soft shadow: no outline, so a screen of cards does not read as a wireframe.
+ * One main piece of information per card: a pane of glass over the light of the app. `halo`
+ * gives it the mood edge, for the one card of a screen that carries the state.
  */
 export function Card({
   children,
   className = "",
   padded = true,
+  halo = false,
 }: {
   children: ReactNode;
   className?: string;
   padded?: boolean;
+  halo?: boolean;
 }) {
   return (
-    <div
-      className={`rounded-card bg-raised shadow-card ${padded ? "p-4 @[620px]:p-5" : "overflow-hidden"} ${className}`}
+    <Glass
+      halo={halo}
+      className={`${padded ? "p-4 @[620px]:px-[18px] @[620px]:py-4" : "overflow-hidden"} ${className}`}
     >
       {children}
-    </div>
+    </Glass>
   );
 }
 

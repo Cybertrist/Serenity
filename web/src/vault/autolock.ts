@@ -52,6 +52,11 @@ export class AutoLock {
     return this.running;
   }
 
+  /** Milliseconds left before the lock, or null when the guard is stopped. */
+  remaining(): number | null {
+    return this.running ? Math.max(0, this.deadline - this.timers.now()) : null;
+  }
+
   /** Starts (or restarts) the guard, optionally with a new idle delay. */
   start(idleMs?: number): void {
     if (idleMs !== undefined) this.idleMs = idleMs;

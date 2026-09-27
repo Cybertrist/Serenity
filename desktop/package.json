@@ -1,0 +1,56 @@
+{
+  "name": "serenity-desktop",
+  "productName": "Serenity",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Serenity pour Windows et Linux : ton coffre dans sa propre fenêtre.",
+  "license": "AGPL-3.0-or-later",
+  "author": "Tristan",
+  "homepage": "https://github.com/Cybertrist/Serenity",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux"
+  },
+  "build": {
+    "appId": "fr.cybertrist.serenity",
+    "productName": "Serenity",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "build/icon.png"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "build/icon.png",
+      "category": "Utility",
+      "maintainer": "Tristan"
+    }
+  },
+  "devDependencies": {
+    "electron": "^44.4.5",
+    "electron-builder": "^26.15.3"
+  },
+  "allowScripts": {
+    "electron@44.4.5": true,
+    "electron-winstaller@5.4.0": true
+  }
+}

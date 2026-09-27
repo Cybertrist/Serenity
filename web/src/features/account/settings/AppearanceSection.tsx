@@ -1,6 +1,6 @@
 import { MoonIcon, SunIcon } from "@phosphor-icons/react";
 import { useState } from "react";
-import { LockMark, Note, Segmented, setThemeChoice, themeChoice, useTheme } from "../../../design";
+import { Logo, Note, Segmented, setThemeChoice, themeChoice, useTheme } from "../../../design";
 import type { ThemeChoice } from "../../../design";
 
 const OPTIONS: { value: ThemeChoice; label: string }[] = [
@@ -32,7 +32,7 @@ export function AppearanceSection() {
         }}
       />
       <div className="flex items-center gap-4 rounded-card bg-surface p-5 shadow-[inset_0_0_0_1px_var(--color-line)]">
-        <LockMark size={54} />
+        <Logo size={54} />
         <div className="flex flex-col gap-1">
           <p className="m-0 text-body font-medium">
             {theme === "light" ? "Thème clair" : "Thème sombre"}

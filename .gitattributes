@@ -1,1 +1,3 @@
 *.txt text eol=lf
+# Hashed in its own CSP (desktop/src/setup-csp.js): the bytes must not change on checkout.
+desktop/src/setup.html text eol=lf

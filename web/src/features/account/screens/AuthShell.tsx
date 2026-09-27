@@ -1,10 +1,24 @@
-import { AnimatePresence, motion } from "motion/react";
-import type { ReactNode } from "react";
-import { EASE_OUT, Wordmark } from "../../../design";
+import { LockSimpleIcon } from "@phosphor-icons/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useEffect, useState, type ReactNode } from "react";
+import { TitleBar } from "../../../app/shell/TitleBar";
+import { EASE_OUT, Logo, Ribbons, Wordmark } from "../../../design";
+
+/** Rises in, a little later for each piece: the mark, the name, the card, what follows. */
+function rise(step: number, reduce: boolean | null) {
+  return reduce
+    ? { initial: { opacity: 0 }, animate: { opacity: 1 } }
+    : {
+        initial: { opacity: 0, y: 14, filter: "blur(6px)" },
+        animate: { opacity: 1, y: 0, filter: "blur(0px)" },
+        transition: { duration: 1, ease: EASE_OUT, delay: 0.1 + step * 0.1 },
+      };
+}
 
 /**
- * The frame every entry screen shares: the wordmark, one card, and the secondary actions
- * under it. Nothing else: this is the first thing a stranger sees of the vault.
+ * The frame every entry screen shares (welcome, login, unlock, recovery): the ribbon of the
+ * logo drawn across the night, the mark with its breathing halo, the name, one glass card, the
+ * secondary actions under it, and a line that says where the decryption happens.
  */
 export function AuthShell({
   step,
@@ -16,25 +30,42 @@ export function AuthShell({
   children: ReactNode;
   footer?: ReactNode;
 }) {
+  const reduce = useReducedMotion();
+  const [narrow, setNarrow] = useState(() => window.innerWidth < 620);
+  useEffect(() => {
+    const onResize = () => {
+      setNarrow(window.innerWidth < 620);
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    document.title = "Serenity";
+  }, []);
+
   return (
-    <main className="relative flex min-h-dvh items-center justify-center overflow-hidden px-4 py-10">
-      {/* One soft light behind the card, in the accent: the page is not a flat black void. */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-[38%] h-[520px] w-[720px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-glow blur-[90px]"
-      />
-      <div className="relative flex w-full max-w-[420px] flex-col items-center gap-8">
-        <Wordmark
-          size={24}
-          initial={{ opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: EASE_OUT }}
-        />
+    <main className="relative flex min-h-dvh flex-col items-center overflow-hidden bg-[radial-gradient(70%_55%_at_50%_38%,color-mix(in_oklab,var(--g1)_22%,var(--color-bg)),var(--color-bg)_70%)] px-4 [[data-theme=light]_&]:bg-[radial-gradient(70%_55%_at_50%_38%,color-mix(in_oklab,var(--g2)_12%,var(--color-bg)),var(--color-bg)_70%)]">
+      <TitleBar bare />
+      <Ribbons narrow={narrow} still={reduce === true} />
+      <div
+        className={`relative z-10 flex w-full max-w-[400px] flex-1 flex-col items-center ${narrow ? "pb-5 pt-[max(40px,env(safe-area-inset-top))]" : "justify-center py-12"}`}
+      >
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, ease: EASE_OUT }}
-          className="relative w-full overflow-hidden rounded-sheet bg-raised shadow-float"
+          {...rise(0, reduce)}
+          className={`relative ${narrow ? "mb-4 h-16 w-16" : "mb-5 h-[84px] w-[84px]"}`}
+        >
+          <span aria-hidden="true" className="mark-halo" />
+          <Logo size={narrow ? 64 : 84} className="relative" />
+        </motion.div>
+        <Wordmark size={narrow ? 30 : 36} {...rise(1, reduce)} />
+        {/* On a phone the ribbon runs through this gap, between the name and the card. */}
+        {narrow ? <span aria-hidden="true" className="min-h-[120px] flex-1" /> : null}
+        <motion.div
+          {...rise(3, reduce)}
+          className={`glass relative w-full overflow-hidden rounded-[18px] ${narrow ? "" : "mt-7"}`}
         >
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
@@ -43,23 +74,30 @@ export function AuthShell({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -16 }}
               transition={{ duration: 0.22, ease: EASE_OUT }}
-              className="flex flex-col gap-5 px-5 pb-6 pt-7 sm:px-7 sm:pb-7 sm:pt-8"
+              className="flex flex-col gap-4 px-[18px] pb-[18px] pt-5 sm:px-5 sm:pb-5 sm:pt-6"
             >
               {children}
             </motion.div>
           </AnimatePresence>
         </motion.div>
-        {footer ? <div className="flex w-full flex-col gap-3">{footer}</div> : null}
+        {footer ? (
+          <motion.div
+            {...rise(4, reduce)}
+            className="mt-4 flex w-full flex-col items-center gap-2.5"
+          >
+            {footer}
+          </motion.div>
+        ) : null}
       </div>
+      <p className="relative z-10 m-0 flex items-center gap-1.5 pb-[max(20px,env(safe-area-inset-bottom))] text-center text-[12px] text-faint">
+        <LockSimpleIcon size={13} aria-hidden="true" className="shrink-0" />
+        {narrow
+          ? "Déchiffré ici, jamais sur le serveur."
+          : "Déchiffré sur cet appareil. Le serveur ne voit que des blocs chiffrés."}
+      </p>
     </main>
   );
 }
-
-/**
- * Three steps, three bands: the account creation fills the flag as it goes. Any other count
- * falls back to the accent: the flag only means something when it is whole.
- */
-const FLAG = ["bg-bleu", "bg-blanc", "bg-rouge"];
 
 /** Title and one line of explanation, at the top of a card. */
 export function AuthHead({
@@ -73,10 +111,10 @@ export function AuthHead({
   step?: [number, number];
 }) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3.5">
       {step ? (
         <div className="flex items-center gap-3">
-          <span className="tabular shrink-0 text-caption font-medium text-muted">{`Étape ${String(step[0])} sur ${String(step[1])}`}</span>
+          <span className="tabular shrink-0 text-[12px] font-medium text-faint">{`Étape ${String(step[0])} sur ${String(step[1])}`}</span>
           <span
             role="progressbar"
             aria-valuemin={1}
@@ -85,21 +123,20 @@ export function AuthHead({
             aria-label="Progression"
             className="flex flex-1 gap-1.5"
           >
-            {Array.from({ length: step[1] }, (_, i) => {
-              const done = step[1] === FLAG.length ? (FLAG[i] ?? "bg-accent") : "bg-accent";
-              return (
-                <span
-                  key={i}
-                  className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i < step[0] ? done : "bg-track"}`}
-                />
-              );
-            })}
+            {Array.from({ length: step[1] }, (_, i) => (
+              <span
+                key={i}
+                className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i < step[0] ? "bg-accent shadow-[0_0_10px_-2px_var(--color-accent)]" : "bg-track"}`}
+              />
+            ))}
           </span>
         </div>
       ) : null}
-      <div className="flex flex-col gap-1.5">
-        <h1 className="m-0 text-title">{title}</h1>
-        <p className="m-0 text-body text-muted">{subtitle}</p>
+      <div className="flex flex-col gap-1">
+        <h1 className="m-0 font-display text-[21px] font-bold leading-tight tracking-[-0.01em]">
+          {title}
+        </h1>
+        <p className="m-0 text-[13.5px] text-muted">{subtitle}</p>
       </div>
     </div>
   );

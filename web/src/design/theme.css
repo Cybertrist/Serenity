@@ -1,110 +1,226 @@
 @import "tailwindcss";
 
 /*
- * Serenity design tokens (docs/design.md). Dark theme by default.
+ * Serenity design tokens: the Aurora direction (docs/design.md). Dark theme by default.
  *
- * Depth comes from surfaces, not from outlines: four steps of background, each one a little
- * lighter, and hairlines only where an edge has to be read (a field, a divider in a list).
+ * Night blue background, glass surfaces that let a soft light through, and one light behind the
+ * whole app that says how things stand: calm blue, amber when something leaked, violet-blue
+ * while the agent works, grey when it is stopped. The screens drive it with `data-mood` on
+ * <html> (web/src/design/mood.ts), never by painting their own backgrounds.
  */
 @theme {
-  /* The page behind the app, then the app itself, then a card, then what floats (a dialog). */
-  --color-bg: #05070b;
-  --color-surface: #0b0e14;
-  --color-raised: #131722;
-  --color-float: #191e2b;
-  /* Hairlines: a divider, then the edge of a control, which has to reach 3:1. */
-  --color-line: rgb(255 255 255 / 0.07);
-  --color-line-soft: rgb(255 255 255 / 0.05);
-  --color-line-strong: rgb(255 255 255 / 0.2);
-  --color-text: #eef1f6;
-  --color-muted: #9aa3b3;
-  /* Bleu de France, opened up for a dark background: the only blue that acts in the app. */
-  --color-accent: #6b9cf7;
-  --color-accent-strong: #4f86f0;
-  --color-accent-soft: rgb(107 156 247 / 0.12);
-  --color-on-accent: #051126;
-  --color-ok: #6fd9a0;
-  --color-ok-soft: rgb(111 217 160 / 0.11);
-  --color-warn: #f0cb57;
-  --color-warn-soft: rgb(240 203 87 / 0.11);
-  /* Rouge Marianne, opened up for a dark background. */
-  --color-crit: #ff7b80;
-  --color-crit-soft: rgb(255 123 128 / 0.11);
-  --color-neutral-soft: rgb(255 255 255 / 0.06);
-  --color-hover: rgb(255 255 255 / 0.045);
-  --color-track: rgb(255 255 255 / 0.22);
-  /* The white of the flag: the padlock and the wordmark, nothing else. */
-  --color-mark: #f2f4f8;
-  /*
-   * The flag, and only where it means something: the head of the app, the steps of the
-   * account creation, the head of the unlock fall. Never as decoration on a screen.
-   */
-  --color-bleu: #3b7dd8;
-  --color-blanc: #f2f4f8;
-  --color-rouge: #e8434b;
-  /* Pieces that cannot be borrowed from the palette above. */
-  --color-frame: rgb(255 255 255 / 0.09);
-  --color-glow: rgb(79 134 240 / 0.14);
-  --color-glow-strong: rgb(79 134 240 / 0.45);
-  --color-scrim: rgb(2 4 8 / 0.62);
+  /* The page, the sidebar, then a card, then what floats (a dialog, the palette). */
+  --color-bg: #070a12;
+  --color-surface: #0a0e18;
+  --color-panel: #0e1322;
+  --color-raised: rgb(20 26 43 / 0.72);
+  --color-float: rgb(15 20 35 / 0.9);
+  /* Glass: a card, a field, what is selected. Blurred by the `glass` utility. */
+  --color-glass: rgb(17 23 38 / 0.56);
+  --color-glass-2: rgb(24 31 50 / 0.66);
+  --color-glass-hi: rgb(36 46 72 / 0.55);
+  /* Hairlines: a divider, then the edge of a control. */
+  --color-line: rgb(148 163 196 / 0.1);
+  --color-line-soft: rgb(148 163 196 / 0.06);
+  --color-line-strong: rgb(148 163 196 / 0.22);
+  --color-text: #e9edf5;
+  --color-muted: #a7b1c6;
+  --color-faint: #7e8aa4;
+  --color-accent: #3b82f6;
+  --color-accent-strong: #2c6ce4;
+  --color-accent-text: #82b1ff;
+  --color-accent-soft: rgb(59 130 246 / 0.14);
+  --color-on-accent: #ffffff;
+  --color-violet: #8b7cf8;
+  --color-violet-text: #b4a9ff;
+  --color-violet-soft: rgb(139 124 248 / 0.15);
+  --color-ok: #3dd68c;
+  --color-ok-soft: rgb(61 214 140 / 0.13);
+  --color-warn: #f2a93b;
+  --color-warn-text: #f7c26e;
+  --color-warn-soft: rgb(242 169 59 / 0.13);
+  --color-crit: #f07a7a;
+  --color-crit-soft: rgb(240 122 122 / 0.12);
+  --color-neutral-soft: rgb(148 163 196 / 0.08);
+  --color-hover: rgb(148 163 196 / 0.07);
+  --color-press: rgb(148 163 196 / 0.12);
+  --color-track: rgb(148 163 196 / 0.24);
+  --color-scrim: rgb(3 5 10 / 0.62);
   --color-knob: #ffffff;
   --color-shade: rgb(0 0 0 / 0.55);
-  --color-shade-strong: rgb(0 0 0 / 0.8);
-  /* The top edge of a raised surface catches the light: one pixel, barely there. */
-  --color-sheen: rgb(255 255 255 / 0.05);
-  /* Trail of the unlock rain, as a canvas needs it: three numbers. */
-  --rain-trail: 226 232 240;
-  --rain-alpha: 0.34;
+  /* Brand blue of the logotype ("ity"), fixed per theme. */
+  --color-brand: #3b82f6;
+  /* Windows close button, the one red of the window chrome. */
+  --color-close: #e81123;
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  /* The logotype's stencil, in a real typeface: the wordmark, and nothing else. */
-  --font-stencil: "Black Ops One", ui-sans-serif, sans-serif;
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "Cascadia Mono", monospace;
+  /* The brand and the big screen titles, nothing else. */
+  --font-display: "Syne", "Geist", ui-sans-serif, sans-serif;
 
-  /* Five sizes. Display is the screen title on a wide app, title the one on a phone. */
-  --text-display: 28px;
-  --text-display--line-height: 1.15;
-  --text-display--letter-spacing: -0.022em;
-  --text-display--font-weight: 650;
-  --text-title: 22px;
-  --text-title--line-height: 1.2;
-  --text-title--letter-spacing: -0.018em;
-  --text-title--font-weight: 650;
-  --text-heading: 17px;
+  /* Six sizes. Display is the screen title on a wide app, title the one on a phone. */
+  --text-display: 30px;
+  --text-display--line-height: 1.1;
+  --text-display--letter-spacing: -0.015em;
+  --text-display--font-weight: 700;
+  --text-title: 24px;
+  --text-title--line-height: 1.15;
+  --text-title--letter-spacing: -0.012em;
+  --text-title--font-weight: 700;
+  --text-heading: 15px;
   --text-heading--line-height: 1.3;
-  --text-heading--letter-spacing: -0.012em;
+  --text-heading--letter-spacing: -0.005em;
   --text-heading--font-weight: 600;
-  --text-body: 15px;
+  --text-body: 14px;
   --text-body--line-height: 1.5;
-  --text-body--letter-spacing: -0.006em;
-  --text-caption: 13px;
+  --text-caption: 12.5px;
   --text-caption--line-height: 1.45;
   --text-micro: 11px;
   --text-micro--line-height: 1.3;
 
-  --radius-card: 18px;
-  --radius-control: 12px;
-  --radius-chip: 10px;
-  --radius-sheet: 24px;
+  --radius-card: 16px;
+  --radius-control: 10px;
+  --radius-chip: 9px;
+  --radius-sheet: 20px;
 
-  --shadow-card: inset 0 1px 0 var(--color-sheen), 0 1px 2px rgb(0 0 0 / 0.25);
-  --shadow-float: inset 0 1px 0 var(--color-sheen), 0 24px 64px -16px var(--color-shade);
-  --shadow-frame:
-    0 0 0 1px var(--color-frame), 0 50px 140px -40px var(--color-shade-strong),
-    0 0 120px -20px var(--color-glow);
+  --shadow-card: inset 0 1px 0 rgb(255 255 255 / 0.035), 0 18px 40px -20px rgb(0 0 0 / 0.75);
+  --shadow-float: 0 30px 90px -20px rgb(0 0 0 / 0.85), 0 0 0 1px rgb(148 163 196 / 0.16);
+  --shadow-primary: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 8px 22px -8px rgb(59 130 246 / 0.7);
+
+  --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-spin-slow: spin 1.4s linear infinite;
 }
 
 /*
- * The flag, drawn once: three equal bands, hard stops, in the reading direction. It dresses
- * the head of the app and the steps of the account creation, nothing else.
+ * Light theme. `data-theme` is set by web/src/design/theme.ts on every load, from the
+ * preference of this device; the media query below only dresses the very first paint.
  */
-@utility tricolore {
-  background-image: linear-gradient(
-    90deg,
-    var(--color-bleu) 0 33.34%,
-    var(--color-blanc) 33.34% 66.67%,
-    var(--color-rouge) 66.67% 100%
-  );
+[data-theme="light"] {
+  --color-bg: #f2f4f9;
+  --color-surface: #ebeef5;
+  --color-panel: #ffffff;
+  --color-raised: rgb(255 255 255 / 0.8);
+  --color-float: rgb(255 255 255 / 0.94);
+  --color-glass: rgb(255 255 255 / 0.62);
+  --color-glass-2: rgb(255 255 255 / 0.82);
+  --color-glass-hi: rgb(255 255 255 / 0.96);
+  --color-line: rgb(15 23 42 / 0.08);
+  --color-line-soft: rgb(15 23 42 / 0.05);
+  --color-line-strong: rgb(15 23 42 / 0.2);
+  --color-text: #0b1222;
+  --color-muted: #455068;
+  --color-faint: #5d6780;
+  --color-accent: #2563eb;
+  --color-accent-strong: #1d4ed8;
+  --color-accent-text: #1d4ed8;
+  --color-accent-soft: rgb(37 99 235 / 0.09);
+  --color-violet: #6d5ae6;
+  --color-violet-text: #5341c9;
+  --color-violet-soft: rgb(109 90 230 / 0.1);
+  --color-ok: #138a55;
+  --color-ok-soft: rgb(19 138 85 / 0.1);
+  --color-warn: #b45309;
+  --color-warn-text: #9a5605;
+  --color-warn-soft: rgb(217 138 11 / 0.12);
+  --color-crit: #c93434;
+  --color-crit-soft: rgb(201 52 52 / 0.09);
+  --color-neutral-soft: rgb(15 23 42 / 0.045);
+  --color-hover: rgb(15 23 42 / 0.045);
+  --color-press: rgb(15 23 42 / 0.08);
+  --color-track: rgb(15 23 42 / 0.2);
+  --color-scrim: rgb(30 41 59 / 0.24);
+  --color-shade: rgb(15 23 42 / 0.16);
+  --color-brand: #2563eb;
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.05), 0 14px 34px -18px rgb(15 23 42 / 0.2);
+  --shadow-float: 0 30px 80px -24px rgb(15 23 42 / 0.35), 0 0 0 1px rgb(15 23 42 / 0.1);
+  --shadow-primary: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 8px 20px -8px rgb(37 99 235 / 0.55);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --color-bg: #f2f4f9;
+    --color-text: #0b1222;
+  }
+}
+
+/*
+ * The light behind the app. Three colours and a halo, registered so a change of mood fades
+ * instead of snapping. `data-mood` sits on <html>: calm (default), leak, agent, off.
+ */
+@property --g1 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #1e40af;
+}
+@property --g2 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #3b82f6;
+}
+@property --g3 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #38bdf8;
+}
+@property --halo {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #3b82f6;
+}
+
+:root {
+  --g1: #1e40af;
+  --g2: #3b82f6;
+  --g3: #38bdf8;
+  --halo: #3b82f6;
+  --aurora-opacity: 0.5;
+  transition:
+    --g1 1.2s var(--ease-out-soft),
+    --g2 1.2s var(--ease-out-soft),
+    --g3 1.2s var(--ease-out-soft),
+    --halo 0.9s var(--ease-out-soft);
+}
+[data-theme="light"] {
+  --aurora-opacity: 0.3;
+}
+[data-mood="leak"] {
+  --g1: #b45309;
+  --g2: #f59e0b;
+  --g3: #2563eb;
+  --halo: #f2a93b;
+}
+[data-mood="agent"] {
+  --g1: #4338ca;
+  --g2: #8b5cf6;
+  --g3: #3b82f6;
+  --halo: #8b7cf8;
+}
+[data-mood="off"] {
+  --g1: #334155;
+  --g2: #475569;
+  --g3: #1e293b;
+  --halo: #64748b;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("/fonts/geist-latin.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/fonts/geist-mono-latin.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Syne";
+  src: url("/fonts/syne-latin.woff2") format("woff2");
+  font-weight: 400 800;
+  font-display: swap;
 }
 
 /* Tabular figures: codes, counters and dates do not dance when they change. */
@@ -112,83 +228,92 @@
   font-variant-numeric: tabular-nums;
 }
 
-/*
- * Light theme. `data-theme` is set by web/src/design/theme.ts on every load, from the
- * preference of this device; the media query below only dresses the very first paint,
- * before the script runs.
- */
-[data-theme="light"] {
-  --color-bg: #e9ecf2;
-  --color-surface: #f6f7fa;
-  --color-raised: #ffffff;
-  --color-float: #ffffff;
-  --color-line: rgb(12 22 44 / 0.09);
-  --color-line-soft: rgb(12 22 44 / 0.06);
-  --color-line-strong: rgb(12 22 44 / 0.34);
-  --color-text: #0e1525;
-  --color-muted: #566074;
-  /* The flag blue reads at 7:1 on paper: no need to tamper with it. */
-  --color-accent: #0055a4;
-  --color-accent-strong: #004a90;
-  --color-accent-soft: rgb(0 85 164 / 0.09);
-  --color-on-accent: #ffffff;
-  --color-ok: #136640;
-  --color-ok-soft: rgb(19 102 64 / 0.09);
-  --color-warn: #6e5300;
-  --color-warn-soft: rgb(140 106 0 / 0.11);
-  /* Rouge Marianne, the cut that holds on white. */
-  --color-crit: #b3141a;
-  --color-crit-soft: rgb(201 25 30 / 0.08);
-  --color-neutral-soft: rgb(12 22 44 / 0.05);
-  --color-hover: rgb(12 22 44 / 0.04);
-  --color-track: rgb(12 22 44 / 0.3);
-  /* The mark turns to ink: a white padlock on white paper is not a padlock. */
-  --color-mark: #0e1525;
-  /* On paper, the white of the flag has to be drawn, or the rule looks broken in the middle. */
-  --color-bleu: #0055a4;
-  --color-blanc: #c9d3e2;
-  --color-rouge: #e1000f;
-  --color-frame: rgb(12 22 44 / 0.1);
-  --color-glow: rgb(0 85 164 / 0.08);
-  --color-glow-strong: rgb(0 85 164 / 0.32);
-  --color-scrim: rgb(12 22 44 / 0.28);
-  --color-knob: #ffffff;
-  --color-shade: rgb(12 22 44 / 0.16);
-  --color-shade-strong: rgb(12 22 44 / 0.2);
-  --color-sheen: rgb(255 255 255 / 0);
-  --rain-trail: 20 28 48;
-  /* Ink on paper needs more body than white on black. */
-  --rain-alpha: 0.5;
-  --shadow-card: 0 0 0 1px rgb(12 22 44 / 0.06), 0 1px 3px rgb(12 22 44 / 0.06);
+/* A surface of frosted glass: cards, the list, the fiche. */
+@utility glass {
+  background-color: var(--color-glass);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  backdrop-filter: blur(22px) saturate(140%);
+  border: 1px solid var(--color-line);
+  box-shadow: var(--shadow-card);
 }
 
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme]) {
-    --color-bg: #e9ecf2;
-    --color-text: #0e1525;
+/* What floats over the app: dialogs, the palette, toasts. */
+@utility glass-float {
+  background-color: color-mix(in oklab, var(--color-panel) 86%, transparent);
+  -webkit-backdrop-filter: blur(30px) saturate(150%);
+  backdrop-filter: blur(30px) saturate(150%);
+  box-shadow: var(--shadow-float);
+}
+
+/* Bars of the chrome (title bar, tab bar): the light shows through, blurred. */
+@utility glass-bar {
+  background-color: color-mix(in oklab, var(--color-bg) 72%, transparent);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  backdrop-filter: blur(24px) saturate(150%);
+}
+
+/*
+ * The mood edge: a hairline gradient in the halo colour on the top left corner of a card, and
+ * a soft glow under it. For the one card of a screen that carries the state.
+ */
+@utility halo {
+  position: relative;
+  isolation: isolate;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    pointer-events: none;
+    background: linear-gradient(
+      140deg,
+      color-mix(in oklab, var(--halo) 75%, transparent),
+      transparent 38%,
+      transparent 70%,
+      color-mix(in oklab, var(--halo) 35%, transparent)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+  }
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 8% 6% -6%;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(
+      60% 70% at 30% 20%,
+      color-mix(in oklab, var(--halo) 50%, transparent),
+      transparent 70%
+    );
+    filter: blur(34px);
+    opacity: 0.55;
   }
 }
 
-/* Inter is variable: one file carries every weight the app uses. */
-@font-face {
-  font-family: "Inter";
-  src: url("/fonts/inter-latin.woff2") format("woff2");
-  font-weight: 100 900;
-  font-display: swap;
+/* Upper-case label over a group: zones, sections of the palette. */
+@utility eyebrow {
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-faint);
 }
 
-@font-face {
-  font-family: "Black Ops One";
-  src: url("/fonts/black-ops-one-latin.woff2") format("woff2");
-  font-weight: 400;
-  font-display: swap;
+/* Window chrome: the part you drag the desktop window by, and what must stay clickable in it. */
+@utility app-drag {
+  -webkit-app-region: drag;
 }
-
-@font-face {
-  font-family: "JetBrains Mono";
-  src: url("/fonts/jetbrains-mono-latin.woff2") format("woff2");
-  font-weight: 400 500;
-  font-display: swap;
+@utility app-no-drag {
+  -webkit-app-region: no-drag;
 }
 
 @layer base {
@@ -197,11 +322,9 @@
     background: var(--color-bg);
     color: var(--color-text);
     font-family: var(--font-sans);
-    /* Inter's open digits and the straight-sided "l": a password must be read without doubt. */
     font-feature-settings:
-      "cv11" 1,
-      "ss03" 1,
-      "cv05" 1;
+      "ss01" 1,
+      "cv11" 1;
     font-size: 15px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -212,11 +335,12 @@
     margin: 0;
     min-height: 100dvh;
     background: var(--color-bg);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
   }
   ::selection {
-    background: var(--color-accent-soft);
+    background: color-mix(in oklab, var(--color-accent) 35%, transparent);
   }
-  /* Thin scrollbars: a dialog that scrolls should not grow a grey bar across the design. */
   * {
     scrollbar-width: thin;
     scrollbar-color: var(--color-line-strong) transparent;
@@ -232,7 +356,7 @@
     background-clip: content-box;
   }
   :focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--color-accent-text);
     outline-offset: 2px;
   }
   button,
@@ -263,7 +387,381 @@
     *::before,
     *::after {
       animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+  }
+}
+
+/* ============ The light behind the app ============ */
+
+.aurora {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.aurora::before {
+  content: "";
+  position: absolute;
+  left: -5%;
+  right: -15%;
+  top: -55%;
+  height: 100%;
+  background:
+    radial-gradient(32% 42% at 28% 55%, var(--g1), transparent 70%),
+    radial-gradient(28% 38% at 58% 45%, var(--g2), transparent 70%),
+    radial-gradient(24% 34% at 86% 58%, var(--g3), transparent 70%);
+  opacity: var(--aurora-opacity);
+  filter: blur(36px);
+  animation: aurora-drift 26s ease-in-out infinite alternate;
+}
+.aurora svg {
+  position: absolute;
+  right: -4%;
+  top: -12%;
+  width: 78%;
+  height: auto;
+  opacity: 0.55;
+}
+[data-theme="light"] .aurora svg {
+  opacity: 0.35;
+}
+.aurora .aurora-glow {
+  stroke: var(--g2);
+  stroke-width: 26;
+  opacity: 0.25;
+  filter: blur(10px);
+  fill: none;
+}
+.aurora .aurora-stop-1 {
+  stop-color: var(--g1);
+}
+.aurora .aurora-stop-3 {
+  stop-color: var(--g3);
+}
+.aurora .aurora-line {
+  stroke-width: 1.4;
+  fill: none;
+}
+.aurora-revealed::before {
+  animation:
+    aurora-flare 1.6s var(--ease-out-soft) both,
+    aurora-drift 26s ease-in-out 1.6s infinite alternate;
+}
+@keyframes aurora-drift {
+  50% {
+    transform: translate3d(-4%, 3%, 0) scale(1.06);
+  }
+  100% {
+    transform: translate3d(3%, -2%, 0) scale(1);
+  }
+}
+@keyframes aurora-flare {
+  from {
+    opacity: 1;
+    transform: translateY(18%) scaleY(1.5);
+  }
+  to {
+    opacity: var(--aurora-opacity);
+    transform: none;
+  }
+}
+
+/* ============ The agent's orb ============ */
+
+.orb {
+  position: relative;
+  flex: none;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff 0 8%, var(--color-violet) 40%, #3b2fb0 75%);
+  box-shadow: 0 0 14px -2px var(--color-violet);
+}
+.orb::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in oklab, var(--color-violet) 60%, transparent);
+  animation: orb-pulse 2.6s var(--ease-out-soft) infinite;
+}
+.orb[data-off] {
+  background: radial-gradient(circle at 35% 30%, #cbd5e1 0 8%, #64748b 45%, #334155 80%);
+  box-shadow: none;
+}
+.orb[data-off]::after {
+  display: none;
+}
+@keyframes orb-pulse {
+  from {
+    transform: scale(0.85);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* ============ Unlock: the ribbon, the sweep ============ */
+
+.ribbons {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transition:
+    transform 1.2s var(--ease-out-soft),
+    opacity 1.2s;
+}
+.ribbons path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: ribbon-draw 2.2s var(--ease-out-soft) 0.15s forwards;
+}
+.ribbons .rb-wide {
+  stroke-width: 70;
+  opacity: 0.3;
+}
+.ribbons .rb-mid {
+  stroke-width: 16;
+  opacity: 0.55;
+  animation-delay: 0.25s;
+}
+.ribbons .rb-core {
+  stroke-width: 3.5;
+  opacity: 0.95;
+  animation-delay: 0.35s;
+}
+.ribbons .rb-thin {
+  stroke-width: 1.2;
+  opacity: 0.5;
+  animation-delay: 0.5s;
+}
+.ribbons .rb-spark {
+  stroke-width: 3;
+  stroke: #fff;
+  opacity: 0;
+  stroke-dasharray: 0.05 0.95;
+  stroke-dashoffset: 0;
+  animation: ribbon-travel 5.5s linear 2.2s infinite;
+}
+[data-theme="light"] .ribbons .rb-wide {
+  opacity: 0.22;
+}
+[data-theme="light"] .ribbons .rb-core {
+  opacity: 0.75;
+}
+[data-theme="light"] .ribbons .rb-spark {
+  stroke: #93c5fd;
+}
+.ribbons-narrow .rb-wide {
+  stroke-width: 44;
+}
+.ribbons-narrow .rb-mid {
+  stroke-width: 10;
+}
+.ribbons-narrow .rb-core {
+  stroke-width: 2.6;
+}
+.ribbons-still path {
+  animation: none;
+  stroke-dashoffset: 0;
+}
+.ribbons-still .rb-spark {
+  display: none;
+}
+@keyframes ribbon-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes ribbon-travel {
+  0% {
+    stroke-dashoffset: 1.05;
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.9;
+  }
+  70% {
+    opacity: 0.9;
+  }
+  100% {
+    stroke-dashoffset: -0.05;
+    opacity: 0;
+  }
+}
+
+/* The opening: the ribbon swells and rises, a beam sweeps, the lock screen dissolves. */
+.opening-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  pointer-events: none;
+  overflow: hidden;
+}
+.opening-veil .veil-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    70% 55% at 50% 38%,
+    color-mix(in oklab, var(--g1) 22%, var(--color-bg)),
+    var(--color-bg) 70%
+  );
+  opacity: 0;
+  transition: opacity 0.45s var(--ease-out-soft);
+}
+[data-theme="light"] .opening-veil .veil-bg {
+  background: radial-gradient(
+    70% 55% at 50% 38%,
+    color-mix(in oklab, var(--g2) 12%, var(--color-bg)),
+    var(--color-bg) 70%
+  );
+}
+.opening-veil[data-stage="cover"] .veil-bg,
+.opening-veil[data-stage="hold"] .veil-bg {
+  opacity: 1;
+}
+.opening-veil .ribbons {
+  transform: translateY(0) scaleY(1);
+}
+.opening-veil .ribbons path {
+  animation: none;
+  stroke-dashoffset: 0;
+}
+.opening-veil .ribbons .rb-spark {
+  display: none;
+}
+.opening-veil[data-stage="cover"] .ribbons,
+.opening-veil[data-stage="hold"] .ribbons {
+  transform: translateY(-14%) scaleY(1.35);
+}
+.opening-veil[data-stage="cover"] .rb-wide,
+.opening-veil[data-stage="hold"] .rb-wide {
+  opacity: 0.6;
+  transition: opacity 0.6s;
+}
+.opening-veil[data-stage="lift"] .ribbons {
+  transform: translateY(-60%) scaleY(1.6);
+  opacity: 0;
+  transition:
+    transform 0.9s var(--ease-out-soft),
+    opacity 0.7s var(--ease-out-soft);
+}
+.opening-veil[data-stage="lift"] .veil-bg {
+  opacity: 0;
+  transition: opacity 0.6s var(--ease-out-soft) 0.1s;
+}
+.opening-veil .sweep {
+  position: absolute;
+  top: -10%;
+  bottom: -10%;
+  left: 0;
+  width: 26%;
+  opacity: 0;
+  transform: translateX(-130%) skewX(-16deg);
+  background: radial-gradient(
+    50% 55% at 50% 62%,
+    rgb(219 234 254 / 0.55),
+    rgb(96 165 250 / 0.16) 45%,
+    transparent 75%
+  );
+  mix-blend-mode: screen;
+  filter: blur(10px);
+}
+[data-theme="light"] .opening-veil .sweep {
+  mix-blend-mode: normal;
+  background: radial-gradient(
+    50% 55% at 50% 62%,
+    rgb(255 255 255 / 0.95),
+    rgb(191 219 254 / 0.45) 45%,
+    transparent 75%
+  );
+}
+.opening-veil[data-stage="cover"] .sweep {
+  animation: veil-sweep 1.25s cubic-bezier(0.6, 0, 0.3, 1) 0.1s forwards;
+}
+@keyframes veil-sweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-130%) skewX(-16deg);
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(420%) skewX(-16deg);
+  }
+}
+
+/* The vault rising into place behind the lifting veil. */
+.app-rise > * {
+  animation: app-rise 0.7s var(--ease-out-soft) both;
+}
+@keyframes app-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(6px);
+  }
+}
+
+/* The halo breathing behind the logo on the entry screens. */
+.mark-halo {
+  position: absolute;
+  inset: -40%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(59 130 246 / 0.55), transparent);
+  filter: blur(12px);
+  animation: mark-breathe 5s ease-in-out infinite;
+}
+[data-theme="light"] .mark-halo {
+  background: radial-gradient(closest-side, rgb(59 130 246 / 0.28), transparent);
+}
+@keyframes mark-breathe {
+  50% {
+    transform: scale(1.12);
+    opacity: 0.75;
+  }
+}
+
+/* Hold-to-confirm: the fill runs while the control is held. */
+.hold-fill {
+  transform: scaleX(var(--hold, 0));
+}
+
+/* ============ Monogram of an account ============ */
+
+.monogram {
+  color: #fff;
+  background: linear-gradient(150deg, oklch(0.52 0.11 var(--h)), oklch(0.34 0.11 var(--h)));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.16),
+    inset 0 0 0 1px rgb(255 255 255 / 0.05);
+}
+[data-theme="light"] .monogram {
+  color: oklch(0.4 0.12 var(--h));
+  background: linear-gradient(150deg, oklch(0.93 0.05 var(--h)), oklch(0.87 0.05 var(--h)));
+  box-shadow: inset 0 0 0 1px oklch(0.8 0.05 var(--h) / 0.6);
+}
+
+/* ============ Toast ============ */
+
+.toast-drain {
+  transform-origin: left;
+  animation: toast-drain 4s linear forwards;
+}
+@keyframes toast-drain {
+  to {
+    transform: scaleX(0);
   }
 }

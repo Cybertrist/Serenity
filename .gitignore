@@ -60,3 +60,5 @@ Thumbs.db
 
 # --- Claude Code local settings ---
 .claude/settings.local.json
+desktop/node_modules/
+desktop/dist/

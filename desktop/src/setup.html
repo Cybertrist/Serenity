@@ -1,0 +1,417 @@
+<!doctype html>
+<!--
+  First launch of the desktop app: ask for the https address of the user's own Serenity server.
+  Local page (loadFile), no network at all. Same look as the web client's entry screens.
+  The inline style and script are allowed by their hash only: after editing either block, run
+  `node src/setup-csp.js` to refresh the hashes in the CSP below.
+-->
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; img-src 'self'; font-src 'self'; style-src 'sha256-CnuASNFyZp4jHD8eaANB8F2qcF4Z02GC/+Gg/4GWnng='; script-src 'sha256-jooNevTX69s17NGIbtJVct3YCtcifLJY1/Fyhj5AeHk='; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark light" />
+    <title>Serenity</title>
+    <style>
+      @font-face {
+        font-family: "Geist";
+        src: url("fonts/geist-latin.woff2") format("woff2");
+        font-weight: 100 900;
+      }
+      @font-face {
+        font-family: "Syne";
+        src: url("fonts/syne-latin.woff2") format("woff2");
+        font-weight: 400 800;
+      }
+      :root {
+        color-scheme: dark;
+        --bg: #070a12;
+        --glass: rgb(17 23 38 / 0.56);
+        --glass-2: rgb(24 31 50 / 0.66);
+        --line: rgb(148 163 196 / 0.1);
+        --line-2: rgb(148 163 196 / 0.22);
+        --hover: rgb(148 163 196 / 0.07);
+        --text: #e9edf5;
+        --text-2: #a7b1c6;
+        --text-3: #7e8aa4;
+        --accent: #3b82f6;
+        --accent-text: #82b1ff;
+        --brand: #3b82f6;
+        --warn: #f7c26e;
+        --glow: rgb(30 64 175 / 0.22);
+        --shadow: inset 0 1px 0 rgb(255 255 255 / 0.035), 0 18px 40px -20px rgb(0 0 0 / 0.75);
+        --halo: rgb(59 130 246 / 0.55);
+        --ribbon-a: #2563eb;
+        --ribbon-b: #dbeafe;
+        --ribbon-c: #3b82f6;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          color-scheme: light;
+          --bg: #f2f4f9;
+          --glass: rgb(255 255 255 / 0.62);
+          --glass-2: rgb(255 255 255 / 0.82);
+          --line: rgb(15 23 42 / 0.08);
+          --line-2: rgb(15 23 42 / 0.2);
+          --hover: rgb(15 23 42 / 0.045);
+          --text: #0b1222;
+          --text-2: #455068;
+          --text-3: #5d6780;
+          --accent: #2563eb;
+          --accent-text: #1d4ed8;
+          --brand: #2563eb;
+          --warn: #9a5605;
+          --glow: rgb(59 130 246 / 0.12);
+          --shadow: 0 1px 2px rgb(15 23 42 / 0.05), 0 14px 34px -18px rgb(15 23 42 / 0.2);
+          --halo: rgb(59 130 246 / 0.28);
+          --ribbon-a: #3b82f6;
+          --ribbon-b: #1d4ed8;
+          --ribbon-c: #60a5fa;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        color: var(--text);
+        background: radial-gradient(70% 55% at 50% 38%, var(--glow), transparent 70%), var(--bg);
+        font: 400 14px/1.5 "Geist", ui-sans-serif, system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      button,
+      input {
+        font: inherit;
+        color: inherit;
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent-text);
+        outline-offset: 2px;
+      }
+      .bar {
+        -webkit-app-region: drag;
+        position: relative;
+        z-index: 3;
+        height: 40px;
+        display: flex;
+        justify-content: flex-end;
+        flex: none;
+      }
+      .bar button {
+        -webkit-app-region: no-drag;
+        width: 46px;
+        height: 100%;
+        border: 0;
+        background: none;
+        color: var(--text-2);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+      }
+      .bar button:hover {
+        background: var(--hover);
+        color: var(--text);
+      }
+      .bar button.close:hover {
+        background: #e81123;
+        color: #fff;
+      }
+      .ribbons {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+      .ribbons path {
+        fill: none;
+        stroke-linecap: round;
+        stroke-dasharray: 1;
+        stroke-dashoffset: 1;
+        animation: draw 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s forwards;
+      }
+      .ribbons .w {
+        stroke-width: 70;
+        opacity: 0.25;
+        filter: blur(20px);
+      }
+      .ribbons .c {
+        stroke-width: 3.5;
+        opacity: 0.9;
+        animation-delay: 0.35s;
+      }
+      .ribbons .t {
+        stroke-width: 1.2;
+        opacity: 0.5;
+        animation-delay: 0.5s;
+      }
+      .ribbons .sa {
+        stop-color: var(--ribbon-a);
+      }
+      .ribbons .sb {
+        stop-color: var(--ribbon-b);
+      }
+      .ribbons .sc {
+        stop-color: var(--ribbon-c);
+      }
+      @keyframes draw {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+      main {
+        position: relative;
+        z-index: 2;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0 20px 40px;
+      }
+      .mark {
+        position: relative;
+        width: 84px;
+        height: 84px;
+        margin-bottom: 20px;
+      }
+      .mark::before {
+        content: "";
+        position: absolute;
+        inset: -40%;
+        border-radius: 50%;
+        background: radial-gradient(closest-side, var(--halo), transparent);
+        filter: blur(12px);
+      }
+      .mark img {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        border-radius: 24%;
+      }
+      h1 {
+        margin: 0;
+        font: 800 36px/1 "Syne", "Geist", sans-serif;
+        letter-spacing: -0.01em;
+      }
+      h1 span {
+        color: var(--brand);
+      }
+      .hello {
+        margin: 12px 0 26px;
+        color: var(--text-2);
+        font-size: 14.5px;
+        text-align: center;
+        max-width: 380px;
+      }
+      form {
+        width: 100%;
+        max-width: 400px;
+        padding: 18px;
+        border-radius: 18px;
+        background: var(--glass);
+        backdrop-filter: blur(22px) saturate(140%);
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      label {
+        font-weight: 500;
+        font-size: 12.5px;
+        color: var(--text-2);
+      }
+      input {
+        height: 44px;
+        padding: 0 12px;
+        border-radius: 10px;
+        border: 1px solid var(--line-2);
+        background: var(--glass-2);
+        font-size: 14.5px;
+        outline: none;
+        transition:
+          border-color 0.15s,
+          box-shadow 0.2s;
+      }
+      input:focus {
+        border-color: color-mix(in oklab, var(--accent) 70%, transparent);
+        box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 18%, transparent);
+      }
+      input::placeholder {
+        color: var(--text-3);
+      }
+      .hint {
+        margin: -4px 0 0;
+        font-size: 12.5px;
+        color: var(--text-3);
+      }
+      .error {
+        margin: -2px 0 0;
+        font-size: 12.5px;
+        color: var(--warn);
+      }
+      .error:empty {
+        display: none;
+      }
+      .primary {
+        height: 44px;
+        border-radius: 11px;
+        border: 1px solid rgb(255 255 255 / 0.15);
+        color: #fff;
+        font-weight: 500;
+        font-size: 14.5px;
+        cursor: pointer;
+        background: linear-gradient(180deg, #4b8cf8, #2c6ce4);
+        box-shadow:
+          inset 0 1px 0 rgb(255 255 255 / 0.22),
+          0 8px 22px -8px rgb(59 130 246 / 0.7);
+      }
+      .primary:hover {
+        background: linear-gradient(180deg, #5a97fa, #3374ea);
+      }
+      .primary:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+      footer {
+        position: relative;
+        z-index: 2;
+        flex: none;
+        padding: 0 20px 20px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--text-3);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .ribbons path {
+          animation: none;
+          stroke-dashoffset: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bar">
+      <button type="button" id="min" aria-label="Réduire" title="Réduire">
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+          <path d="M1 6h10" stroke="currentColor" stroke-width="1.1" />
+        </svg>
+      </button>
+      <button type="button" id="max" aria-label="Agrandir" title="Agrandir">
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+          <rect x="1.5" y="1.5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.1" />
+        </svg>
+      </button>
+      <button type="button" id="close" class="close" aria-label="Fermer" title="Fermer">
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+          <path d="M1.5 1.5l9 9M10.5 1.5l-9 9" stroke="currentColor" stroke-width="1.1" />
+        </svg>
+      </button>
+    </div>
+    <svg class="ribbons" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="rg" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1440" y2="0">
+          <stop offset="0" class="sa" stop-opacity="0" />
+          <stop offset=".3" class="sa" />
+          <stop offset=".52" class="sb" />
+          <stop offset=".78" class="sc" />
+          <stop offset="1" class="sc" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      <path class="w" pathLength="1" d="M-120 770 C 200 630 420 890 720 670 S 1180 370 1560 500" stroke="url(#rg)" />
+      <path class="c" pathLength="1" d="M-120 770 C 200 630 420 890 720 670 S 1180 370 1560 500" stroke="url(#rg)" />
+      <path class="t" pathLength="1" d="M-120 710 C 230 570 440 830 700 630 S 1150 320 1560 450" stroke="url(#rg)" />
+    </svg>
+    <main>
+      <div class="mark"><img src="logo.png" alt="" /></div>
+      <h1>Seren<span>ity</span></h1>
+      <p class="hello">Bienvenue. Indique l'adresse de ton serveur Serenity pour ouvrir ton coffre.</p>
+      <form id="setup" novalidate>
+        <label for="url">Adresse du serveur</label>
+        <input
+          id="url"
+          type="url"
+          inputmode="url"
+          placeholder="https://coffre.exemple.fr"
+          autocomplete="url"
+          spellcheck="false"
+          aria-describedby="hint error"
+          required
+          autofocus
+        />
+        <p class="hint" id="hint">
+          En https. C'est l'adresse privée de ton serveur, jamais une adresse publique.
+        </p>
+        <p class="error" id="error" role="alert"></p>
+        <button class="primary" type="submit" id="go">Ouvrir mon coffre</button>
+      </form>
+    </main>
+    <footer>Cette fenêtre ne parle qu'à ton serveur. Tu pourras changer d'adresse plus tard.</footer>
+    <script>
+      "use strict";
+      (function () {
+        var bridge = window.serenityDesktop;
+        var form = document.getElementById("setup");
+        var input = document.getElementById("url");
+        var error = document.getElementById("error");
+        var go = document.getElementById("go");
+        document.getElementById("min").addEventListener("click", function () {
+          if (bridge) bridge.minimize();
+        });
+        document.getElementById("max").addEventListener("click", function () {
+          if (bridge) bridge.toggleMaximize();
+        });
+        document.getElementById("close").addEventListener("click", function () {
+          if (bridge) bridge.close();
+        });
+        if (bridge) {
+          bridge.server().then(function (current) {
+            if (current && !input.value) input.value = current;
+          });
+        }
+        function valid(raw) {
+          try {
+            var url = new URL(raw.indexOf("://") === -1 ? "https://" + raw : raw);
+            var loop = url.hostname === "127.0.0.1" || url.hostname === "localhost";
+            return url.protocol === "https:" || (url.protocol === "http:" && loop) ? url.origin : null;
+          } catch (e) {
+            return null;
+          }
+        }
+        form.addEventListener("submit", function (event) {
+          event.preventDefault();
+          error.textContent = "";
+          var origin = valid(input.value.trim());
+          if (!origin) {
+            error.textContent = "Il faut une adresse en https, par exemple https://coffre.exemple.fr.";
+            input.focus();
+            return;
+          }
+          if (!bridge) {
+            error.textContent = "Cette page ne marche que dans l'application Serenity.";
+            return;
+          }
+          go.disabled = true;
+          go.textContent = "Connexion…";
+          bridge.setServer(origin).then(function (result) {
+            if (result && result.ok) return;
+            go.disabled = false;
+            go.textContent = "Ouvrir mon coffre";
+            error.textContent = (result && result.error) || "Adresse refusée.";
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

@@ -61,6 +61,8 @@ interface Session {
    */
   refreshKeysCache: () => Promise<void>;
   touch: () => void;
+  /** Milliseconds before the automatic lock, or null when the vault is not open. */
+  lockIn: () => number | null;
   enter: (keyring: Keyring, login: LoginPayload | null, username: string) => Promise<void>;
   /** `beforeEnter` runs once the password is proven, before the app opens: the lock animation. */
   unlock: (password: string, beforeEnter?: () => Promise<void>) => Promise<void>;
@@ -361,6 +363,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     touch: () => {
       guard.activity();
     },
+    lockIn: () => guard.remaining(),
     enter,
     unlock,
     lock,

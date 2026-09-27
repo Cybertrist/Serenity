@@ -1,41 +1,45 @@
-import { motion } from "motion/react";
-import { SPRING } from "../../design";
-import type { Tab } from "./context";
+import { SlidersHorizontalIcon } from "@phosphor-icons/react";
+import { Badge } from "../../design";
+import { useHealth } from "../health";
+import { useShell, type Tab } from "./context";
 import { TABS } from "./nav";
+import { useAgentState } from "./useShellData";
 
-type Badges = Partial<Record<Tab, number>>;
+/**
+ * The tabs of a phone, under the thumb: the four screens and the settings. Frosted glass over
+ * the content, which scrolls underneath.
+ */
+export function TabBar() {
+  const shell = useShell();
+  const health = useHealth();
+  const agent = useAgentState();
+  const badge = (id: Tab) =>
+    id === "breaches" && health.flagged > 0 ? (
+      <Badge
+        value={health.flagged}
+        tone="warn"
+        label={`${String(health.flagged)} à voir`}
+        className="absolute left-[calc(50%+5px)] top-0.5 !h-4 !min-w-4 !px-1 !text-[10px]"
+      />
+    ) : id === "agent" && agent.waiting > 0 ? (
+      <Badge
+        value={agent.waiting}
+        tone="violet"
+        label={`${String(agent.waiting)} à valider`}
+        className="absolute left-[calc(50%+5px)] top-0.5 !h-4 !min-w-4 !px-1 !text-[10px]"
+      />
+    ) : null;
 
-function Badge({ count, inline }: { count: number; inline: boolean }) {
-  return (
-    <span
-      className={`tabular flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-crit px-1.5 text-micro font-bold text-white ${
-        inline ? "" : "absolute left-[calc(50%+6px)] top-1.5 ring-2 ring-surface"
-      }`}
-    >
-      <span className="sr-only">{`${String(count)} à voir`}</span>
-      <span aria-hidden="true">{count > 9 ? "9+" : count}</span>
-    </span>
-  );
-}
+  const item =
+    "relative flex min-h-[52px] flex-1 flex-col items-center justify-center gap-1 rounded-[12px] text-[10.5px] font-medium leading-none transition-colors duration-150";
 
-/** The four screens, at the bottom of a narrow app. */
-export function TabBar({
-  tab,
-  onChange,
-  badges,
-}: {
-  tab: Tab;
-  onChange: (t: Tab) => void;
-  badges: Badges;
-}) {
   return (
     <nav
       aria-label="Navigation principale"
-      className="flex shrink-0 gap-1 border-t border-line bg-surface/90 px-2 pb-[max(6px,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur-md"
+      className="glass-bar absolute inset-x-0 bottom-0 z-20 flex border-t border-line px-2 pb-[max(10px,env(safe-area-inset-bottom))] pt-1.5"
     >
       {TABS.map(({ id, label, hint, icon: IconComponent }) => {
-        const active = id === tab;
-        const badge = badges[id] ?? 0;
+        const active = id === shell.tab;
         return (
           <button
             key={id}
@@ -43,92 +47,33 @@ export function TabBar({
             title={hint}
             aria-current={active ? "page" : undefined}
             onClick={() => {
-              onChange(id);
+              shell.go(id);
             }}
-            className={`relative flex min-h-[54px] flex-1 flex-col items-center justify-center gap-1 rounded-control text-micro tracking-[0.01em] transition-colors duration-150 ${
-              active ? "font-semibold text-text" : "font-medium text-muted hover:text-text"
-            }`}
+            className={`${item} ${active ? "text-text" : "text-faint hover:text-muted"}`}
           >
-            <span
-              className={`relative flex h-8 w-14 items-center justify-center rounded-full ${active ? "text-accent" : ""}`}
-            >
-              {active ? (
-                <motion.span
-                  layoutId="tab-pill"
-                  transition={SPRING}
-                  aria-hidden="true"
-                  className="absolute inset-0 rounded-full bg-accent-soft"
-                />
-              ) : null}
-              <IconComponent
-                size={22}
-                weight={active ? "fill" : "regular"}
-                aria-hidden="true"
-                className="relative"
-              />
-            </span>
-            <span className="relative">{label}</span>
-            {badge > 0 ? <Badge count={badge} inline={false} /> : null}
-          </button>
-        );
-      })}
-    </nav>
-  );
-}
-
-/** The same four screens, as the sidebar of a wide app. */
-export function SideNav({
-  tab,
-  onChange,
-  badges,
-}: {
-  tab: Tab;
-  onChange: (t: Tab) => void;
-  badges: Badges;
-}) {
-  return (
-    <nav aria-label="Navigation principale" className="flex flex-col gap-0.5">
-      {TABS.map(({ id, label, hint, icon: IconComponent }) => {
-        const active = id === tab;
-        const badge = badges[id] ?? 0;
-        return (
-          <button
-            key={id}
-            type="button"
-            title={hint}
-            aria-current={active ? "page" : undefined}
-            onClick={() => {
-              onChange(id);
-            }}
-            className={`relative flex min-h-11 w-full items-center gap-3 rounded-control px-3 text-body transition-colors duration-150 ${
-              active
-                ? "font-semibold text-text"
-                : "font-medium text-muted hover:bg-hover hover:text-text"
-            }`}
-          >
-            {active ? (
-              <motion.span
-                layoutId="side-pill"
-                transition={SPRING}
-                aria-hidden="true"
-                className="absolute inset-0 rounded-control bg-raised shadow-card"
-              />
-            ) : null}
             <IconComponent
-              size={20}
+              size={23}
               weight={active ? "fill" : "regular"}
               aria-hidden="true"
-              className={`relative ${active ? "text-accent" : ""}`}
+              className={
+                active ? "text-accent-text drop-shadow-[0_0_8px_var(--halo)]" : "text-current"
+              }
             />
-            <span className="relative flex-1 text-left">{label}</span>
-            {badge > 0 ? (
-              <span className="relative">
-                <Badge count={badge} inline />
-              </span>
-            ) : null}
+            <span>{label}</span>
+            {badge(id)}
           </button>
         );
       })}
+      <button
+        type="button"
+        onClick={() => {
+          shell.openSettings();
+        }}
+        className={`${item} text-faint hover:text-muted`}
+      >
+        <SlidersHorizontalIcon size={23} aria-hidden="true" />
+        <span>Réglages</span>
+      </button>
     </nav>
   );
 }

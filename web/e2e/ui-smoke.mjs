@@ -89,7 +89,7 @@ await page.getByText("Ton coffre est vide.").waitFor({ timeout: 20000 });
 await shot("04-coffre-vide");
 
 const add = async (name, user, pwd, url, totp) => {
-  await page.getByRole("button", { name: "Ajouter une entrée" }).first().click();
+  await page.getByRole("button", { name: "Nouvelle entrée" }).first().click();
   await page.getByLabel("Nom").fill(name);
   await page.getByLabel("Identifiant sur le site").fill(user);
   await page.getByLabel("Mot de passe", { exact: true }).fill(pwd);
@@ -150,7 +150,7 @@ await page.getByText(/Ton coffre est verrouillé/).waitFor();
 await shot("13-deverrouillage");
 await page.getByLabel("Mot de passe maître").fill("une phrase de passe de test");
 await page.getByRole("button", { name: "Déverrouiller" }).click();
-await page.getByText("Protégé par toi").waitFor({ timeout: 20000 });
+await page.getByRole("heading", { name: "Protégé par toi" }).waitFor({ timeout: 20000 });
 await shot("14-deverrouille");
 
 // Offline: the service worker serves the app, the encrypted cache is unlocked locally, read-only.
@@ -208,15 +208,33 @@ await big.goto(BASE);
 await big.getByRole("button", { name: "Continuer" }).waitFor({ timeout: 20000 });
 await big.getByLabel("Identifiant").fill("tristan");
 await big.getByLabel("Mot de passe maître").fill("une phrase de passe de test");
-await wideShot("16-bureau-cadenas");
+await wideShot("16-bureau-connexion");
 await big.getByRole("button", { name: "Continuer" }).click();
 await wideShot("17-bureau-code");
 await big.getByLabel("Code à 6 chiffres").fill(totp(secret, await tick()));
-await report(big, "connexion sur le cadenas", async () => {
+await report(big, "connexion sur grand écran", async () => {
   await big.getByRole("button", { name: "Déverrouiller" }).click();
-  await big.getByText("Protégé par toi").waitFor({ timeout: 20000 });
+  // The unlock moment, caught while the beam sweeps across.
+  await big.locator(".opening-veil").waitFor({ state: "attached", timeout: 20000 });
+  await big.waitForTimeout(600);
+  await big.screenshot({ path: `${shots}/17b-bureau-ouverture.png` });
+  await big.getByRole("heading", { name: "Protégé par toi" }).waitFor({ timeout: 20000 });
 });
 await wideShot("18-bureau-coffre");
+// The keyboard: the palette (Ctrl+K), a search in it, then "G then C" to go to the codes.
+await big.keyboard.press("Control+k");
+await big.getByRole("dialog", { name: "Palette de commandes" }).waitFor();
+await wideShot("18b-bureau-palette");
+await big.keyboard.type("net");
+await wideShot("18c-bureau-palette-recherche");
+await big.keyboard.press("Escape");
+await big.getByRole("dialog").waitFor({ state: "detached" });
+await big.keyboard.press("g");
+await big.keyboard.press("c");
+await big.getByRole("heading", { name: "Codes", exact: true }).waitFor();
+await wideShot("18d-bureau-codes");
+await big.keyboard.press("g");
+await big.keyboard.press("v");
 await big.getByRole("button", { name: /Banque/ }).click();
 await big.getByRole("dialog").waitFor();
 await wideShot("19-bureau-fiche");
@@ -269,15 +287,16 @@ await sun.goto(BASE);
 await sun.getByRole("button", { name: "Continuer" }).waitFor({ timeout: 20000 });
 await sun.getByLabel("Identifiant").fill("tristan");
 await sun.getByLabel("Mot de passe maître").fill("une phrase de passe de test");
-await dayShot("24-clair-cadenas");
+await dayShot("24-clair-connexion");
 await sun.getByRole("button", { name: "Continuer" }).click();
 await sun.getByLabel("Code à 6 chiffres").fill(totp(secret, await tick()));
 await report(sun, "connexion en thème clair", async () => {
   await sun.getByRole("button", { name: "Déverrouiller" }).click();
-  // Caught mid-fall: the rain has to read as ink on paper, not as a white-out.
-  await sun.waitForTimeout(700);
-  await sun.screenshot({ path: `${shots}/25-clair-pluie.png` });
-  await sun.getByText("Protégé par toi").waitFor({ timeout: 20000 });
+  // Caught mid-sweep: the unlock moment has to read on paper, not as a white-out.
+  await sun.locator(".opening-veil").waitFor({ state: "attached", timeout: 20000 });
+  await sun.waitForTimeout(600);
+  await sun.screenshot({ path: `${shots}/25-clair-ouverture.png` });
+  await sun.getByRole("heading", { name: "Protégé par toi" }).waitFor({ timeout: 20000 });
 });
 await dayShot("26-clair-coffre");
 await sun.getByRole("button", { name: /Banque/ }).click();
@@ -289,13 +308,64 @@ await sun.getByRole("button", { name: "Réglages" }).click();
 await sun.getByRole("dialog").waitFor();
 await sun.getByRole("button", { name: "Apparence" }).click();
 await dayShot("28-clair-apparence");
-// The padlock cinema is the piece the light theme could ruin: lock, and look at it.
+// The lock screen is the piece the light theme could ruin: lock, and look at it.
 await sun.getByRole("button", { name: "Verrouillage" }).click();
 await sun.getByRole("button", { name: "Verrouiller maintenant" }).click();
 await report(sun, "verrouillage en thème clair", async () => {
   await sun.getByRole("button", { name: "Déverrouiller" }).waitFor({ timeout: 20000 });
 });
 await dayShot("29-clair-verrouille");
+
+// Desktop app: the same client, with the bridge the Electron preload exposes (faked here). It
+// must draw its own title bar, window controls included.
+const win = await browser.newContext({
+  viewport: { width: 1280, height: 800 },
+  deviceScaleFactor: 1,
+  locale: "fr-FR",
+  colorScheme: "dark",
+});
+await win.addInitScript(() => {
+  window.serenityDesktop = {
+    platform: "win32",
+    minimize() {},
+    toggleMaximize() {},
+    close() {},
+    isMaximized: async () => false,
+    onMaximized: () => () => {},
+    onLock: () => () => {},
+    server: async () => location.origin,
+    setServer: async () => ({ ok: true }),
+    changeServer() {},
+  };
+});
+const app = await win.newPage();
+app.on("pageerror", (e) => problems.push(`pageerror (appli): ${e.message}`));
+const appShot = async (name) => {
+  await app.waitForTimeout(4000);
+  await app.screenshot({ path: `${shots}/${name}.png` });
+};
+await app.goto(BASE);
+await app.getByRole("button", { name: "Continuer" }).waitFor({ timeout: 20000 });
+await app.getByLabel("Identifiant").fill("tristan");
+await app.getByLabel("Mot de passe maître").fill("une phrase de passe de test");
+await app.getByRole("button", { name: "Fermer" }).waitFor();
+await appShot("30-appli-connexion");
+await app.getByRole("button", { name: "Continuer" }).click();
+await app.getByLabel("Code à 6 chiffres").fill(totp(secret, await tick()));
+await report(app, "connexion dans l'appli de bureau", async () => {
+  await app.getByRole("button", { name: "Déverrouiller" }).click();
+  await app.getByRole("heading", { name: "Protégé par toi" }).waitFor({ timeout: 20000 });
+});
+await appShot("31-appli-coffre");
+await app.getByRole("button", { name: "Rechercher une entrée ou une action" }).click();
+await app.getByRole("dialog", { name: "Palette de commandes" }).waitFor();
+await appShot("32-appli-palette");
+await app.keyboard.press("Escape");
+await app.getByRole("dialog").waitFor({ state: "detached" });
+await app.keyboard.press("g");
+await app.keyboard.press("a");
+await appShot("33-appli-agent");
+await win.close();
 
 await browser.close();
 if (problems.length) {

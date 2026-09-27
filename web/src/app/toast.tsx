@@ -28,7 +28,7 @@ const ICONS: Record<Tone, Icon> = {
 
 const COLOURS: Record<Tone, string> = {
   ok: "text-ok",
-  accent: "text-accent",
+  accent: "text-accent-text",
   warn: "text-warn",
   crit: "text-crit",
   neutral: "text-muted",
@@ -74,7 +74,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       className={
         slot
           ? // Clear of the add button: above it on a phone, beside it on a wide app.
-            "pointer-events-none absolute inset-x-0 bottom-[84px] z-30 flex flex-col items-center gap-2 px-4 @[620px]:bottom-6 @[620px]:px-6"
+            "pointer-events-none absolute inset-x-0 bottom-[calc(96px+env(safe-area-inset-bottom))] z-30 flex flex-col items-center gap-2 px-4 @[900px]:bottom-12 @[900px]:px-6"
           : "pointer-events-none fixed inset-x-0 bottom-5 z-50 flex flex-col items-center gap-2 px-4"
       }
     >
@@ -93,7 +93,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               onClick={() => {
                 setToasts((all) => all.filter((x) => x.id !== t.id));
               }}
-              className="pointer-events-auto flex max-w-[440px] items-start gap-2.5 rounded-control bg-float px-4 py-3 text-left text-caption font-medium shadow-float ring-1 ring-line"
+              className="glass-float pointer-events-auto relative flex max-w-[460px] items-start gap-2.5 overflow-hidden rounded-[12px] py-2.5 pl-3 pr-3.5 text-left text-[13.5px]"
             >
               <IconComponent
                 size={18}
@@ -102,6 +102,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 className={`mt-px shrink-0 ${COLOURS[t.tone]}`}
               />
               <span>{t.text}</span>
+              <span
+                aria-hidden="true"
+                className="toast-drain absolute inset-x-0 bottom-0 h-0.5 bg-accent"
+              />
             </motion.button>
           );
         })}

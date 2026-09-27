@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { IconButton } from "./Button";
 import { Chip } from "./Chip";
-import { DIALOG } from "./motion";
+import { DIALOG, SOFT_SPRING } from "./motion";
 import type { Tone } from "./tone";
 
 type Size = "sm" | "md" | "lg";
@@ -62,6 +62,7 @@ export function Modal({
   header,
   footer,
   flush = false,
+  fullscreenOnMobile = false,
   children,
 }: {
   open: boolean;
@@ -77,9 +78,13 @@ export function Modal({
   footer?: ReactNode;
   /** Drops the body padding: for a dialog that lays out its own panes. */
   flush?: boolean;
+  /** Below 620 px of app, take the whole screen and slide up (a fiche on a phone). */
+  fullscreenOnMobile?: boolean;
   children: ReactNode;
 }) {
   const reduce = useReducedMotion();
+  // The slide-up only makes sense when the dialog does take the whole screen.
+  const narrow = typeof window !== "undefined" && window.innerWidth < 620;
   const panel = useRef<HTMLDivElement>(null);
   const id = useId();
   // Callers often pass a fresh arrow function on every render. Kept in a ref, it does not
@@ -133,7 +138,7 @@ export function Modal({
     <AnimatePresence>
       {open ? (
         <div
-          className={`${slot ? "absolute" : "fixed"} inset-0 z-40 flex items-center justify-center p-3 @[620px]:p-6`}
+          className={`${slot ? "absolute" : "fixed"} inset-0 z-40 flex items-center justify-center ${fullscreenOnMobile ? "p-0 @[620px]:p-6" : "p-3 @[620px]:p-6"}`}
         >
           <motion.div
             className="absolute inset-0 bg-scrim backdrop-blur-[3px]"
@@ -152,17 +157,26 @@ export function Modal({
             aria-labelledby={`${id}-title`}
             aria-describedby={subtitle ? `${id}-subtitle` : undefined}
             tabIndex={-1}
-            className={`relative z-10 flex max-h-full w-full flex-col overflow-hidden rounded-sheet bg-float shadow-float outline-none ${WIDTHS[size]}`}
+            className={`glass-float relative z-10 flex max-h-full w-full flex-col overflow-hidden outline-none ${WIDTHS[size]} ${fullscreenOnMobile ? "h-full rounded-none @[620px]:h-auto @[620px]:rounded-sheet" : "rounded-sheet"}`}
             {...(reduce
               ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
-              : { variants: DIALOG, initial: "initial", animate: "animate", exit: "exit" })}
+              : fullscreenOnMobile && narrow
+                ? {
+                    initial: { y: "100%" },
+                    animate: { y: 0, transition: SOFT_SPRING },
+                    exit: { y: "100%", transition: { duration: 0.2 } },
+                  }
+                : { variants: DIALOG, initial: "initial", animate: "animate", exit: "exit" })}
           >
             <div className="flex shrink-0 items-start gap-3 px-5 pb-3 pt-5 @[620px]:px-6">
               {header ?? (
                 <>
-                  {icon ? <Chip icon={icon} tone={tone} duotone /> : null}
+                  {icon ? <Chip icon={icon} tone={tone} size={36} duotone /> : null}
                   <div className="flex min-w-0 flex-1 flex-col gap-0.5 pt-0.5">
-                    <h2 id={`${id}-title`} className="m-0 text-balance text-heading">
+                    <h2
+                      id={`${id}-title`}
+                      className="m-0 text-balance font-display text-[19px] font-bold leading-tight tracking-[-0.01em]"
+                    >
                       {title}
                     </h2>
                     {subtitle ? (
@@ -184,7 +198,7 @@ export function Modal({
                 onClick={() => {
                   close.current();
                 }}
-                className="-mr-2.5 -mt-1.5"
+                className="-mr-1.5 -mt-0.5"
               />
             </div>
             <div

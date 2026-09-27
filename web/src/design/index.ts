@@ -1,11 +1,17 @@
+export { Aurora } from "./Aurora";
 export { Button, IconButton } from "./Button";
 export { Card, SectionTitle } from "./Card";
-export { Chip, Count, Pill } from "./Chip";
+export { Badge, Chip, Count, Pill } from "./Chip";
 export { Confirm } from "./Confirm";
 export { EmptyState, ErrorNote, Note, Skeleton } from "./Feedback";
 export { Checkbox, Field, INPUT_BOX, SearchField, TextArea } from "./Field";
-export { LockMark, Shackle } from "./Lock";
+export { Glass } from "./Glass";
+export { HealthRing, healthTone } from "./HealthRing";
+export { HoldSwitch } from "./HoldSwitch";
+export { Kbd, keyLabels, keyText } from "./Kbd";
 export { Modal } from "./Modal";
+export { Monogram, hueOf, initialOf } from "./Monogram";
+export { resetMood, setBaseMood, useMood, type Mood } from "./mood";
 export {
   DIALOG,
   EASE,
@@ -22,6 +28,9 @@ export {
   SOFT_SPRING,
   SPRING,
 } from "./motion";
+export { Opening } from "./Opening";
+export { Orb } from "./Orb";
+export { Ribbons } from "./Ribbons";
 export { Row } from "./Row";
 export { Segmented } from "./Segmented";
 export { StatusCard } from "./StatusCard";
@@ -36,5 +45,5 @@ export {
   type ThemeChoice,
 } from "./theme";
 export { Toggle } from "./Toggle";
-export { Wordmark } from "./Wordmark";
+export { Logo, Wordmark } from "./Wordmark";
 export type { Tone } from "./tone";
