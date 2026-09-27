@@ -36,9 +36,11 @@ Nommage : `ADR-NNN-titre-court.md`.
 - [ADR-014 : Thème clair, réglé par appareil](ADR-014-theme-clair.md)
 - [ADR-015 : L'exécuteur de rotation, conteneur à part, recettes de sites](ADR-015-executeur-rotation.md)
 - [ADR-016 : Sauvegardes restic, clés incluses, exercice de restauration](ADR-016-sauvegardes.md)
-- [ADR-017 : Identité française, bleu de France, blanc, rouge Marianne](ADR-017-identite-francaise.md)
+- [ADR-017 : Identité française, bleu de France, blanc, rouge Marianne](ADR-017-identite-francaise.md) (remplacé par ADR-020)
 - [ADR-018 : Scan local complet, question au réseau une fois par jour](ADR-018-veille-incrementale.md)
-- [ADR-019 : Refonte de l'interface, des surfaces plutôt que des filets](ADR-019-refonte-interface.md)
+- [ADR-019 : Refonte de l'interface, des surfaces plutôt que des filets](ADR-019-refonte-interface.md) (remplacé par ADR-020)
+- [ADR-020 : Refonte Aurora, une lumière d'état et le S ruban](ADR-020-refonte-aurora.md)
+- [ADR-021 : Appli de bureau avec Electron plutôt que Tauri](ADR-021-bureau-electron.md)
 
 ## Archives
 

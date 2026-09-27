@@ -15,7 +15,7 @@ A **complete, self-hosted** password manager, with its own encrypted vault. No B
 
 What sets it apart: an **agent** that watches for data breaches and takes care of the passwords you hand over to it. The principle fits in one sentence: not a human in the loop, but a human always kept informed.
 
-<img src="docs/img/bureau-coffre.png" alt="The vault on desktop, in French: entries protected by the master password on one side, those delegated to the agent on the other, and a banner flagging the accounts to watch." width="100%">
+<img src="docs/img/bureau-coffre.png" alt="The vault on desktop, in French: the sidebar with the health ring, the list of both zones and the open entry side by side, a status bar at the bottom, and an amber glow because an account leaked." width="100%">
 
 <img src="docs/img/en/sections/s01.png" alt="01 The vault" width="100%">
 
@@ -25,10 +25,10 @@ The vault has two zones, and that design choice drives everything else.
 
 <div align="center">
 
-<img src="docs/img/coffre.png" alt="The vault on mobile, in French" width="24%">
+<img src="docs/img/coffre.png" alt="The vault on mobile, in French: « Tout va bien. » (all is well) and the health ring" width="24%">
 <img src="docs/img/codes.png" alt="The two-factor codes screen, in French" width="24%">
-<img src="docs/img/fuites.png" alt="The detected breaches screen, in French" width="24%">
-<img src="docs/img/agent.png" alt="The agent screen, in French" width="24%">
+<img src="docs/img/fuites.png" alt="The breaches screen, in French, with the health ring and one alert" width="24%">
+<img src="docs/img/agent.png" alt="The agent screen, in French: a rotation waiting for your approval" width="24%">
 
 </div>
 
@@ -52,14 +52,16 @@ The proof is asked of the site itself: the old password is refused, the new one 
 
 <img src="docs/img/en/schemas/v1.png" alt="Vault encrypted in the browser, with Argon2id for derivation, XChaCha20-Poly1305 for the entries and a recovery kit shown exactly once. Installable app as a PWA, light or dark theme, designed for mobile first. Import from what you have: Google passwords as CSV, Authenticator codes or a Bitwarden export, encrypted on the spot. Breach watch through Pwned Passwords under k-anonymity, plus detection of reused, weak or ageing passwords. Two-factor codes computed in the browser, offline included. Real rotation in an isolated container, one recipe per site, a transaction that serves the vault before the site. Home-made notifications, with no third-party service. restic backup nightly, with a restore drill replayed in continuous integration." width="100%">
 
-A kill switch stops the agent immediately, and it is checked before every action, not only at launch.
+A kill switch stops the agent immediately, and it is checked before every action, not only at launch. In the app you hold it for a second: the gesture is the confirmation.
+
+On a computer, a **desktop app for Windows and Linux** opens your server in its own window, locks the vault with your session and answers Ctrl Shift Space ([`docs/11-bureau.md`](docs/11-bureau.md), in French). The interface follows the vault's light, blue when all is well, amber when an account leaked, in dark or light theme, and everything works from the keyboard through Ctrl K.
 
 Next comes the native Android app with notifications in V2, then rotation on real sites in V3, with one recipe per site and a browser extension.
 
 <div align="center">
 
 <img src="docs/img/clair-coffre.png" alt="The same vault in light theme, in French" width="49%">
-<img src="docs/img/connexion.png" alt="The login screen, in French" width="49%">
+<img src="docs/img/connexion.png" alt="The login screen, in French: the logo's ribbon across the night" width="49%">
 
 </div>
 
@@ -80,6 +82,8 @@ make up
 ```
 
 **Nothing is exposed outside `127.0.0.1`.** Serenity never puts itself on the Internet: you reach it from your devices through the private path of your choice, a mesh network, a VPN, an SSH tunnel or a reverse proxy on your local network. The [infrastructure page](docs/02-infrastructure.md), in French, compares the four.
+
+On your computer, get the desktop app from the [Releases](https://github.com/Cybertrist/Serenity/releases) (`.exe` for Windows, `.AppImage` or `.deb` for Linux) and give it your server's address on first launch. On your phone, install the PWA from the browser.
 
 All the documentation is in [`docs/`](docs/README.md), in French, one page per phase.
 

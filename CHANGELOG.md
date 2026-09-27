@@ -17,6 +17,15 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- **Une appli de bureau pour Windows et Linux** (`desktop/`, Electron). Elle ouvre ton serveur
+  Serenity dans sa propre fenêtre, sans cadre, et dessine sa barre de titre : le logo, la
+  recherche au centre, réduire, agrandir, fermer. Le coffre se verrouille quand tu verrouilles ta
+  session ou que la machine s'endort, Ctrl Maj Espace montre ou cache la fenêtre depuis
+  n'importe où, et une page de premier lancement demande l'adresse du serveur (`https`
+  seulement). L'appli n'embarque pas le code du coffre : CSP, contrôle d'origine et clés en
+  mémoire restent ceux du navigateur, et la page est isolée (sandbox, pont minimal, navigation
+  bloquée hors du serveur). Construite en CI sous Windows et Linux, installateurs attachés à
+  chaque Release. `make desktop`, `make desktop-dist`, ADR-021, `docs/11-bureau.md`.
 - **La veille arrête de tout redemander.** L'onglet Fuites relançait un scan complet à chaque
   ouverture : une requête à Pwned Passwords par entrée, environ 100 ko de réponse chacune. Sur
   500 comptes, cela faisait 500 requêtes et 50 Mo par visite. Les contrôles qui ne coûtent rien
@@ -197,6 +206,19 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Modifié
 
+- **Nouvelle interface, Aurora.** Fond bleu nuit, verre, et une lumière derrière l'appli dont la
+  couleur dit où en est le coffre : bleue quand tout va bien, ambre après une fuite, violette
+  quand l'agent travaille, grise quand il est arrêté. Le coffre s'ouvre sur une phrase (« Tout
+  va bien. ») et un anneau de santé calculé à partir des vraies alertes. Le kill switch se
+  maintient 1 s au lieu de se confirmer, une barre d'état résume tout en pied des grandes
+  fenêtres, et l'écran Agent montre ses 24 dernières heures sur une frise. Tout se fait au
+  clavier : Ctrl K ouvre une palette pour chaque entrée et chaque action, G puis une lettre
+  change d'écran, et les raccourcis sont écrits à côté des boutons. L'appli occupe tout l'écran,
+  les réglages deviennent un écran (cinquième onglet sur téléphone), et le déverrouillage passe
+  sous un faisceau de lumière. L'identité bleu blanc rouge part en entier (drapeau, cadenas
+  pochoir, Black Ops One, pluie tricolore) : le logo S ruban devient la marque, avec le
+  logotype « Seren**ity** » en Syne, et Geist remplace Inter. Captures refaites. ADR-020,
+  `docs/design.md`, `docs/07-interface.md`.
 - **L'interface est refaite.** Fini les filets blancs autour de chaque carte, les titres en
   pochoir et les écrans qui pivotaient en 3D. La profondeur vient maintenant des surfaces (quatre
   niveaux de fond, des ombres douces), le texte passe en Inter, les titres sont calés à gauche, et

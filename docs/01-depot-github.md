@@ -21,6 +21,7 @@ fil des phases.
 |---|---|
 | `api/` | Backend Python (FastAPI) : comptes, coffre, veille, agent, et le client de référence. |
 | `web/` | Frontend React (PWA), sa charte (`src/design/`) et le parcours Chromium (`e2e/`). |
+| `desktop/` | L'appli de bureau Windows et Linux (Electron), une fenêtre sur ton serveur ([11](11-bureau.md)). |
 | `rotator/` | L'exécuteur de rotation : le seul conteneur avec un navigateur, et ses recettes de sites. |
 | `demo/` | Le site jouet sur lequel l'agent s'entraîne (profil compose `demo`). |
 | `shared/` | Ce que Python et TypeScript doivent lire pareil : vecteurs de test crypto et veille. |
@@ -50,6 +51,9 @@ Huit jobs sur chaque pull request et chaque push sur `main` :
 | **UI smoke** | Chromium parcourt tous les écrans sur l'image de production, CSP stricte ; captures en artefact |
 | **Rotation** | L'agent change vraiment un mot de passe sur le site de démo, vrai navigateur |
 | **Sauvegarde** | L'exercice de restauration : un coffre jetable détruit, puis restauré |
+
+À part, `.github/workflows/desktop.yml` construit l'appli de bureau sous Windows et Linux à
+chaque changement de `desktop/`, et attache les installateurs à la Release sur un tag `v*`.
 
 ### Dependabot
 

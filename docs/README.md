@@ -13,10 +13,11 @@ Une page par phase, dans l'ordre de construction.
 | [04 : Coffre](04-coffre.md) | Entrées chiffrées, synchronisation, délégation, import Bitwarden |
 | [05 : Veille](05-veille.md) | Fuites (k-anonymat), réutilisés, faibles, anciens, e-mails, notifications |
 | [06 : Agent](06-agent.md) | Politiques, kill switch, allowlist, échéances, rotation transactionnelle |
-| [07 : Interface](07-interface.md) | PWA React, écrans, hors ligne, CSP stricte |
+| [07 : Interface](07-interface.md) | PWA React, trois formes, écrans, clavier, hors ligne, CSP stricte |
 | [08 : Rotation](08-rotation.md) | L'exécuteur : navigateur isolé, recettes de sites, site de démo |
 | [09 : Sauvegardes](09-sauvegardes.md) | restic, snapshot SQLite, clés, exercice de restauration |
 | [10 : Sécurité](10-securite.md) | Revue avant la `v0.1.0` : ce qui est vérifié, le modèle de menace, les risques restants |
+| [11 : Appli de bureau](11-bureau.md) | Windows et Linux : une fenêtre sur ton serveur, verrouillée avec la machine |
 
 Références :
 

@@ -10,7 +10,7 @@ Gestionnaire de mots de passe **complet et auto-hébergé**, avec son propre cof
 
 Sa particularité : un **agent** qui surveille les fuites de données et s'occupe des mots de passe que tu lui confies. Le principe tient en une phrase, pas d'humain dans la boucle, mais un humain toujours informé.
 
-<img src="docs/img/bureau-coffre.png" alt="Le coffre sur ordinateur : les entrées protégées par le mot de passe maître d'un côté, celles confiées à l'agent de l'autre, et un bandeau qui signale les comptes à surveiller." width="100%">
+<img src="docs/img/bureau-coffre.png" alt="Le coffre sur ordinateur : la barre latérale avec l'anneau de santé, la liste des deux zones et la fiche côte à côte, une barre d'état en bas, et une lumière ambre parce qu'un compte a fui." width="100%">
 
 <img src="docs/img/sections/s01.png" alt="01 Le coffre" width="100%">
 
@@ -20,10 +20,10 @@ Le coffre a deux zones, et c'est le choix de conception qui commande tout le res
 
 <div align="center">
 
-<img src="docs/img/coffre.png" alt="Le coffre sur mobile" width="24%">
+<img src="docs/img/coffre.png" alt="Le coffre sur mobile : « Tout va bien. » et l'anneau de santé" width="24%">
 <img src="docs/img/codes.png" alt="Les codes à deux facteurs" width="24%">
-<img src="docs/img/fuites.png" alt="L'écran des fuites détectées" width="24%">
-<img src="docs/img/agent.png" alt="L'écran de l'agent" width="24%">
+<img src="docs/img/fuites.png" alt="L'écran des fuites, avec l'anneau de santé et une alerte" width="24%">
+<img src="docs/img/agent.png" alt="L'écran de l'agent : une rotation qui attend ton accord" width="24%">
 
 </div>
 
@@ -45,14 +45,16 @@ La preuve est demandée au site lui-même : l'ancien mot de passe est refusé, l
 
 <img src="docs/img/schemas/v1.png" alt="Coffre chiffré dans le navigateur, avec Argon2id pour la dérivation, XChaCha20-Poly1305 pour les entrées et un kit de récupération montré une seule fois. Application installable en PWA, thème clair ou sombre, pensée d'abord pour le mobile. Import depuis l'existant : mots de passe Google en CSV, codes d'Authenticator ou export Bitwarden, chiffrés sur place. Veille des fuites par Pwned Passwords en k-anonymat, plus la détection des mots de passe réutilisés, faibles ou anciens. Codes à deux facteurs calculés dans le navigateur, hors ligne compris. Rotation réelle dans un conteneur isolé, une recette par site, une transaction qui sert le coffre avant le site. Notifications maison, sans service tiers. Sauvegarde restic chaque nuit, avec un exercice de restauration rejoué en intégration continue." width="100%">
 
-Un kill switch arrête l'agent immédiatement, et il est vérifié avant chaque action, pas seulement au lancement.
+Un kill switch arrête l'agent immédiatement, et il est vérifié avant chaque action, pas seulement au lancement. Dans l'appli, il se maintient une seconde : le geste vaut confirmation.
+
+Sur ordinateur, une **appli de bureau pour Windows et Linux** ouvre ton serveur dans sa propre fenêtre, verrouille le coffre avec ta session et répond à Ctrl Maj Espace ([`docs/11-bureau.md`](docs/11-bureau.md)). L'interface suit la lumière du coffre, bleue quand tout va bien, ambre quand un compte a fui, en thème sombre ou clair, et tout se fait au clavier depuis Ctrl K.
 
 Ensuite viendra l'application Android native avec notifications en V2, puis la rotation sur de vrais sites en V3, avec une recette par site et une extension de navigateur.
 
 <div align="center">
 
 <img src="docs/img/clair-coffre.png" alt="Le même coffre en thème clair" width="49%">
-<img src="docs/img/connexion.png" alt="L'écran de connexion" width="49%">
+<img src="docs/img/connexion.png" alt="L'écran de connexion : le ruban du logo à travers la nuit" width="49%">
 
 </div>
 
@@ -73,6 +75,8 @@ make up
 ```
 
 **Rien n'est exposé en dehors de `127.0.0.1`.** Serenity ne se met jamais sur Internet : tu l'atteins depuis tes appareils par l'accès privé de ton choix, réseau maillé, VPN, tunnel SSH ou reverse proxy sur ton réseau local. La [page infrastructure](docs/02-infrastructure.md) compare les quatre.
+
+Sur ton ordinateur, prends l'appli de bureau dans les [Releases](https://github.com/Cybertrist/Serenity/releases) (`.exe` pour Windows, `.AppImage` ou `.deb` pour Linux) et donne-lui l'adresse de ton serveur au premier lancement. Sur ton téléphone, installe la PWA depuis le navigateur.
 
 Toute la documentation est dans [`docs/`](docs/README.md), en français, une page par phase.
 

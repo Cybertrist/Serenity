@@ -60,6 +60,7 @@ Toute la spécification détaillée vit dans `docs/crypto.md`. Résumé :
 |---|---|
 | Backend | Python 3.12, FastAPI, Pydantic v2, SQLModel + SQLite (mode WAL), APScheduler, httpx, PyNaCl |
 | Frontend | React 18, TypeScript strict, Vite, Tailwind CSS v4, vite-plugin-pwa, libsodium-wrappers-sumo |
+| Appli de bureau | Electron (fenêtre sur le serveur, sans code du coffre) |
 | Icônes / animations / données | Phosphor Icons, Motion, TanStack Query |
 | Notifications | Maison, sans service tiers : centre de notifications dans l'API ; appli Android par vérification périodique (WorkManager), sans icône permanente |
 | Appli Android (V2) | Kotlin, Jetpack Compose, libsodium (binding Lazysodium) |

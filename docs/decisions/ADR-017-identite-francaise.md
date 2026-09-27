@@ -1,7 +1,7 @@
 # ADR-017 : Identité française, bleu de France, blanc, rouge Marianne
 
 - **Date** : 2026-09-20
-- **Statut** : accepté
+- **Statut** : remplacé par ADR-020 (refonte Aurora)
 
 ## Contexte
 

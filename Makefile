@@ -9,7 +9,7 @@ DEV_RUN   := docker run --rm --user $(shell id -u):$(shell id -g) \
 # Container UIDs (see docker-compose.yml and api/Dockerfile).
 UID_API := 10001
 
-.PHONY: help init keys up down restart logs ps client reset-totp watch-now schedule-now rotate-now recipe-inspect backup-now backup-check restore-check test lint vectors web-test crypto-interop e2e ui-smoke rotation-demo api-doc brand film dev-image
+.PHONY: help init keys up down restart logs ps client reset-totp watch-now schedule-now rotate-now recipe-inspect backup-now backup-check restore-check test lint vectors web-test crypto-interop e2e ui-smoke rotation-demo api-doc brand film desktop desktop-dist dev-image
 
 help: ## Show this help
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-10s %s\n", $$1, $$2}'
@@ -115,6 +115,12 @@ brand: ## Rebuild the icons and the social banner from the mark (Chromium in Doc
 
 film: dev-image ## Record the agent at work on the demo site (docs/img/agent-demo.gif and .mp4)
 	scripts/film.sh
+
+desktop: ## Run the desktop app in dev (opens your Serenity server)
+	cd desktop && npm ci --no-audit --no-fund && npm start
+
+desktop-dist: ## Build the desktop installer for this platform (desktop/dist)
+	cd desktop && npm ci --no-audit --no-fund && npx electron-builder --publish never
 
 api-doc: dev-image ## Regenerate docs/api.md from the OpenAPI schema
 	docker run --rm --user $(shell id -u):$(shell id -g) -v "$(CURDIR)/api:/app" -v "$(CURDIR)/docs:/docs" \

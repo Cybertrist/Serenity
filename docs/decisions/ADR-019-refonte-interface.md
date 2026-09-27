@@ -1,7 +1,7 @@
 # ADR-019 : Refonte de l'interface, des surfaces plutôt que des filets
 
 - **Date** : 2026-09-26
-- **Statut** : accepté
+- **Statut** : remplacé par ADR-020 (refonte Aurora)
 
 ## Contexte
 
