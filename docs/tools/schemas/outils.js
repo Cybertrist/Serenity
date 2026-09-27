@@ -94,7 +94,7 @@ module.exports = (LG) => {
   /// the body. [titre] is the text alternative, and it lists the content.
   function svg(nom, largeur, hauteur, corps, titre) {
     for (const s of [corps, titre]) {
-      if (/[–—]/.test(s)) throw new Error(`${nom} : tiret long interdit`);
+      if (/[\u2013\u2014]/.test(s)) throw new Error(`${nom} : tiret long interdit`);
     }
     const defsImages = [..._images].map((n) => {
       const im = IMAGES[n];
