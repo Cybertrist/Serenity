@@ -3,7 +3,7 @@
 #
 # GitHub strips JavaScript and CSS from READMEs, so nothing can switch the
 # page in place. These are two links to two files, drawn to read as a
-# selector. The current language is lit in the profile accent, the other
+# selector. The current language is lit in the banner blue, the other
 # one dimmed, reusing the grey cartouche of the project cards.
 #
 # Their background is opaque: GitHub renders READMEs on white as well as
@@ -18,7 +18,7 @@ W=300; H=96
 pastille () {
 local pt ct bd fd
 if [ "$3" = allumee ]; then
-  pt='<i></i>'; ct='#F0F4F8'; bd='#4A2029'; fd='#160A0E'
+  pt='<i></i>'; ct='#F0F4F8'; bd='#23406E'; fd='#0A1322'
 else
   pt='';        ct='#7C8894'; bd='#2A333D';             fd='#0C1117'
 fi
@@ -35,7 +35,7 @@ html,body{width:${W}px;height:${H}px;overflow:hidden;background:transparent}
      letter-spacing:3.2px;color:$ct;white-space:nowrap}
 /* Le point n'est là que sur la langue affichée : il dit « vous êtes ici »
    sans avoir à l'écrire, et laisse l'autre pastille lisible comme un lien. */
-.p i{width:8px;height:8px;border-radius:2px;background:#E23B4E;
+.p i{width:8px;height:8px;border-radius:2px;background:#3B82F6;
      transform:rotate(45deg);flex-shrink:0}
 </style></head><body><div class="w"><div class="p">$pt<b>$2</b></div></div></body></html>
 HTML

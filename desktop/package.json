@@ -33,7 +33,8 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "Serenity-Setup.${ext}"
     },
     "linux": {
       "target": [
@@ -43,6 +44,15 @@
       "icon": "build/icon.png",
       "category": "Utility",
       "maintainer": "Tristan"
+    },
+    "portable": {
+      "artifactName": "Serenity-Portable.${ext}"
+    },
+    "appImage": {
+      "artifactName": "Serenity.${ext}"
+    },
+    "deb": {
+      "artifactName": "serenity.${ext}"
     }
   },
   "devDependencies": {

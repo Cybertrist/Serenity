@@ -19,7 +19,7 @@ compte rendu de la revue et la liste honnête des risques qu'on garde.
 | **Dépendances Python** | Aucune vulnérabilité connue (`pip-audit` sur l'arbre complet) | voir la commande dans la section suivante |
 | **Dépendances npm** | Aucune vulnérabilité connue, avec et sans les outils de développement | `npm audit` dans `web/` |
 | **En-têtes HTTP** | CSP stricte sans `unsafe-inline` ni `unsafe-eval`, `frame-ancestors 'none'`, `base-uri 'none'`, HSTS, COOP, CORP, `no-referrer`, `nosniff`, `Permissions-Policy` | `cat web/security-headers.conf` |
-| **Contrôles d'accès de l'API** | 44 routes : 9 publiques et justifiées une par une, 19 derrière une session, 16 derrière un coffre déverrouillé | `make test` (`tests/test_route_guards.py`) |
+| **Contrôles d'accès de l'API** | 46 routes : 9 publiques et justifiées une par une, 20 derrière une session, 17 derrière un coffre déverrouillé | `make test` (`tests/test_route_guards.py`) |
 | **Secrets dans les journaux** | Les clés, mots de passe et jetons sont caviardés, y compris au milieu d'une phrase | `make test` (`tests/test_audit.py`) |
 | **Crypto identique des deux côtés** | Un bloc chiffré par Python se déchiffre en TypeScript, et l'inverse, avec des nonces neufs | `make crypto-interop` |
 | **Rotation, sauvegardes, interface** | Rejouées en entier à chaque commit, navigateur compris | `make rotation-demo`, `make backup-check`, `make ui-smoke` |

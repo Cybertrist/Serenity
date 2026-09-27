@@ -620,7 +620,11 @@ function Guards({ status }: { status: AgentStatus }) {
       title:
         status.allowlist.length === 0
           ? "Aucun site autorisé à être changé seul"
-          : `${plural(status.allowlist.length, "site autorisé", "sites autorisés")} à être changés seuls`,
+          : plural(
+              status.allowlist.length,
+              "site autorisé à être changé seul",
+              "sites autorisés à être changés seuls",
+            ),
       text:
         status.allowlist.length === 0
           ? "L'agent prépare, mais c'est toi qui changes."
