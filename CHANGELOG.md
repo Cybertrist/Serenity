@@ -17,9 +17,8 @@ versionnage : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
-- **Un site de démonstration** sur GitHub Pages (`docs/index.html`), tiré du TD2 Marketing :
-  le scan de fuite factice, les offres Standard, Premium et Entreprise, le comparatif. C'est une
-  maquette, rien n'y est vendu.
+- **Un site vitrine** sur GitHub Pages (`docs/index.html`) aux couleurs du logo : le scan de
+  fuite, les offres Standard, Premium et Entreprise, le comparatif et l'espace entreprises.
 - **Une appli de bureau pour Windows et Linux** (`desktop/`, Electron). Elle ouvre ton serveur
   Serenity dans sa propre fenêtre, sans cadre, et dessine sa barre de titre : le logo, la
   recherche au centre, réduire, agrandir, fermer. Le coffre se verrouille quand tu verrouilles ta
