@@ -323,7 +323,7 @@ h2{font:700 clamp(28px,4.4vw,44px)/1.1 "Geist",sans-serif;letter-spacing:-.03em;
 
 /* Plans */
 .plans{display:grid;gap:16px;grid-template-columns:1fr;align-items:stretch}
-@media(min-width:960px){.plans{grid-template-columns:1fr 1fr 1.15fr}}
+@media(min-width:960px){.plans{grid-template-columns:repeat(3,1fr)}}
 .plan{padding:28px;display:flex;flex-direction:column;position:relative}
 .plan .name{font:700 12px/1 "Geist",sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 .plan .price{display:flex;align-items:baseline;gap:6px;margin:18px 0 4px}
@@ -341,17 +341,6 @@ h2{font:700 clamp(28px,4.4vw,44px)/1.1 "Geist",sans-serif;letter-spacing:-.03em;
 .plan.biz{border-color:rgba(255,45,61,.35);background:linear-gradient(180deg,rgba(255,45,61,.08),rgba(14,22,44,.55) 35%)}
 .plan.biz .name{color:var(--red-text)}
 .plan.biz li svg{color:var(--red-text)}
-.calc{margin:0 0 20px;padding:16px;border-radius:12px;background:rgba(5,9,22,.5);border:1px solid var(--line-soft)}
-.calc label{display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);margin-bottom:10px}
-.calc label b{color:var(--text);font-variant-numeric:tabular-nums;font-weight:600}
-.calc input[type=range]{width:100%;accent-color:var(--red)}
-.tiers{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}
-.tiers div{padding:8px 4px;border-radius:9px;text-align:center;border:1px solid var(--line-soft);font-size:11.5px;color:var(--faint);transition:all .2s}
-.tiers div b{display:block;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
-.tiers div.on{border-color:rgba(255,45,61,.6);background:var(--red-soft);color:var(--red-text)}
-.tiers div.on b{color:var(--text)}
-.calc .total{display:flex;justify-content:space-between;align-items:baseline;margin-top:14px;font-size:13.5px;color:var(--muted)}
-.calc .total b{font:700 22px/1 "Geist",sans-serif;color:var(--text);font-variant-numeric:tabular-nums}
 .plans-foot{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 26px;margin-top:26px;color:var(--muted);font-size:14px}
 .plans-foot span{display:inline-flex;align-items:center;gap:7px}
 .plans-foot svg{width:16px;height:16px;color:var(--blue-text)}
@@ -786,19 +775,8 @@ footer a{color:var(--muted)}
       </div>
       <div class="plan glass biz rv">
         <span class="name">Entreprise</span>
-        <div class="price"><b id="bizPrice">2 €</b><span>/ utilisateur / mois</span></div>
+        <div class="price"><b>4 €</b><span>/ utilisateur / mois</span></div>
         <p class="for">Le même agent, pour toute l'équipe, avec les outils de l'entreprise.</p>
-        <div class="calc">
-          <label for="users">Nombre d'utilisateurs <b id="usersOut">25</b></label>
-          <input type="range" id="users" min="0" max="100" value="33">
-          <div class="tiers" id="tiers">
-            <div data-t="0"><b>2 €</b>0 à 50</div>
-            <div data-t="1"><b>5 €</b>50 à 1 000</div>
-            <div data-t="2"><b>4 €</b>1 000 à 10 000</div>
-            <div data-t="3"><b>Devis</b>10 000 et +</div>
-          </div>
-          <div class="total"><span>Estimation par mois</span><b id="bizTotal">50 €</b></div>
-        </div>
         <ul>
           <li><svg><use href="#i-check"/></svg>SSO, connexion unique</li>
           <li><svg><use href="#i-check"/></svg>Migration et accompagnement au déploiement</li>
@@ -1090,22 +1068,6 @@ footer a{color:var(--muted)}
   hold.addEventListener('keydown', (e) => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) press(e); });
   hold.addEventListener('keyup', release);
 
-  // Business estimate: slider on a log scale from 1 to 20 000 users
-  const TIERS = [{ max: 50, p: 2 }, { max: 1000, p: 5 }, { max: 10000, p: 4 }, { max: Infinity, p: null }];
-  const fmt = new Intl.NumberFormat('fr-FR');
-  const users = $('#users');
-  const update = () => {
-    const n = Math.max(1, Math.round(Math.pow(20000, users.value / 100)));
-    const nice = n > 1000 ? Math.round(n / 100) * 100 : n > 100 ? Math.round(n / 10) * 10 : n;
-    const t = TIERS.findIndex((x) => nice <= x.max);
-    $('#usersOut').textContent = fmt.format(nice);
-    document.querySelectorAll('#tiers div').forEach((d) => d.classList.toggle('on', +d.dataset.t === t));
-    const p = TIERS[t].p;
-    $('#bizPrice').textContent = p ? `${p} €` : 'Devis';
-    $('#bizTotal').textContent = p ? `${fmt.format(p * nice)} €` : 'Sur devis';
-  };
-  users.addEventListener('input', update);
-  update();
 })();
 </script>
 </body>
