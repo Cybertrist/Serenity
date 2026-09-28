@@ -1466,19 +1466,15 @@ footer a{color:var(--muted)}
   // Duplicate the feed so the marquee loops without a gap
   $('#feedTrack').innerHTML += $('#feedTrack').innerHTML;
 
-  // Hacked intro, once per visit, skipped when motion is reduced
+  // Hacked intro on every load (reduced motion keeps it, without the shaking)
   const pwn = $('#pwn');
-  let pwnSeen = false;
-  try { pwnSeen = sessionStorage.getItem('pwn') === '1'; } catch (e) { /* storage blocked */ }
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const pwnTimers = [];
   const endPwn = () => {
     pwnTimers.forEach(clearTimeout);
-    try { sessionStorage.setItem('pwn', '1'); } catch (e) { /* storage blocked */ }
     pwn.classList.add('out');
     setTimeout(() => { pwn.classList.remove('on', 'out'); document.body.style.overflow = ''; }, 700);
   };
-  if (!pwnSeen && !reduce) {
+  {
     pwn.classList.add('on');
     document.body.style.overflow = 'hidden';
     const lines = [
