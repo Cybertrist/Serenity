@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Serenity : le gestionnaire de mots de passe qui les change pour toi</title>
 <meta name="description" content="Serenity détecte les fuites de données et change tes mots de passe compromis à ta place.">
-<meta name="theme-color" content="#04060D">
+<meta name="theme-color" content="#0B1430">
 <meta property="og:title" content="Serenity">
 <meta property="og:description" content="Les autres te préviennent. Serenity change le mot de passe.">
 <meta property="og:image" content="https://cybertrist.github.io/Serenity/img/social-preview.png">
@@ -17,18 +17,18 @@
 /* Palette taken from the logo: electric blue ribbon, white core, red reflection, night tile */
 :root{
   color-scheme: dark;
-  --bg:#04060D; --surface:#070B16; --panel:#0A1020;
-  --glass:rgba(14,22,44,.55); --glass-2:rgba(22,34,66,.6);
-  --line-soft:rgba(140,170,255,.07); --line:rgba(140,170,255,.13); --line-strong:rgba(160,190,255,.26);
-  --text:#F2F5FF; --muted:#A0ABC6; --faint:#65708C;
-  --blue:#2F6BFF; --blue-hi:#4D82FF; --blue-text:#8DB0FF; --blue-soft:rgba(47,107,255,.14);
-  --red:#FF2D3D; --red-text:#FF6B76; --red-soft:rgba(255,45,61,.13);
+  --bg:#0B1430; --surface:#101B3C; --panel:#14204A;
+  --glass:rgba(34,52,110,.42); --glass-2:rgba(44,66,132,.55);
+  --line-soft:rgba(150,180,255,.11); --line:rgba(150,180,255,.2); --line-strong:rgba(170,200,255,.34);
+  --text:#F5F8FF; --muted:#BCC7E4; --faint:#8793B5;
+  --blue:#2F6BFF; --blue-hi:#4D82FF; --blue-text:#8DB0FF; --blue-soft:rgba(47,107,255,.2);
+  --red:#FF2D3D; --red-text:#FF6B76; --red-soft:rgba(255,45,61,.16);
   --r-card:16px; --r-btn:10px;
   --wrap:1160px;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.6 "Geist",system-ui,sans-serif;font-feature-settings:"ss01","cv11";overflow-x:hidden}
+body{margin:0;background:var(--bg) radial-gradient(1200px 900px at 85% 30%,rgba(47,107,255,.22),transparent 60%) fixed;color:var(--text);font:400 16px/1.6 "Geist",system-ui,sans-serif;font-feature-settings:"ss01","cv11";overflow-x:hidden}
 img{max-width:100%;height:auto;display:block}
 a{color:var(--blue-text);text-decoration:none}
 a:hover{text-decoration:underline}
@@ -39,7 +39,7 @@ svg{flex:none}
 .red{color:var(--red-text)} .blue{color:var(--blue-text)}
 
 /* Navigation */
-nav.top{position:sticky;top:0;z-index:20;background:rgba(4,6,13,.74);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--line-soft)}
+nav.top{position:sticky;top:0;z-index:20;background:rgba(11,20,48,.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--line-soft)}
 nav.top .wrap{display:flex;align-items:center;gap:24px;height:64px}
 .brand{display:flex;align-items:center;gap:10px;color:var(--text);text-decoration:none!important}
 .brand img{width:32px;height:32px;border-radius:24%}
@@ -64,9 +64,9 @@ nav.top .cta{margin-left:auto}
 /* Light and ribbon */
 .aurora{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
 .aurora i{position:absolute;border-radius:50%;filter:blur(100px);animation:drift 26s ease-in-out infinite alternate}
-.aurora i:nth-child(1){width:680px;height:460px;left:-160px;top:-100px;background:#1740C8;opacity:.55}
-.aurora i:nth-child(2){width:520px;height:380px;right:-160px;top:20px;background:#2F6BFF;opacity:.35;animation-delay:-9s}
-.aurora i:nth-child(3){width:380px;height:280px;left:48%;top:230px;background:#E0182A;opacity:.22;animation-delay:-17s}
+.aurora i:nth-child(1){width:680px;height:460px;left:-160px;top:-100px;background:#1740C8;opacity:.8}
+.aurora i:nth-child(2){width:520px;height:380px;right:-160px;top:20px;background:#2F6BFF;opacity:.55;animation-delay:-9s}
+.aurora i:nth-child(3){width:380px;height:280px;left:48%;top:230px;background:#E0182A;opacity:.3;animation-delay:-17s}
 @keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(60px,30px) scale(1.08)}100%{transform:translate(-40px,-20px) scale(.96)}}
 .ribbon{position:absolute;left:0;right:0;width:100%;height:260px;top:120px;z-index:1;pointer-events:none}
 .ribbon path{fill:none;stroke-linecap:round}
@@ -84,7 +84,7 @@ nav.top .cta{margin-left:auto}
 .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 12px var(--red);animation:pulse 2.4s ease-in-out infinite}
 @keyframes pulse{50%{opacity:.45;transform:scale(.8)}}
 h1{font:800 clamp(38px,7vw,72px)/1.02 "Geist",sans-serif;letter-spacing:-.035em;margin:22px 0 18px;max-width:14ch}
-h1 .grad{background:linear-gradient(95deg,#6F9BFF 0%,#FFFFFF 48%,#FF3A4A 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+h1 .grad{color:#5B8CFF;text-shadow:0 0 40px rgba(47,107,255,.45)}
 .lead{font-size:clamp(17px,2.2vw,20px);color:var(--muted);max-width:56ch;margin:0 0 30px}
 .hero .actions{display:flex;flex-wrap:wrap;gap:12px}
 .reassure{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:22px;font-size:13.5px;color:var(--faint)}
@@ -94,7 +94,7 @@ h1 .grad{background:linear-gradient(95deg,#6F9BFF 0%,#FFFFFF 48%,#FF3A4A 100%);-
 /* App mockup, drawn in the logo colours */
 .frame{position:relative;margin-top:56px;border-radius:18px;padding:1px;background:linear-gradient(160deg,rgba(120,160,255,.55),rgba(47,107,255,.12) 45%,rgba(47,107,255,.3));box-shadow:0 40px 120px -30px rgba(47,107,255,.6)}
 .app{border-radius:17px;background:var(--surface);overflow:hidden;font-size:13px}
-.app .bar{display:flex;align-items:center;gap:12px;height:44px;padding:0 14px;border-bottom:1px solid var(--line-soft);background:rgba(10,16,32,.9)}
+.app .bar{display:flex;align-items:center;gap:12px;height:44px;padding:0 14px;border-bottom:1px solid var(--line-soft);background:rgba(18,30,66,.92)}
 .app .bar img{width:20px;height:20px;border-radius:24%}
 .app .bar .wordmark{font-size:14px}
 .app .search{flex:1;max-width:420px;margin:0 auto;display:flex;align-items:center;gap:8px;height:28px;padding:0 10px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid var(--line-soft);color:var(--faint);font-size:12px;min-width:0;overflow:hidden;white-space:nowrap}
@@ -106,7 +106,7 @@ h1 .grad{background:linear-gradient(95deg,#6F9BFF 0%,#FFFFFF 48%,#FF3A4A 100%);-
 .app .body{display:grid;grid-template-columns:1fr;min-height:420px}
 @media(min-width:760px){.app .body{grid-template-columns:190px 1fr}}
 @media(min-width:1040px){.app .body{grid-template-columns:200px 1fr 1.05fr}}
-.side{display:none;flex-direction:column;gap:2px;padding:12px 10px;border-right:1px solid var(--line-soft);background:rgba(7,11,22,.6)}
+.side{display:none;flex-direction:column;gap:2px;padding:12px 10px;border-right:1px solid var(--line-soft);background:rgba(14,24,54,.6)}
 @media(min-width:760px){.side{display:flex}}
 .nav-i{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;color:var(--muted)}
 .nav-i svg{width:15px;height:15px}
@@ -153,15 +153,15 @@ h1 .grad{background:linear-gradient(95deg,#6F9BFF 0%,#FFFFFF 48%,#FF3A4A 100%);-
 .hist i{width:8px;height:8px;border-radius:50%;margin-top:5px;border:2px solid var(--blue)}
 .hist i.r{border-color:var(--red)}
 .hist small{color:var(--faint);font-family:"Geist Mono",monospace;font-size:11px}
-.status{display:flex;flex-wrap:wrap;gap:6px 18px;padding:8px 14px;border-top:1px solid var(--line-soft);font-size:11.5px;color:var(--faint);background:rgba(7,11,22,.8)}
+.status{display:flex;flex-wrap:wrap;gap:6px 18px;padding:8px 14px;border-top:1px solid var(--line-soft);font-size:11.5px;color:var(--faint);background:rgba(14,24,54,.85)}
 .status .live{color:var(--muted);display:inline-flex;gap:6px;align-items:center}
 .status .live i{width:6px;height:6px;border-radius:50%;background:var(--blue);box-shadow:0 0 6px var(--blue)}
-.float{position:absolute;display:none;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:rgba(10,16,32,.92);border:1px solid var(--line);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 20px 50px -10px rgba(0,0,0,.7);font-size:13.5px;max-width:270px;z-index:3}
+.float{position:absolute;display:none;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:rgba(20,32,70,.94);border:1px solid var(--line);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 20px 50px -10px rgba(0,0,0,.7);font-size:13.5px;max-width:270px;z-index:3}
 .float b{display:block;font-weight:600}
 .float small{color:var(--muted);font-size:12.5px;line-height:1.4;display:block}
 .float .ic{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center}
 .float .ic svg{width:18px;height:18px}
-.f1{left:-40px;top:56%;max-width:232px}
+.f1{left:-40px;top:61%;max-width:232px}
 .f1 .ic{background:var(--red-soft);color:var(--red-text)}
 .f2{right:-26px;top:-34px}
 .f2 .ic{background:var(--blue-soft);color:var(--blue-text)}
@@ -173,7 +173,7 @@ section{position:relative;padding:88px 0}
 .sec-head.center{margin-left:auto;margin-right:auto;text-align:center}
 h2{font:700 clamp(28px,4.4vw,44px)/1.1 "Geist",sans-serif;letter-spacing:-.03em;margin:14px 0 14px}
 .sec-head p,.sub{color:var(--muted);font-size:17.5px;margin:0}
-.glass{background:var(--glass);border:1px solid var(--line);border-radius:var(--r-card);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);box-shadow:inset 0 1px 0 rgba(200,215,255,.06),0 24px 60px -30px rgba(0,0,0,.8)}
+.glass{background:var(--glass);border:1px solid var(--line);border-radius:var(--r-card);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);box-shadow:inset 0 1px 0 rgba(200,215,255,.06),0 24px 60px -30px rgba(0,0,0,.45)}
 .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(47,107,255,.4),rgba(255,45,61,.4),transparent)}
 
 .strip{padding:34px 0 10px}
@@ -202,7 +202,7 @@ h2{font:700 clamp(28px,4.4vw,44px)/1.1 "Geist",sans-serif;letter-spacing:-.03em;
 .scan-card{padding:26px;margin-top:22px}
 .scan-form{display:flex;flex-direction:column;gap:10px}
 @media(min-width:560px){.scan-form{flex-direction:row}}
-.field{flex:1 1 auto;display:flex;align-items:center;gap:10px;height:48px;padding:0 14px;border-radius:var(--r-btn);border:1px solid var(--line-strong);background:rgba(4,6,13,.6)}
+.field{flex:1 1 auto;display:flex;align-items:center;gap:10px;height:48px;padding:0 14px;border-radius:var(--r-btn);border:1px solid var(--line-strong);background:rgba(10,18,42,.55)}
 .field:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,107,255,.28)}
 .field svg{width:18px;height:18px;color:var(--faint)}
 .field input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font:15.5px "Geist",sans-serif}
@@ -220,7 +220,7 @@ h2{font:700 clamp(28px,4.4vw,44px)/1.1 "Geist",sans-serif;letter-spacing:-.03em;
 .result-head b{display:block;font-size:17px}
 .result-head small{color:var(--muted);font-size:14px;word-break:break-all}
 .leaks{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-.leaks li{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:rgba(4,6,13,.45);border:1px solid var(--line-soft);opacity:0;transform:translateY(8px);transition:opacity .4s,transform .4s}
+.leaks li{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:rgba(10,18,42,.4);border:1px solid var(--line-soft);opacity:0;transform:translateY(8px);transition:opacity .4s,transform .4s}
 .leaks li.in{opacity:1;transform:none}
 .leaks .what{flex:1;min-width:0}
 .leaks .what b{display:block;font-size:14.5px;font-weight:600}
@@ -235,18 +235,18 @@ h2{font:700 clamp(28px,4.4vw,44px)/1.1 "Geist",sans-serif;letter-spacing:-.03em;
 .screen > *{position:relative;z-index:1}
 .screen h4{font:800 28px/1 "Syne",sans-serif;margin:4px 0 6px}
 .screen .muted{color:var(--muted);font-size:12.5px;margin:0 0 16px}
-.hcard{display:flex;gap:14px;align-items:center;padding:14px;border-radius:16px;border:1px solid rgba(255,45,61,.4);background:rgba(10,16,32,.8);margin-bottom:12px;box-shadow:0 10px 40px -15px rgba(255,45,61,.5)}
+.hcard{display:flex;gap:14px;align-items:center;padding:14px;border-radius:16px;border:1px solid rgba(255,45,61,.4);background:rgba(20,32,70,.8);margin-bottom:12px;box-shadow:0 10px 40px -15px rgba(255,45,61,.5)}
 .hcard .ring{width:62px;height:62px;flex:none}
 .hcard .ring b{font-size:18px}
 .hcard p{margin:0;font-size:12.5px;color:var(--muted)}
 .hcard p b{display:block;color:var(--text);font-size:14px;margin-bottom:2px}
 .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
-.kpis div{padding:8px 10px;border-radius:12px;border:1px solid var(--line-soft);background:rgba(10,16,32,.7);font-size:11px;color:var(--faint)}
+.kpis div{padding:8px 10px;border-radius:12px;border:1px solid var(--line-soft);background:rgba(20,32,70,.7);font-size:11px;color:var(--faint)}
 .kpis b{display:block;font-size:20px;line-height:1.2;color:var(--text)}
 .kpis b.r{color:var(--red)}
 .screen .row{padding:9px 4px;border-bottom:1px solid var(--line-soft);border-radius:0}
 .screen .btn{width:100%;height:42px;margin-top:14px;font-size:14px}
-.tabs{display:flex;justify-content:space-around;margin:16px -18px -18px;padding:10px 0 14px;border-top:1px solid var(--line-soft);color:var(--faint);font-size:10.5px;background:rgba(7,11,22,.9)}
+.tabs{display:flex;justify-content:space-around;margin:16px -18px -18px;padding:10px 0 14px;border-top:1px solid var(--line-soft);color:var(--faint);font-size:10.5px;background:rgba(14,24,54,.92)}
 .tabs span{display:flex;flex-direction:column;align-items:center;gap:3px}
 .tabs svg{width:18px;height:18px}
 .tabs .on{color:var(--text)}
@@ -329,7 +329,7 @@ h2{font:700 clamp(28px,4.4vw,44px)/1.1 "Geist",sans-serif;letter-spacing:-.03em;
 .plan.biz{border-color:rgba(255,45,61,.35);background:linear-gradient(180deg,rgba(255,45,61,.08),rgba(14,22,44,.55) 35%)}
 .plan.biz .name{color:var(--red-text)}
 .plan.biz li svg{color:var(--red-text)}
-.calc{margin:0 0 20px;padding:16px;border-radius:12px;background:rgba(4,6,13,.5);border:1px solid var(--line-soft)}
+.calc{margin:0 0 20px;padding:16px;border-radius:12px;background:rgba(10,18,42,.45);border:1px solid var(--line-soft)}
 .calc label{display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);margin-bottom:10px}
 .calc label b{color:var(--text);font-variant-numeric:tabular-nums;font-weight:600}
 .calc input[type=range]{width:100%;accent-color:var(--red)}
@@ -408,7 +408,7 @@ footer h4{margin:0 0 10px;color:var(--muted);font-size:12px;letter-spacing:.14em
 footer p{margin:0 0 6px}
 footer a{color:var(--muted)}
 
-.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;z-index:50;padding:12px 16px;border-radius:12px;background:rgba(10,16,32,.96);border:1px solid var(--line);box-shadow:0 20px 50px -10px rgba(0,0,0,.7);font-size:14px;transition:all .3s;pointer-events:none;max-width:calc(100% - 32px);display:flex;gap:10px;align-items:center}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;z-index:50;padding:12px 16px;border-radius:12px;background:rgba(20,32,70,.96);border:1px solid var(--line);box-shadow:0 20px 50px -10px rgba(0,0,0,.7);font-size:14px;transition:all .3s;pointer-events:none;max-width:calc(100% - 32px);display:flex;gap:10px;align-items:center}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 .toast i{width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 8px var(--blue);flex:none}
 
