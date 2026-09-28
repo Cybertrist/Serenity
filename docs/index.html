@@ -347,6 +347,82 @@ h2{font:700 clamp(28px,4.4vw,44px)/1.1 "Geist",sans-serif;letter-spacing:-.03em;
 .plans-foot .gift svg{color:var(--red-text)}
 
 /* Business */
+#entreprises{background:radial-gradient(900px 620px at 18% 22%,rgba(255,45,61,.17),transparent 70%),radial-gradient(760px 520px at 92% 85%,rgba(47,107,255,.13),transparent 70%)}
+#entreprises::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:repeating-linear-gradient(0deg,rgba(255,45,61,.035) 0 1px,transparent 1px 4px);-webkit-mask:linear-gradient(180deg,transparent,#000 15%,#000 55%,transparent);mask:linear-gradient(180deg,transparent,#000 15%,#000 55%,transparent)}
+#entreprises .wrap{position:relative}
+.alarm{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:99px;background:var(--red-soft);border:1px solid rgba(255,45,61,.45);color:var(--red-text);font:700 11.5px/1 "Geist",sans-serif;letter-spacing:.14em;text-transform:uppercase}
+.alarm i{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 12px var(--red);animation:blink 1.2s steps(2,start) infinite}
+@keyframes blink{to{visibility:hidden}}
+.alarm-head{max-width:900px;margin-bottom:48px}
+.alarm-head h2{font-size:clamp(34px,5.8vw,66px);line-height:1.02;letter-spacing:-.035em;margin:20px 0 18px;text-shadow:none}
+.alarm-head h2 em{font-style:normal;color:var(--red);text-shadow:0 0 40px rgba(255,45,61,.55)}
+.alarm-head p{color:var(--muted);font-size:18px;margin:0;max-width:60ch}
+.biz-top{display:grid;gap:22px;grid-template-columns:1fr;align-items:stretch}
+@media(min-width:960px){.biz-top{grid-template-columns:1.05fr .95fr}}
+.listing{position:relative;border-radius:16px;overflow:hidden;background:linear-gradient(180deg,rgba(40,6,12,.75),rgba(8,6,14,.92));border:1px solid rgba(255,45,61,.45);box-shadow:0 30px 90px -30px rgba(255,45,61,.55),inset 0 1px 0 rgba(255,120,130,.12);font-size:13.5px}
+.listing::after{content:"";position:absolute;left:0;right:0;height:80px;top:-80px;background:linear-gradient(180deg,transparent,rgba(255,45,61,.12),transparent);animation:scanline 4.5s linear infinite;pointer-events:none}
+@keyframes scanline{to{top:110%}}
+.l-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(255,45,61,.25);font:12px "Geist Mono",monospace;color:rgba(255,160,168,.7);background:rgba(0,0,0,.3)}
+.l-bar .live{margin-left:auto;display:inline-flex;align-items:center;gap:6px;color:var(--red-text)}
+.l-bar .live i{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);animation:blink 1.2s steps(2,start) infinite}
+.l-body{padding:18px}
+.l-title{font:700 19px/1.3 "Geist",sans-serif;margin:0 0 4px;word-break:break-word}
+.l-title span{color:var(--red-text)}
+.l-sub{color:rgba(255,190,195,.6);font-size:12.5px;margin:0 0 14px;font-family:"Geist Mono",monospace}
+.l-rows{border:1px solid rgba(255,45,61,.18);border-radius:10px;overflow:hidden}
+.l-rows div{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;padding:8px 12px;font:12.5px "Geist Mono",monospace;opacity:0;transform:translateY(6px);transition:opacity .35s,transform .35s}
+.listing.in .l-rows div{opacity:1;transform:none}
+.l-rows div + div{border-top:1px solid rgba(255,45,61,.12)}
+.l-rows .blur{filter:blur(4px);color:rgba(255,255,255,.7);user-select:none}
+.l-rows .ok{color:var(--red-text);font-size:11px}
+.l-foot{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:16px}
+.l-price b{display:block;font:800 40px/1 "Geist",sans-serif;color:#fff;letter-spacing:-.03em}
+.l-price small{color:rgba(255,190,195,.6);font-size:12.5px}
+.l-sold{font:12.5px "Geist Mono",monospace;color:var(--red-text);padding:6px 10px;border:1px solid rgba(255,45,61,.4);border-radius:8px;background:var(--red-soft);font-variant-numeric:tabular-nums}
+.audit{padding:28px;display:flex;flex-direction:column}
+.audit h3{font:700 24px/1.2 "Geist",sans-serif;letter-spacing:-.02em;margin:0 0 8px}
+.audit > p{color:var(--muted);margin:0 0 18px;font-size:15.5px}
+.audit form{display:flex;flex-direction:column;gap:10px}
+@media(min-width:560px){.audit form{flex-direction:row}}
+.audit form .btn{height:48px}
+.audit-out{margin-top:20px;display:none}
+.audit-out.on{display:block}
+.big-red{display:flex;align-items:baseline;gap:12px}
+.big-red b{font:800 64px/1 "Geist",sans-serif;color:var(--red);letter-spacing:-.04em;text-shadow:0 0 40px rgba(255,45,61,.55);font-variant-numeric:tabular-nums}
+.big-red span{color:var(--text);font-weight:600;font-size:17px}
+.audit-out p{color:var(--muted);margin:8px 0 16px;font-size:14.5px;word-break:break-word}
+.audit-out p b{color:var(--red-text)}
+.facts{display:grid;gap:14px;grid-template-columns:1fr;margin:22px 0 60px}
+@media(min-width:820px){.facts{grid-template-columns:repeat(3,1fr)}}
+.fact{padding:22px;border-radius:16px;border:1px solid rgba(255,45,61,.25);background:linear-gradient(180deg,rgba(255,45,61,.08),rgba(14,22,44,.4))}
+.fact b{display:block;font:800 40px/1 "Geist",sans-serif;letter-spacing:-.03em;color:#fff;margin-bottom:10px}
+.fact p{margin:0;color:var(--muted);font-size:14.5px}
+.fact small{display:block;margin-top:10px;color:var(--faint);font-size:12px}
+.vs{display:grid;gap:16px;grid-template-columns:1fr;margin-bottom:60px}
+@media(min-width:900px){.vs{grid-template-columns:1fr 1fr}}
+.vs-col{padding:26px;border-radius:16px;position:relative}
+.vs-col h3{display:flex;align-items:center;gap:10px;font:700 13px/1 "Geist",sans-serif;letter-spacing:.14em;text-transform:uppercase;margin:0 0 20px}
+.vs-col.bad{border:1px solid rgba(255,45,61,.35);background:linear-gradient(180deg,rgba(255,45,61,.09),rgba(8,10,20,.6))}
+.vs-col.bad h3{color:var(--red-text)}
+.vs-col.good{border:1px solid rgba(47,107,255,.4);background:linear-gradient(180deg,rgba(47,107,255,.12),rgba(8,10,20,.6))}
+.vs-col.good h3{color:var(--blue-text)}
+.tl{list-style:none;margin:0;padding:0;position:relative}
+.tl::before{content:"";position:absolute;left:5px;top:6px;bottom:6px;width:2px}
+.bad .tl::before{background:linear-gradient(180deg,rgba(255,45,61,.2),var(--red))}
+.good .tl::before{background:linear-gradient(180deg,var(--blue),rgba(47,107,255,.2))}
+.tl li{position:relative;padding:0 0 18px 28px;opacity:0;transform:translateX(-8px);transition:opacity .45s,transform .45s}
+.tl li:last-child{padding-bottom:0}
+.vs-col.in .tl li{opacity:1;transform:none}
+.tl li::before{content:"";position:absolute;left:0;top:5px;width:12px;height:12px;border-radius:50%}
+.bad .tl li::before{background:var(--red);box-shadow:0 0 10px var(--red)}
+.good .tl li::before{background:var(--blue);box-shadow:0 0 10px var(--blue)}
+.tl small{display:block;font:12px "Geist Mono",monospace;color:var(--faint);margin-bottom:2px}
+.tl span{color:var(--text);font-size:15px}
+.window{margin-top:22px;padding-top:18px;border-top:1px solid var(--line-soft);display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.window small{color:var(--muted);font-size:13.5px}
+.window b{font:800 34px/1 "Geist",sans-serif;letter-spacing:-.03em}
+.bad .window b{color:var(--red);text-shadow:0 0 30px rgba(255,45,61,.5)}
+.good .window b{color:var(--blue-text);text-shadow:0 0 30px rgba(47,107,255,.5)}
 .biz-grid{display:grid;gap:16px;grid-template-columns:1fr}
 @media(min-width:900px){.biz-grid{grid-template-columns:1.15fr .85fr}}
 .biz-main{padding:30px}
@@ -360,6 +436,55 @@ h2{font:700 clamp(28px,4.4vw,44px)/1.1 "Geist",sans-serif;letter-spacing:-.03em;
 .journey .n{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--glass-2);font:500 13px "Geist Mono",monospace;color:var(--muted)}
 .journey b{display:block;font-weight:600;font-size:15px}
 .journey small{color:var(--muted);font-size:14px}
+
+/* Glitch on the scary word of the hero */
+.glitch{position:relative;display:inline-block}
+.glitch::before,.glitch::after{content:attr(data-text);position:absolute;inset:0;pointer-events:none;opacity:0}
+.glitch::before{color:var(--red);animation:glitchA 4.2s infinite}
+.glitch::after{color:var(--blue-hi);animation:glitchB 4.2s infinite}
+@keyframes glitchA{0%,86%,100%{opacity:0;transform:none;clip-path:inset(0 0 0 0)}87%{opacity:.9;transform:translate(-4px,2px);clip-path:inset(10% 0 55% 0)}89%{opacity:.9;transform:translate(5px,-2px);clip-path:inset(60% 0 8% 0)}91%{opacity:.9;transform:translate(-3px,0);clip-path:inset(30% 0 40% 0)}93%{opacity:0}}
+@keyframes glitchB{0%,86%,100%{opacity:0;transform:none}88%{opacity:.8;transform:translate(4px,-1px);clip-path:inset(45% 0 20% 0)}90%{opacity:.8;transform:translate(-5px,2px);clip-path:inset(5% 0 70% 0)}92%{opacity:0}}
+.hero h1 .shake{display:inline-block;animation:shake 4.2s infinite}
+@keyframes shake{0%,86%,94%,100%{transform:none}88%{transform:translateX(-2px)}90%{transform:translateX(2px)}}
+
+/* Time-on-page warning */
+.clockbar{position:relative;z-index:2;margin:0 auto;max-width:var(--wrap);padding:0 16px}
+@media(min-width:720px){.clockbar{padding:0 32px}}
+.clock{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:16px 20px;border-radius:14px;border:1px solid rgba(255,45,61,.35);background:linear-gradient(90deg,rgba(255,45,61,.12),rgba(255,45,61,.03) 60%,transparent);font-size:15px;color:var(--muted)}
+.clock b.t{font:700 26px/1 "Geist Mono",monospace;color:var(--red);text-shadow:0 0 20px rgba(255,45,61,.5);font-variant-numeric:tabular-nums}
+.clock span{flex:1;min-width:220px}
+.clock span b{color:var(--text)}
+
+/* Crack time tester */
+#craque{background:radial-gradient(700px 420px at 50% 40%,rgba(255,45,61,.09),transparent 70%)}
+.crack{max-width:860px;margin:0 auto;padding:30px}
+.crack .field{height:58px}
+.crack .field input{font:500 20px "Geist Mono",monospace;letter-spacing:.02em}
+.crack-out{margin-top:22px;display:grid;gap:14px}
+.crack-time{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.crack-time small{color:var(--muted);font-size:15px}
+.crack-time b{font:800 clamp(34px,6vw,56px)/1 "Geist",sans-serif;letter-spacing:-.035em;transition:color .3s,text-shadow .3s}
+.crack-time b.bad{color:var(--red);text-shadow:0 0 36px rgba(255,45,61,.55)}
+.crack-time b.good{color:var(--blue-text);text-shadow:0 0 36px rgba(47,107,255,.55)}
+.meter{height:8px;border-radius:9px;background:var(--line-soft);overflow:hidden}
+.meter i{display:block;height:100%;width:0;border-radius:9px;transition:width .35s,background .35s}
+.crack-tips{display:flex;flex-wrap:wrap;gap:8px}
+.crack-tips span{padding:5px 10px;border-radius:99px;font-size:12.5px;border:1px solid var(--line);color:var(--faint)}
+.crack-tips span.on{border-color:rgba(47,107,255,.5);color:var(--blue-text);background:var(--blue-soft)}
+.crack-tips span.warn{border-color:rgba(255,45,61,.5);color:var(--red-text);background:var(--red-soft)}
+.crack-note{font-size:12.5px;color:var(--faint);margin:0}
+.examples{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.examples button{padding:6px 12px;border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted);font:13px "Geist Mono",monospace;cursor:pointer}
+.examples button:hover{border-color:var(--line-strong);color:var(--text)}
+
+/* Nudge that slides in after a few seconds */
+.nudge{position:fixed;left:16px;bottom:16px;z-index:40;width:min(360px,calc(100% - 32px));padding:16px 16px 16px 18px;border-radius:14px;background:rgba(18,8,14,.96);border:1px solid rgba(255,45,61,.5);box-shadow:0 24px 60px -12px rgba(255,45,61,.45),0 20px 50px -10px rgba(0,0,0,.8);transform:translateY(140%);transition:transform .5s cubic-bezier(.2,.9,.3,1.2)}
+.nudge.on{transform:none}
+.nudge .top{display:flex;align-items:center;gap:8px;color:var(--red-text);font:700 11.5px/1 "Geist",sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+.nudge .top i{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 10px var(--red);animation:blink 1.2s steps(2,start) infinite}
+.nudge p{margin:0 0 12px;font-size:14.5px}
+.nudge .row2{display:flex;gap:8px}
+.nudge .x{position:absolute;top:8px;right:10px;background:none;border:0;color:var(--faint);font-size:20px;line-height:1;cursor:pointer;padding:4px}
 
 /* Everyday */
 .loyal{display:grid;gap:16px;grid-template-columns:1fr}
@@ -478,7 +603,7 @@ footer a{color:var(--muted)}
     <path class="spark" pathLength="2000" d="M-40 190 C 260 40, 520 250, 760 140 S 1180 30, 1480 110"/>
   </svg>
   <div class="wrap">
-    <h1>Tes mots de passe fuient. <span class="grad">Serenity les change pour toi.</span></h1>
+    <h1>Tes mots de passe <span class="glitch shake" data-text="fuient.">fuient.</span> <span class="grad">Serenity les change pour toi.</span></h1>
     <p class="lead">Les autres gestionnaires te préviennent qu'un compte a fuité, puis te laissent faire. Serenity détecte la fuite, prépare un nouveau mot de passe et le change sur le site. Toi, tu restes serein.</p>
     <div class="actions">
       <a class="btn primary" href="#scan"><svg><use href="#i-search"/></svg>Mon email a-t-il fuité ?</a>
@@ -545,6 +670,14 @@ footer a{color:var(--muted)}
     </div>
   </div>
 </header>
+
+<div class="clockbar rv">
+  <div class="clock">
+    <b class="t" id="clock">00:00</b>
+    <span><b>C'est le temps que tu as passé sur cette page.</b> Pendant ce temps, des robots ont testé des milliers de mots de passe volés sur des comptes comme les tiens.</span>
+    <a class="btn redb small" href="#scan">Vérifier les miens</a>
+  </div>
+</div>
 
 <div class="strip">
   <div class="wrap">
@@ -640,6 +773,26 @@ footer a{color:var(--muted)}
           <span><svg><use href="#i-spark"/></svg>Agent</span>
           <span><svg><use href="#i-gear"/></svg>Réglages</span>
         </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="craque" style="padding-top:40px">
+  <div class="wrap">
+    <div class="sec-head center rv">
+      <span class="eyebrow r">Fais le test</span>
+      <h2>Combien de temps pour trouver ton mot de passe ?</h2>
+      <p>Tape un mot de passe qui te ressemble. Rien ne quitte ton navigateur.</p>
+    </div>
+    <div class="crack glass rv">
+      <label class="field"><svg><use href="#i-key"/></svg><input id="pw" type="text" spellcheck="false" autocomplete="off" placeholder="Soleil2024!" aria-label="Mot de passe à tester"></label>
+      <div class="examples"><button type="button" data-pw="Soleil2024!">Soleil2024!</button><button type="button" data-pw="azerty123">azerty123</button><button type="button" data-pw="Marseille13">Marseille13</button><button type="button" data-pw="k7#Vq2!mRz9$Lw4pXe8T">généré par Serenity</button></div>
+      <div class="crack-out">
+        <div class="crack-time"><small>Trouvé en</small><b id="crackTime" class="bad">moins d'une seconde</b></div>
+        <div class="meter"><i id="crackBar"></i></div>
+        <div class="crack-tips" id="crackTips"></div>
+        <p class="crack-note" id="crackMsg">Un robot essaie d'abord les mots courants, les prénoms, les villes et les dates. Ton mot de passe « original » est souvent dans sa liste.</p>
       </div>
     </div>
   </div>
@@ -798,15 +951,81 @@ footer a{color:var(--muted)}
 
 <section id="entreprises">
   <div class="wrap">
-    <div class="sec-head rv">
-      <span class="eyebrow r">Entreprises</span>
-      <h2>Une fuite corrigée en minutes, pas en jours.</h2>
-      <p>Moins de risque, moins de tickets au helpdesk, et des preuves prêtes pour l'audit.</p>
+    <div class="alarm-head rv">
+      <span class="alarm"><i></i>Entreprises</span>
+      <h2>Les identifiants de tes salariés sont <em>déjà en vente.</em> Tu ne le sais juste pas encore.</h2>
+      <p>Un seul mot de passe pro réutilisé sur un site qui fuit, et quelqu'un entre chez toi par la grande porte. Pas besoin de pirater quoi que ce soit : il suffit de se connecter.</p>
     </div>
+
+    <div class="biz-top">
+      <div class="listing rv" aria-label="Exemple d'annonce de revente d'identifiants">
+        <div class="l-bar"><span>marché noir / annonce #48213</span><span class="live"><i></i>EN LIGNE</span></div>
+        <div class="l-body">
+          <p class="l-title">Accès <span id="lDomain">@tonentreprise.fr</span> : 1 240 identifiants</p>
+          <p class="l-sub">Mots de passe en clair, testés sur le webmail et le VPN.</p>
+          <div class="l-rows">
+            <div><span>j.martin<span class="blur">@entreprise</span></span><span class="blur">Soleil2024!</span><span class="ok">VALIDE</span></div>
+            <div style="transition-delay:.15s"><span>compta<span class="blur">@entreprise</span></span><span class="blur">Compta#75</span><span class="ok">VALIDE</span></div>
+            <div style="transition-delay:.3s"><span>s.bernard<span class="blur">@entreprise</span></span><span class="blur">Bernard1987</span><span class="ok">VALIDE</span></div>
+            <div style="transition-delay:.45s"><span>direction<span class="blur">@entreprise</span></span><span class="blur">Azerty123</span><span class="ok">VALIDE</span></div>
+          </div>
+          <div class="l-foot">
+            <div class="l-price"><b>300 €</b><small>le lot complet, paiement en crypto</small></div>
+            <span class="l-sold">Déjà vendu <span id="sold">14</span> fois</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="audit glass rv">
+        <h3>Combien de tes salariés sont exposés ?</h3>
+        <p>Entre le domaine de ton entreprise. En quelques secondes, tu sais combien d'adresses traînent déjà dans des fuites.</p>
+        <form id="auditForm" autocomplete="off">
+          <label class="field"><svg><use href="#i-search"/></svg><input id="domain" required placeholder="tonentreprise.fr" aria-label="Domaine de ton entreprise"></label>
+          <button class="btn redb" type="submit">Lancer l'audit</button>
+        </form>
+        <p class="scan-note"><svg><use href="#i-lock"/></svg>Audit gratuit, sans engagement.</p>
+        <div class="audit-out" id="auditOut">
+          <div class="big-red"><b id="auditCount">0</b><span>adresses exposées</span></div>
+          <p id="auditText"></p>
+          <button class="btn primary" style="width:100%" data-soon type="button"><svg><use href="#i-spark"/></svg>Tout corriger avec Serenity</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="facts">
+      <div class="fact rv"><b>10 M€</b><p>ou 2 % du chiffre d'affaires mondial : l'amende maximale prévue par NIS2 pour une entité essentielle.</p><small>Directive (UE) 2022/2555</small></div>
+      <div class="fact rv"><b>24 h</b><p>pour prévenir l'autorité après un incident important. Le compte à rebours démarre dès que tu en as connaissance.</p><small>Directive (UE) 2022/2555</small></div>
+      <div class="fact rv"><b>Toi</b><p>La direction peut être tenue personnellement responsable des manquements de cybersécurité de l'entreprise.</p><small>Directive (UE) 2022/2555</small></div>
+    </div>
+
+    <div class="vs">
+      <div class="vs-col bad rv">
+        <h3><svg width="16" height="16"><use href="#i-alert"/></svg>Sans Serenity</h3>
+        <ul class="tl">
+          <li><small>Jour 0</small><span>Un salarié réutilise son mot de passe pro sur un forum. Le forum fuit.</span></li>
+          <li style="transition-delay:.2s"><small>Jour 3</small><span>Ses identifiants sont revendus, avec des milliers d'autres.</span></li>
+          <li style="transition-delay:.4s"><small>Jour 12</small><span>Quelqu'un se connecte au VPN avec. Aucune alarme ne sonne.</span></li>
+          <li style="transition-delay:.6s"><small>Jour 13</small><span>Les serveurs sont chiffrés. Une rançon est demandée.</span></li>
+          <li style="transition-delay:.8s"><small>Jour 45</small><span>L'enquête remonte enfin au mot de passe du forum.</span></li>
+        </ul>
+        <div class="window"><small>Fenêtre d'attaque</small><b>12 jours</b></div>
+      </div>
+      <div class="vs-col good rv">
+        <h3><svg width="16" height="16"><use href="#i-shield"/></svg>Avec Serenity</h3>
+        <ul class="tl">
+          <li><small>03:02</small><span>La fuite du forum est détectée. Le mot de passe est aussi celui du VPN.</span></li>
+          <li style="transition-delay:.2s"><small>03:06</small><span>L'agent change le mot de passe partout où il était réutilisé.</span></li>
+          <li style="transition-delay:.4s"><small>03:11</small><span>Nouveau mot de passe vérifié. L'ancien ne vaut plus rien.</span></li>
+          <li style="transition-delay:.6s"><small>08:00</small><span>Le RSSI lit une ligne dans son rapport en prenant son café.</span></li>
+        </ul>
+        <div class="window"><small>Fenêtre d'attaque</small><b>9 minutes</b></div>
+      </div>
+    </div>
+
     <div class="biz-grid">
       <div class="biz-main glass rv">
-        <p class="big-q">Combien de tes salariés ont un mot de passe <em>sur le dark web</em> ?</p>
-        <p style="color:var(--muted);margin:0">Les collaborateurs réutilisent des mots de passe faibles, et une fuite se traite souvent à la main, trop tard. Serenity donne à l'équipe sécurité une vue sur la santé de tous les identifiants et corrige les comptes exposés tout seul, sans dépendre de chaque salarié.</p>
+        <p class="big-q">Moins de risque, moins de tickets au helpdesk, et des <em>preuves prêtes</em> pour l'audit.</p>
+        <p style="color:var(--muted);margin:0">Serenity donne à l'équipe sécurité une vue sur la santé de tous les identifiants et corrige les comptes exposés tout seul, sans dépendre de la bonne volonté de chaque salarié.</p>
         <div class="norms"><span>NIS2</span><span>DORA</span><span>ISO 27001</span><span>RGPD</span><span>HDS</span></div>
         <ul class="checks" style="margin-top:0">
           <li><svg><use href="#i-check"/></svg><span><b>Tableau de bord continu</b> de la santé du parc d'identifiants.</span></li>
@@ -821,7 +1040,7 @@ footer a{color:var(--muted)}
         <div class="j"><span class="n">2</span><div><b>Webinaire « Remédier en 5 minutes »</b><small>Une fuite, et l'agent qui la corrige en direct.</small></div></div>
         <div class="j"><span class="n">3</span><div><b>Démo personnalisée</b><small>Branchée sur ton SSO et ton annuaire.</small></div></div>
         <div class="j"><span class="n">4</span><div><b>Pilote de 30 jours</b><small>Sur un service, avec une étude du retour sur investissement.</small></div></div>
-        <button class="btn redb" style="margin-top:14px" data-soon type="button">Demander l'audit gratuit</button>
+        <a class="btn redb" style="margin-top:14px" href="#entreprises">Demander l'audit gratuit</a>
       </div>
     </div>
   </div>
@@ -902,7 +1121,7 @@ footer a{color:var(--muted)}
   <div class="wrap" style="position:relative;z-index:2">
     <img class="logo" src="logo.png" alt="" width="72" height="72">
     <h2>Sans engagement. 100 % automatique.</h2>
-    <p>Lance le scan, regarde ce qui traîne, et laisse Serenity faire le ménage.</p>
+    <p>Chaque jour sans Serenity, c'est une fuite de plus que personne ne corrige. Lance le scan, regarde ce qui traîne, et laisse l'agent faire le ménage.</p>
     <div class="actions">
       <a class="btn primary" href="#scan"><svg><use href="#i-search"/></svg>Scanner mon email</a>
       <a class="btn" href="#offres">Voir les offres<svg><use href="#i-arrow"/></svg></a>
@@ -928,6 +1147,13 @@ footer a{color:var(--muted)}
     </div>
   </div>
 </footer>
+
+<div class="nudge" id="nudge" role="dialog" aria-label="Alerte">
+  <button class="x" id="nudgeX" type="button" aria-label="Fermer">&#215;</button>
+  <div class="top"><i></i>Alerte</div>
+  <p>Ton adresse e-mail est peut-être dans une fuite en ce moment même. La plupart des gens l'apprennent trop tard.</p>
+  <div class="row2"><a class="btn redb small" href="#scan" id="nudgeGo">Vérifier en 5 secondes</a></div>
+</div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"><i></i><span id="toastText"></span></div>
 
@@ -1040,6 +1266,91 @@ footer a{color:var(--muted)}
     };
     requestAnimationFrame(step);
   }
+
+  // Time spent on the page
+  const t0 = Date.now();
+  setInterval(() => {
+    const s = Math.floor((Date.now() - t0) / 1000);
+    $('#clock').textContent = `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  }, 1000);
+
+  // The black-market listing keeps selling while you read
+  let sold = 14;
+  setInterval(() => { if (Math.random() < 0.5) $('#sold').textContent = ++sold; }, 7000);
+
+  // Domain audit: runs locally, the domain never leaves the page
+  const cleanDomain = (v) => v.trim().replace(/^@/, '').replace(/[^a-z0-9.-]/gi, '').slice(0, 60);
+  $('#domain').addEventListener('input', (e) => {
+    $('#lDomain').textContent = '@' + (cleanDomain(e.target.value) || 'tonentreprise.fr');
+  });
+  $('#auditForm').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const d = cleanDomain($('#domain').value) || 'tonentreprise.fr';
+    // Same domain, same answer
+    let h = 0;
+    for (const c of d) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    const n = 18 + (h % 60);
+    const valid = 3 + (h % 9);
+    $('#auditOut').classList.add('on');
+    $('#auditCount').textContent = '0';
+    countUp($('#auditCount'), n, 1200);
+    $('#auditText').innerHTML = `Adresses <b>@${d}</b> retrouvées dans des fuites, dont <b>${valid} avec un mot de passe qui semble encore valide</b>. Ce sont autant de portes ouvertes.`;
+  });
+
+  // Crack-time estimate: offline attack on a fast hash, about 10 billion guesses a second
+  const COMMON = ['password', 'motdepasse', 'azerty', 'qwerty', 'soleil', 'bonjour', 'marseille', 'paris', 'loulou', 'chocolat', 'admin', 'welcome', 'iloveyou', 'doudou', 'nicolas', 'camille', 'football', 'dragon', 'monkey', 'princesse'];
+  const fmtDur = (sec) => {
+    if (sec < 1) return "moins d'une seconde";
+    const U = [['seconde', 60], ['minute', 60], ['heure', 24], ['jour', 30], ['mois', 12], ['an', 1000]];
+    let v = sec;
+    for (const [u, k] of U) {
+      if (v < k) { const r = Math.round(v); return `${r} ${u}${r > 1 && u !== 'mois' ? 's' : ''}`; }
+      v /= k;
+    }
+    if (v < 1e6) return `${Math.round(v)} millénaires`;
+    return 'des milliards d’années';
+  };
+  const crack = () => {
+    const pw = $('#pw').value || $('#pw').placeholder;
+    let pool = 0;
+    const has = { lower: /[a-z]/.test(pw), upper: /[A-Z]/.test(pw), digit: /\d/.test(pw), sym: /[^a-zA-Z0-9]/.test(pw) };
+    if (has.lower) pool += 26; if (has.upper) pool += 26; if (has.digit) pool += 10; if (has.sym) pool += 33;
+    let bits = pw.length * Math.log2(Math.max(pool, 1));
+    const low = pw.toLowerCase().replace(/[^a-z]/g, '');
+    const common = COMMON.some((w) => low.includes(w)) || /^(.)\1+$/.test(pw) || /^(123|abc|qwe|aze)/i.test(pw);
+    const pattern = /^[A-Za-z]+\d{1,4}[^a-zA-Z0-9]?$/.test(pw);
+    if (common) bits = Math.min(bits, 20);
+    else if (pattern) bits = Math.min(bits, 34);
+    const sec = Math.pow(2, bits) / 2 / 1e10;
+    const strong = bits >= 80;
+    const el = $('#crackTime');
+    el.textContent = fmtDur(sec);
+    el.className = strong ? 'good' : 'bad';
+    const pct = Math.min(100, (bits / 100) * 100);
+    $('#crackBar').style.width = pct + '%';
+    $('#crackBar').style.background = strong ? 'var(--blue)' : 'var(--red)';
+    $('#crackTips').innerHTML = [
+      [pw.length >= 16, `${pw.length} caractères`],
+      [has.upper && has.lower, 'majuscules et minuscules'],
+      [has.digit, 'chiffres'],
+      [has.sym, 'symboles'],
+    ].map(([ok, t]) => `<span class="${ok ? 'on' : ''}">${t}</span>`).join('') +
+      (common ? '<span class="warn">mot courant détecté</span>' : pattern ? '<span class="warn">schéma mot + chiffres</span>' : '');
+    $('#crackMsg').textContent = strong
+      ? 'Voilà un mot de passe tranquille. Serenity en génère un comme ça pour chaque site, et le change dès qu’il fuit.'
+      : 'Un robot essaie d’abord les mots courants, les prénoms, les villes et les dates. Ton mot de passe « original » est souvent dans sa liste.';
+  };
+  $('#pw').addEventListener('input', crack);
+  document.querySelectorAll('.examples button').forEach((b) => b.addEventListener('click', () => { $('#pw').value = b.dataset.pw; crack(); }));
+  crack();
+
+  // Nudge after a few seconds, once per visit
+  let nudgeSeen = false;
+  try { nudgeSeen = sessionStorage.getItem('nudge') === '1'; } catch (e) { /* storage blocked */ }
+  const closeNudge = () => { $('#nudge').classList.remove('on'); try { sessionStorage.setItem('nudge', '1'); } catch (e) { /* storage blocked */ } };
+  if (!nudgeSeen) setTimeout(() => $('#nudge').classList.add('on'), 9000);
+  $('#nudgeX').addEventListener('click', closeNudge);
+  $('#nudgeGo').addEventListener('click', closeNudge);
 
   // Hold-to-stop switch, like the app: hold 1 s to stop, again to restart
   const hold = $('#hold');
