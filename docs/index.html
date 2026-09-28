@@ -541,6 +541,68 @@ footer a{color:var(--muted)}
 .rv{opacity:0;transform:translateY(12px);transition:opacity .5s ease-out,transform .5s ease-out}
 .rv.in{opacity:1;transform:none}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}html{scroll-behavior:auto}}
+/* Terror layer */
+.skull{width:1em;height:1em;vertical-align:-.12em}
+
+/* Hacked intro */
+.pwn{position:fixed;inset:0;z-index:100;background:#000;display:none;align-items:center;justify-content:center;flex-direction:column;padding:24px;overflow:hidden;text-align:center}
+.pwn.on{display:flex}
+.pwn.out{animation:pwnOut .7s ease-in forwards}
+@keyframes pwnOut{0%{opacity:1;filter:none}30%{filter:invert(1) hue-rotate(180deg)}100%{opacity:0;transform:scale(1.04)}}
+.pwn::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,45,61,.07) 0 1px,transparent 1px 3px);pointer-events:none;animation:flick .15s steps(2) infinite}
+.pwn::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 40%,rgba(120,0,10,.55));pointer-events:none}
+@keyframes flick{50%{opacity:.6}}
+.pwn-skull{position:relative;width:min(190px,42vw);height:min(190px,42vw);color:var(--red);filter:drop-shadow(0 0 30px rgba(255,45,61,.8));animation:skullIn 1.2s cubic-bezier(.2,.9,.3,1.3) both,jitter 2.2s 1.2s infinite}
+.pwn-skull svg{width:100%;height:100%}
+@keyframes skullIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+@keyframes jitter{0%,90%,100%{transform:none}92%{transform:translate(-6px,2px) skewX(8deg)}94%{transform:translate(5px,-3px)}96%{transform:translate(-2px,1px) skewX(-6deg)}}
+.pwn-term{position:relative;z-index:1;margin-top:28px;width:min(560px,100%);text-align:left;font:14px/1.7 "Geist Mono",monospace;color:#ff8c95;min-height:120px}
+.pwn-term div{white-space:pre-wrap}
+.pwn-term .caret{display:inline-block;width:8px;height:16px;background:var(--red);vertical-align:-3px;animation:blink 1s steps(2,start) infinite}
+.pwn-big{position:relative;z-index:1;margin-top:18px;font:900 clamp(28px,6vw,64px)/1 "Geist",sans-serif;letter-spacing:-.03em;color:#fff;text-shadow:3px 0 var(--red),-3px 0 var(--blue);opacity:0}
+.pwn-big.on{opacity:1;animation:jitter 1s infinite}
+.pwn-reveal{position:relative;z-index:1;margin-top:22px;opacity:0;transition:opacity .5s}
+.pwn-reveal.on{opacity:1}
+.pwn-reveal p{color:#fff;font-size:18px;margin:0 0 16px}
+.pwn-reveal p b{color:var(--blue-text)}
+@media(max-width:560px){.pwn-term{font-size:10.5px}}
+.pwn-skip{position:absolute;z-index:2;top:16px;right:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:#ccc;border-radius:8px;padding:8px 12px;font:13px "Geist",sans-serif;cursor:pointer}
+
+/* Breach feed ticker */
+.feed{position:relative;z-index:15;overflow:hidden;border-bottom:1px solid rgba(255,45,61,.3);background:linear-gradient(90deg,rgba(255,45,61,.16),rgba(40,0,6,.5),rgba(255,45,61,.16));font:12.5px/1 "Geist Mono",monospace;color:#ff9aa2;white-space:nowrap}
+.feed .track{display:inline-flex;gap:28px;padding:9px 0;animation:marquee 40s linear infinite}
+.feed span{display:inline-flex;align-items:center;gap:8px}
+.feed span b{color:#fff;font-weight:500}
+.feed .skull{color:var(--red);width:14px;height:14px;filter:drop-shadow(0 0 4px var(--red))}
+@keyframes marquee{to{transform:translateX(-50%)}}
+
+/* Password graveyard */
+#cimetiere{overflow:hidden;background:radial-gradient(760px 360px at 50% 62%,rgba(255,45,61,.12),transparent 70%)}
+#cimetiere .sec-head h2 .skull{color:var(--red);filter:drop-shadow(0 0 16px rgba(255,45,61,.7))}
+.graves{position:relative;display:grid;gap:18px;grid-template-columns:repeat(2,1fr);align-items:end}
+@media(min-width:760px){.graves{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:1040px){.graves{grid-template-columns:repeat(6,1fr)}}
+.grave{position:relative;padding:26px 14px 18px;text-align:center;border-radius:90px 90px 10px 10px;background:linear-gradient(180deg,#1a2138,#0c1122);border:1px solid rgba(160,180,220,.18);box-shadow:inset 0 2px 0 rgba(255,255,255,.06),0 30px 40px -20px rgba(0,0,0,.9);transform-origin:bottom center}
+.grave:nth-child(odd){transform:rotate(-2deg)}
+.grave:nth-child(3n){transform:rotate(1.5deg);min-height:230px}
+.grave .skull{width:34px;height:34px;color:#8f98b3;margin:0 auto 6px;display:block;transition:color .3s,filter .3s}
+.grave:hover .skull{color:var(--red);filter:drop-shadow(0 0 10px var(--red))}
+.grave .rip{font:800 12px/1 "Geist",sans-serif;letter-spacing:.3em;color:#8f98b3}
+.grave .pw{font:600 15px/1.3 "Geist Mono",monospace;color:#fff;margin:10px 0 6px;word-break:break-all}
+.grave .died{font-size:12px;color:var(--red-text)}
+.grave .epi{font-size:12px;color:var(--faint);font-style:italic;margin-top:8px}
+.fog{position:absolute;left:-10%;right:-10%;bottom:-30px;height:140px;pointer-events:none;background:radial-gradient(40% 60% at 20% 60%,rgba(170,185,220,.14),transparent 70%),radial-gradient(40% 60% at 70% 70%,rgba(170,185,220,.12),transparent 70%);filter:blur(10px);animation:fog 14s ease-in-out infinite alternate}
+@keyframes fog{to{transform:translateX(8%)}}
+.grave-cta{text-align:center;margin-top:44px}
+.grave-cta p{color:var(--muted);margin:0 0 16px;font-size:17px}
+
+/* Alarm pulse on the business area */
+#entreprises{animation:alarmPulse 3.2s ease-in-out infinite}
+@keyframes alarmPulse{0%,100%{box-shadow:inset 0 0 0 rgba(255,45,61,0)}50%{box-shadow:inset 0 0 120px rgba(255,45,61,.16)}}
+.l-bar .skull{color:var(--red);width:15px;height:15px}
+.clock .skull{width:34px;height:34px;color:var(--red);filter:drop-shadow(0 0 10px rgba(255,45,61,.7));animation:jitter 3s infinite}
+@media(max-width:560px){.clock .skull{display:none}}
+
 </style>
 </head>
 <body>
@@ -578,6 +640,8 @@ footer a{color:var(--muted)}
     <symbol id="i-puzzle" viewBox="0 0 24 24"><path d="M9 4.5a2 2 0 1 1 4 0V6h4a1 1 0 0 1 1 1v4h-1.5a2 2 0 1 0 0 4H18v4a1 1 0 0 1-1 1h-4v-1.5a2 2 0 1 0-4 0V20H5a1 1 0 0 1-1-1v-4h1.5a2 2 0 1 0 0-4H4V7a1 1 0 0 1 1-1h4V4.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
     <symbol id="i-store" viewBox="0 0 24 24"><path d="M4 8h16l-1 12H5L4 8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.5 8V6.5a3.5 3.5 0 0 1 7 0V8" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
     <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3.5" y="8" width="17" height="4" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 12v8h14v-8M12 8v12M12 8c-1.5-3.5-5-4-5-1.5S12 8 12 8Zm0 0c1.5-3.5 5-4 5-1.5S12 8 12 8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-skull" viewBox="0 0 24 24"><path d="M12 2.5c-4.7 0-8 3.3-8 7.6 0 2.6 1.2 4.4 3 5.5v2.4c0 .8.6 1.4 1.4 1.4h7.2c.8 0 1.4-.6 1.4-1.4v-2.4c1.8-1.1 3-2.9 3-5.5 0-4.3-3.3-7.6-8-7.6Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="8.9" cy="10.6" r="2" fill="currentColor"/><circle cx="15.1" cy="10.6" r="2" fill="currentColor"/><path d="m12 13.1-1.1 2.1h2.2Z" fill="currentColor"/><path d="M10.2 19.4v-2M12 19.4v-2M13.8 19.4v-2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+    <symbol id="i-skull-big" viewBox="0 0 100 100"><path d="M50 7C27 7 13 23 13 43c0 12.5 6 21.5 15 26.5V80c0 4 3 7 7 7h30c4 0 7-3 7-7V69.5C81 64.5 87 55.5 87 43 87 23 73 7 50 7Z" fill="currentColor" fill-opacity=".14" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><ellipse cx="35.5" cy="45" rx="10" ry="11" fill="#000" stroke="currentColor" stroke-width="3"/><ellipse cx="64.5" cy="45" rx="10" ry="11" fill="#000" stroke="currentColor" stroke-width="3"/><circle cx="35.5" cy="46" r="3.5" fill="currentColor"><animate attributeName="r" values="3.5;5;3.5" dur="1.6s" repeatCount="indefinite"/></circle><circle cx="64.5" cy="46" r="3.5" fill="currentColor"><animate attributeName="r" values="3.5;5;3.5" dur="1.6s" repeatCount="indefinite"/></circle><path d="m50 58-6 10h12Z" fill="currentColor"/><path d="M40 75v10M50 75v10M60 75v10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M30 20c5-4 11-6 17-6.5" stroke="currentColor" stroke-opacity=".5" stroke-width="2.5" stroke-linecap="round" fill="none"/></symbol>
   </defs>
 </svg>
 
@@ -594,6 +658,29 @@ footer a{color:var(--muted)}
     <a class="btn primary small cta" href="#offres">Essai gratuit</a>
   </div>
 </nav>
+
+<div class="pwn" id="pwn" aria-hidden="true">
+  <button class="pwn-skip" id="pwnSkip" type="button">Passer</button>
+  <div class="pwn-skull"><svg><use href="#i-skull-big"/></svg></div>
+  <div class="pwn-term" id="pwnTerm"></div>
+  <div class="pwn-big" id="pwnBig">TES COMPTES M'APPARTIENNENT.</div>
+  <div class="pwn-reveal" id="pwnReveal">
+    <p>Ce n'était pas vrai. <b>Mais ça aurait pu.</b></p>
+    <button class="btn primary" id="pwnGo" type="button"><svg><use href="#i-shield"/></svg>Me protéger avec Serenity</button>
+  </div>
+</div>
+
+<div class="feed" aria-hidden="true">
+  <div class="track" id="feedTrack">
+    <span><svg class="skull"><use href="#i-skull"/></svg>FUITE <b>ForumJeux</b> 1,2 M comptes en vente</span>
+    <span><svg class="skull"><use href="#i-skull"/></svg>FUITE <b>BoutiqueMode</b> adresses et mots de passe</span>
+    <span><svg class="skull"><use href="#i-skull"/></svg>FUITE <b>RéseauPhoto</b> 380 000 comptes</span>
+    <span><svg class="skull"><use href="#i-skull"/></svg>FUITE <b>AppliRecettes</b> e-mails et noms</span>
+    <span><svg class="skull"><use href="#i-skull"/></svg>REVENTE <b>@entreprise</b> 1 240 identifiants, 300 €</span>
+    <span><svg class="skull"><use href="#i-skull"/></svg>FUITE <b>MutuelleFacile</b> dossiers clients</span>
+    <span><svg class="skull"><use href="#i-skull"/></svg>FUITE <b>BilletExpress</b> 2,4 M comptes</span>
+  </div>
+</div>
 
 <header class="hero" id="top">
   <div class="aurora"><i></i><i></i><i></i></div>
@@ -673,6 +760,7 @@ footer a{color:var(--muted)}
 
 <div class="clockbar rv">
   <div class="clock">
+    <svg class="skull"><use href="#i-skull"/></svg>
     <b class="t" id="clock">00:00</b>
     <span><b>C'est le temps que tu as passé sur cette page.</b> Pendant ce temps, des robots ont testé des milliers de mots de passe volés sur des comptes comme les tiens.</span>
     <a class="btn redb small" href="#scan">Vérifier les miens</a>
@@ -794,6 +882,29 @@ footer a{color:var(--muted)}
         <div class="crack-tips" id="crackTips"></div>
         <p class="crack-note" id="crackMsg">Un robot essaie d'abord les mots courants, les prénoms, les villes et les dates. Ton mot de passe « original » est souvent dans sa liste.</p>
       </div>
+    </div>
+  </div>
+</section>
+
+<section id="cimetiere" style="padding-top:40px">
+  <div class="wrap">
+    <div class="sec-head center rv">
+      <span class="eyebrow r">Ils n'ont pas survécu</span>
+      <h2><svg class="skull"><use href="#i-skull"/></svg> Le cimetière des mots de passe</h2>
+      <p>Chacun d'eux protégeait le compte de quelqu'un. Chacun d'eux a été trouvé avant la fin de la première seconde.</p>
+    </div>
+    <div class="graves">
+      <div class="grave rv"><svg class="skull"><use href="#i-skull"/></svg><div class="rip">R.I.P.</div><div class="pw">azerty123</div><div class="died">trouvé en 0,001 s</div><div class="epi">Il était partout.</div></div>
+      <div class="grave rv"><svg class="skull"><use href="#i-skull"/></svg><div class="rip">R.I.P.</div><div class="pw">Soleil2024!</div><div class="died">trouvé en 0,03 s</div><div class="epi">Il se croyait original.</div></div>
+      <div class="grave rv"><svg class="skull"><use href="#i-skull"/></svg><div class="rip">R.I.P.</div><div class="pw">motdepasse</div><div class="died">trouvé en 0,001 s</div><div class="epi">Il ne s'est pas foulé.</div></div>
+      <div class="grave rv"><svg class="skull"><use href="#i-skull"/></svg><div class="rip">R.I.P.</div><div class="pw">Marseille13</div><div class="died">trouvé en 0,02 s</div><div class="epi">Fidèle à son club, jusqu'au bout.</div></div>
+      <div class="grave rv"><svg class="skull"><use href="#i-skull"/></svg><div class="rip">R.I.P.</div><div class="pw">Loulou2012</div><div class="died">trouvé en 0,05 s</div><div class="epi">Le prénom du chien et l'année.</div></div>
+      <div class="grave rv"><svg class="skull"><use href="#i-skull"/></svg><div class="rip">R.I.P.</div><div class="pw">123456</div><div class="died">trouvé instantanément</div><div class="epi">Le doyen du cimetière.</div></div>
+      <div class="fog"></div>
+    </div>
+    <div class="grave-cta rv">
+      <p>Le tien est peut-être déjà creusé.</p>
+      <a class="btn redb" href="#scan"><svg class="skull"><use href="#i-skull"/></svg>Vérifier avant qu'il soit trop tard</a>
     </div>
   </div>
 </section>
@@ -959,7 +1070,7 @@ footer a{color:var(--muted)}
 
     <div class="biz-top">
       <div class="listing rv" aria-label="Exemple d'annonce de revente d'identifiants">
-        <div class="l-bar"><span>marché noir / annonce #48213</span><span class="live"><i></i>EN LIGNE</span></div>
+        <div class="l-bar"><svg class="skull"><use href="#i-skull"/></svg><span>marché noir / annonce #48213</span><span class="live"><i></i>EN LIGNE</span></div>
         <div class="l-body">
           <p class="l-title">Accès <span id="lDomain">@tonentreprise.fr</span> : 1 240 identifiants</p>
           <p class="l-sub">Mots de passe en clair, testés sur le webmail et le VPN.</p>
@@ -1000,7 +1111,7 @@ footer a{color:var(--muted)}
 
     <div class="vs">
       <div class="vs-col bad rv">
-        <h3><svg width="16" height="16"><use href="#i-alert"/></svg>Sans Serenity</h3>
+        <h3><svg width="18" height="18"><use href="#i-skull"/></svg>Sans Serenity</h3>
         <ul class="tl">
           <li><small>Jour 0</small><span>Un salarié réutilise son mot de passe pro sur un forum. Le forum fuit.</span></li>
           <li style="transition-delay:.2s"><small>Jour 3</small><span>Ses identifiants sont revendus, avec des milliers d'autres.</span></li>
@@ -1150,7 +1261,7 @@ footer a{color:var(--muted)}
 
 <div class="nudge" id="nudge" role="dialog" aria-label="Alerte">
   <button class="x" id="nudgeX" type="button" aria-label="Fermer">&#215;</button>
-  <div class="top"><i></i>Alerte</div>
+  <div class="top"><svg class="skull"><use href="#i-skull"/></svg>Alerte</div>
   <p>Ton adresse e-mail est peut-être dans une fuite en ce moment même. La plupart des gens l'apprennent trop tard.</p>
   <div class="row2"><a class="btn redb small" href="#scan" id="nudgeGo">Vérifier en 5 secondes</a></div>
 </div>
@@ -1351,6 +1462,48 @@ footer a{color:var(--muted)}
   if (!nudgeSeen) setTimeout(() => $('#nudge').classList.add('on'), 9000);
   $('#nudgeX').addEventListener('click', closeNudge);
   $('#nudgeGo').addEventListener('click', closeNudge);
+
+  // Duplicate the feed so the marquee loops without a gap
+  $('#feedTrack').innerHTML += $('#feedTrack').innerHTML;
+
+  // Hacked intro, once per visit, skipped when motion is reduced
+  const pwn = $('#pwn');
+  let pwnSeen = false;
+  try { pwnSeen = sessionStorage.getItem('pwn') === '1'; } catch (e) { /* storage blocked */ }
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const pwnTimers = [];
+  const endPwn = () => {
+    pwnTimers.forEach(clearTimeout);
+    try { sessionStorage.setItem('pwn', '1'); } catch (e) { /* storage blocked */ }
+    pwn.classList.add('out');
+    setTimeout(() => { pwn.classList.remove('on', 'out'); document.body.style.overflow = ''; }, 700);
+  };
+  if (!pwnSeen && !reduce) {
+    pwn.classList.add('on');
+    document.body.style.overflow = 'hidden';
+    const lines = [
+      ['connexion à ton navigateur', 'OK'],
+      ['lecture des mots de passe enregistrés', '23 trouvés'],
+      ['test sur ta boîte mail', 'ACCÈS'],
+      ['envoi vers le marché noir', '100 %'],
+    ].map(([k, v]) => `> ${(k + ' ').padEnd(40, '.')} ${v}`);
+    const term = $('#pwnTerm');
+    let at = 900;
+    lines.forEach((l) => {
+      pwnTimers.push(setTimeout(() => {
+        const d = document.createElement('div');
+        term.appendChild(d);
+        let i = 0;
+        const typ = setInterval(() => { d.textContent = l.slice(0, ++i); if (i >= l.length) clearInterval(typ); }, 14);
+      }, at));
+      at += 750;
+    });
+    pwnTimers.push(setTimeout(() => $('#pwnBig').classList.add('on'), at + 200));
+    pwnTimers.push(setTimeout(() => $('#pwnReveal').classList.add('on'), at + 1500));
+    pwnTimers.push(setTimeout(endPwn, at + 6500));
+    $('#pwnSkip').addEventListener('click', endPwn);
+    $('#pwnGo').addEventListener('click', endPwn);
+  }
 
   // Hold-to-stop switch, like the app: hold 1 s to stop, again to restart
   const hold = $('#hold');
